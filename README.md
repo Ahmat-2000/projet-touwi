@@ -25,8 +25,8 @@ La branche **main** est protégée contre les push et commit directs. Toute modi
 Chaque membre doit cloner le dépôt et se positionner sur sa branche respective. Pour ce faire, suivez les étapes ci-dessous :
 
 ```bash
-# Cloner le dépôt
-git clone https://github.com/votre-depot/projet-touwi.git
+# Cloner le dépôt avec SSH
+git clone https://git@github.com:Ahmat-2000/projet-touwi.git
 
 # Se positionner sur la branche de votre équipe
 git checkout team-graphique   # Pour l'équipe graphique
