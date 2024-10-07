@@ -3,16 +3,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 
-const ExamplePlot = () => {
+const DemoPlotly = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
-
-    const [mode, setMode] = useState('add'); // Mode can be 'add' or 'delete'
+    let mode = 'None'; // Default mode
+    const [selections, setSelections] = useState([]); // Array to store selected regions
 
     const plotRef1 = useRef(null);
     const plotRef2 = useRef(null);
     const plotRef3 = useRef(null);
-
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -45,8 +44,8 @@ const ExamplePlot = () => {
 
                 const newTimestamps = newData.map(row => row.timestamp);
                 const signalX = newData.map(row => row.x);
-                const signalY = newData.map(row => row.y); // Correctly map to row.y
-                const signalZ = newData.map(row => row.z); // Correctly map to row.z
+                const signalY = newData.map(row => row.x); // Correctly map to row.y
+                const signalZ = newData.map(row => row.x); // Correctly map to row.z
 
                 setData([
                     { x: newTimestamps, y: signalX, type: 'scatter', mode: 'lines', line: { color: 'red' } },
@@ -69,29 +68,6 @@ const ExamplePlot = () => {
         }
     };
 
-    const syncZoom = (eventdata, index, Plotly) => {
-        console.log('Syncing plots...');
-        console.log(eventdata);
-        console.log(index);
-        console.log(Plotly);
-        console.log("--------------------");
-        const plotRefs = [plotRef1, plotRef2, plotRef3];
-        const otherPlots = plotRefs.current.filter((_, i) => i !== index);
-        otherPlots.forEach((plotRef) => {
-            if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
-                Plotly.relayout(plotRef.current, {
-                    'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-                });
-            }
-            if (eventdata['yaxis.range[0]'] && eventdata['yaxis.range[1]']) {
-                Plotly.relayout(plotRef.current, {
-                    'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']],
-                });
-            }
-        });
-    };
-
-
     function toggleAddMode() {
         changeMode('add');
     }
@@ -101,70 +77,153 @@ const ExamplePlot = () => {
     }
 
     function changeMode(currentMode) {
-        setMode(currentMode);
-        document.getElementById('modeIndicator').innerText = `Mode: ${currentMode}`;
+        mode = currentMode;
+        console.log(`Mode changed to: ${mode}`);
+        document.getElementById('modeIndicator').innerText = `Mode: ${mode}`;
     }
 
     function resetSelection() {
         changeMode('None');
     }
 
+    function highlightRegion(Plotly, start, end) {
+        if (start > end) {
+            [start, end] = [end, start];
+        }
+
+        const shape = {
+            type: 'rect',
+            x0: start,
+            x1: end,
+            y0: 0,
+            y1: 1,
+            xref: 'x',
+            yref: 'paper',
+            fillcolor: 'rgba(255, 0, 0, 0.35)',
+            line: {
+                width: 0
+            }
+        };
+
+        Plotly.relayout(plotRef1.current, { shapes: [...plotRef1.current.layout.shapes, shape] });
+        Plotly.relayout(plotRef2.current, { shapes: [...plotRef2.current.layout.shapes, shape] });
+        Plotly.relayout(plotRef3.current, { shapes: [...plotRef3.current.layout.shapes, shape] });
+    }
+
+    function deleteRegion(Plotly, ly_plots, xValue) {
+        const layout_plot1 = ly_plots[0];
+        const layout_plot2 = ly_plots[1];
+        const layout_plot3 = ly_plots[2];
+
+        // Find the region that contains the clicked xValue
+        let regionIndex = layout_plot1.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
+        if (regionIndex !== -1) {
+            // Remove the region from both layout.shapes and selections
+            layout_plot1.shapes.splice(regionIndex, 1);
+            layout_plot2.shapes.splice(regionIndex, 1);
+            layout_plot3.shapes.splice(regionIndex, 1);
+            selections.splice(regionIndex, 1);
+
+            // Update the shapes on the plots
+            Plotly.relayout(plotRef1.current, { shapes: layout_plot1.shapes });
+            Plotly.relayout(plotRef2.current, { shapes: layout_plot2.shapes });
+            Plotly.relayout(plotRef3.current, { shapes: layout_plot3.shapes });
+
+            console.log(`Region removed at x: ${xValue}`);
+        }
+    }
+
+    const handlePlotClick = (eventData, Plotly) => {
+        const xValue = eventData.points[0].x;
+        console.log(`Clicked at x: ${xValue}`);
+        console.log(`Current mode: ${mode}`);
+
+        // Handle the different modes
+        if (mode === 'delete') {
+            deleteRegion(Plotly, [plotRef1.current.layout, plotRef2.current.layout, plotRef3.current.layout], xValue);
+        } else {
+            if (mode === 'add') {
+                if (selections.length === 0 || selections[selections.length - 1].end !== null) {
+                    console.log(`Selected region: Start - ${xValue}`);
+                    selections.push({ start: xValue, end: null });
+                }
+                else {
+                    console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
+                    selections[selections.length - 1].end = xValue;
+                    // Highlight the region across all plots
+                    highlightRegion(Plotly, selections[selections.length - 1].start, xValue);
+                }
+            }
+        }
+    };
+
+
+    const syncZoom = (eventdata, Plotly, [toChange1, toChange2]) => {
+        //get the x and y range of the plot
+        const layoutUpdate = {
+            'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+            'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']]
+        };
+
+        //update the x and y range of the other plots
+        if (eventdata['xaxis.range[0]'] !== undefined) {
+            Plotly.relayout(toChange1.current, layoutUpdate);
+            Plotly.relayout(toChange2.current, layoutUpdate);
+        }
+
+        /*
+        if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
+            Plotly.relayout(toChange1.current, layoutUpdate);
+            Plotly.relayout(toChange2.current, layoutUpdate);
+        }
+        */
+
+
+    };
+
+
     useEffect(() => {
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
 
         // Only create the plots if data is available
         if (data.length > 0) {
-
             // Initialize the first Plotly chart
-            Plotly.newPlot(plotRef1.current, [data[0]], {
+
+            const layout_plot1 = {
                 title: 'First Plotly Graph',
                 xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal X' },
-            });
+                shapes: [],
+            }
 
-            // Initialize the second Plotly chart
-            Plotly.newPlot(plotRef2.current, [data[1]], {
+            const layout_plot2 = {
                 title: 'Second Plotly Graph',
                 xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal Y' },
-            });
+                shapes: [],
+            }
 
-            // Initialize the third Plotly chart
-            Plotly.newPlot(plotRef3.current, [data[2]], {
+            const layout_plot3 = {
                 title: 'Third Plotly Graph',
                 xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal Z' },
-            });
+                shapes: [],
+            }
 
-            // Add event listener for plotly_click on the first plot
-            plotRef1.current.on('plotly_click', (eventData) => {
-                const xValue = eventData.points[0].x;
-                const yValue = eventData.points[0].y;
-                console.log(`First Plot clicked on point: (${xValue}, ${yValue})`);
-            });
+            Plotly.newPlot(plotRef1.current, [data[0]], layout_plot1);
+            Plotly.newPlot(plotRef2.current, [data[1]], layout_plot2);
+            Plotly.newPlot(plotRef3.current, [data[2]], layout_plot3);
 
+            plotRef1.current.on('plotly_click', (eventData) => handlePlotClick(eventData, Plotly));
             // Add event listener for plotly_click on the second plot
-            plotRef2.current.on('plotly_click', (eventData) => {
-                const xValue = eventData.points[0].x;
-                const yValue = eventData.points[0].y;
-                console.log(`Second Plot clicked on point: (${xValue}, ${yValue})`);
-            });
-
+            plotRef2.current.on('plotly_click', (eventData) => handlePlotClick(eventData, Plotly));
             // Add event listener for plotly_click on the third plot
-            plotRef3.current.on('plotly_click', (eventData) => {
-                const xValue = eventData.points[0].x;
-                const yValue = eventData.points[0].y;
-                console.log(`Third Plot clicked on point: (${xValue}, ${yValue})`);
-            });
+            plotRef3.current.on('plotly_click', (eventData) => handlePlotClick(eventData, Plotly));
 
-            // Sync the plots
-            const syncPlot = (eventdata) => syncZoom(eventdata, index, Plotly);
-            plotRef1.current.on('plotly_relayout', syncPlot);
-            plotRef2.current.on('plotly_relayout', syncPlot);
-            plotRef3.current.on('plotly_relayout', syncPlot);
-            plotRef1.current.syncPlot = syncPlot;
-            plotRef2.current.syncPlot = syncPlot;
-            plotRef3.current.syncPlot = syncPlot;
+
+            plotRef1.current.on('plotly_relayout', (eventdata) => syncZoom(eventdata, Plotly, [plotRef2, plotRef3]));
+            plotRef2.current.on('plotly_relayout', (eventdata) => syncZoom(eventdata, Plotly, [plotRef1, plotRef3]));
+            plotRef3.current.on('plotly_relayout', (eventdata) => syncZoom(eventdata, Plotly, [plotRef1, plotRef2]));
 
         }
 
@@ -179,6 +238,7 @@ const ExamplePlot = () => {
             }
         };
     }, [data]);
+
 
     return (
         <div style={styles.container}>
@@ -196,7 +256,7 @@ const ExamplePlot = () => {
                 <div id="controls" style={styles.controls}>
                     <button onClick={toggleAddMode} style={styles.button}>Add Period</button>
                     <button onClick={toggleDeleteMode} style={styles.button}>Delete Period</button>
-                    <button onClick={resetSelection} style={styles.button}>Reset All</button>
+                    <button onClick={resetSelection} style={styles.button}>Reset Mode</button>
                     <span id="modeIndicator" style={styles.modeIndicator}>Mode: {mode}</span>
                 </div>
             )}
@@ -224,7 +284,7 @@ const styles = {
         alignItems: 'center',
     },
     plot: {
-        margin: '20px 0',  // Add margin to create space between plots
+        margin: '20px 0',
         width: '95%',
         height: '400px',
     },
@@ -233,7 +293,7 @@ const styles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: '10px',  // Space between buttons
+        gap: '10px',
     },
     button: {
         padding: '10px 20px',
@@ -252,4 +312,4 @@ const styles = {
     }
 };
 
-export default ExamplePlot;
+export default DemoPlotly;

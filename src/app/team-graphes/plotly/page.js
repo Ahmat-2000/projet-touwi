@@ -2,9 +2,7 @@
 
 "use client"; // Mark this component as a Client Component
 
-import ExamplePlot from "../components/ExamplePlot";
-import SignalLabeling from "../components/SignalLabeling";
-import SignalPlot from "../components/SignalPlot";
+import DemoPlotly from "../components/DemoPlotly";
 
 export default function PlotlyPage() {
     return (
@@ -13,7 +11,7 @@ export default function PlotlyPage() {
             <p style={styles.description}>
                 This is an example of how <strong>Plotly.js</strong> can be used to display dynamic charts.
             </p>
-            <ExamplePlot/>
+            <DemoPlotly/>
         </div>
     );
 }
