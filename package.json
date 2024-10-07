@@ -9,14 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "next": "14.2.12",
+    "papaparse": "^5.4.1",
+    "plotly.js": "^2.35.2",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.12"
+    "react-plotly.js": "^2.6.0"
   },
   "devDependencies": {
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
     "eslint": "^8",
-    "eslint-config-next": "14.2.12"
+    "eslint-config-next": "14.2.12",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1"
   }
 }
