@@ -8,9 +8,6 @@ export default function PlotlyPage() {
     return (
         <div style={styles.container}>
             <h1 style={styles.title}>Plotly.js Demo</h1>
-            <p style={styles.description}>
-                This is an example of how <strong>Plotly.js</strong> can be used to display dynamic charts.
-            </p>
             <DemoPlotly/>
         </div>
     );

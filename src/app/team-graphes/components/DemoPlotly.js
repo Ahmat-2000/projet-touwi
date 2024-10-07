@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 
+
 const DemoPlotly = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
@@ -115,6 +116,7 @@ const DemoPlotly = () => {
         const layout_plot2 = ly_plots[1];
         const layout_plot3 = ly_plots[2];
 
+
         // Find the region that contains the clicked xValue
         let regionIndex = layout_plot1.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
         if (regionIndex !== -1) {
@@ -190,29 +192,36 @@ const DemoPlotly = () => {
             // Initialize the first Plotly chart
 
             const layout_plot1 = {
-                title: 'First Plotly Graph',
-                xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal X' },
                 shapes: [],
-            }
+                margin: { t: 40, b: 20, l: 60, r: 20 }
+            };
 
             const layout_plot2 = {
-                title: 'Second Plotly Graph',
-                xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal Y' },
                 shapes: [],
-            }
+                margin: { t: 40, b: 20, l: 60, r: 20 }
+                
+                
+            };
 
             const layout_plot3 = {
-                title: 'Third Plotly Graph',
                 xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal Z' },
                 shapes: [],
-            }
+                margin: { t: 40, b: 40, l: 60, r: 20 }
+            };
 
-            Plotly.newPlot(plotRef1.current, [data[0]], layout_plot1);
-            Plotly.newPlot(plotRef2.current, [data[1]], layout_plot2);
-            Plotly.newPlot(plotRef3.current, [data[2]], layout_plot3);
+            const config = {
+                displayModeBar: false,
+                modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
+                displaylogo: false
+            };
+
+
+            Plotly.newPlot(plotRef1.current, [data[0]], layout_plot1, config);
+            Plotly.newPlot(plotRef2.current, [data[1]], layout_plot2, config);
+            Plotly.newPlot(plotRef3.current, [data[2]], layout_plot3, config);
 
             plotRef1.current.on('plotly_click', (eventData) => handlePlotClick(eventData, Plotly));
             // Add event listener for plotly_click on the second plot
@@ -282,9 +291,12 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        height: 'auto',
+        width: '100%',
+        overflow: 'hidden',
     },
     plot: {
-        margin: '20px 0',
+        margin: '0', // Changed from '20px 0' to '0'
         width: '95%',
         height: '400px',
     },
@@ -311,5 +323,6 @@ const styles = {
         color: '#333',
     }
 };
+
 
 export default DemoPlotly;
