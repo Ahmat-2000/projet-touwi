@@ -4,6 +4,7 @@
 
 import ExamplePlot from "../components/ExamplePlot";
 import SignalLabeling from "../components/SignalLabeling";
+import SignalPlot from "../components/SignalPlot";
 
 export default function PlotlyPage() {
     return (
@@ -12,7 +13,7 @@ export default function PlotlyPage() {
             <p style={styles.description}>
                 This is an example of how <strong>Plotly.js</strong> can be used to display dynamic charts.
             </p>
-            <ExamplePlot />
+            <ExamplePlot/>
         </div>
     );
 }

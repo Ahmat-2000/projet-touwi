@@ -4,9 +4,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 
 const ExamplePlot = () => {
-    const [data, setData] = useState([]);
-    const [error, setError] = useState('');
-    const plotRefs = useRef([React.createRef(), React.createRef(), React.createRef()]);
+    const [data, setData] = useState([]); // Array to store data for the plots
+    const [error, setError] = useState(''); // Error message for CSV parsing
+
+    const [mode, setMode] = useState('add'); // Mode can be 'add' or 'delete'
+
+    const plotRef1 = useRef(null);
+    const plotRef2 = useRef(null);
+    const plotRef3 = useRef(null);
+
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -39,8 +45,8 @@ const ExamplePlot = () => {
 
                 const newTimestamps = newData.map(row => row.timestamp);
                 const signalX = newData.map(row => row.x);
-                const signalY = newData.map(row => row.y);
-                const signalZ = newData.map(row => row.z);
+                const signalY = newData.map(row => row.y); // Correctly map to row.y
+                const signalZ = newData.map(row => row.z); // Correctly map to row.z
 
                 setData([
                     { x: newTimestamps, y: signalX, type: 'scatter', mode: 'lines', line: { color: 'red' } },
@@ -64,6 +70,12 @@ const ExamplePlot = () => {
     };
 
     const syncZoom = (eventdata, index, Plotly) => {
+        console.log('Syncing plots...');
+        console.log(eventdata);
+        console.log(index);
+        console.log(Plotly);
+        console.log("--------------------");
+        const plotRefs = [plotRef1, plotRef2, plotRef3];
         const otherPlots = plotRefs.current.filter((_, i) => i !== index);
         otherPlots.forEach((plotRef) => {
             if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
@@ -79,35 +91,94 @@ const ExamplePlot = () => {
         });
     };
 
+
+    function toggleAddMode() {
+        changeMode('add');
+    }
+
+    function toggleDeleteMode() {
+        changeMode('delete');
+    }
+
+    function changeMode(currentMode) {
+        setMode(currentMode);
+        document.getElementById('modeIndicator').innerText = `Mode: ${currentMode}`;
+    }
+
+    function resetSelection() {
+        changeMode('None');
+    }
+
     useEffect(() => {
-        const Plotly = require('plotly.js/dist/plotly.js');
+        const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
 
+        // Only create the plots if data is available
         if (data.length > 0) {
-            plotRefs.current.forEach((plotRef, index) => {
-                Plotly.newPlot(plotRef.current, [data[index]], {
-                    xaxis: { title: index === 2 ? 'Timestamp' : '' },
-                    yaxis: { title: `Signal ${['X', 'Y', 'Z'][index]}` },
-                }, {
-                    displayModeBar: false, // Hide the entire mode bar
-                    // Alternatively, you can selectively hide buttons if needed
-                    // modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d', 'toggleSpikelines'],
-                });
 
-                const syncPlot = (eventdata) => syncZoom(eventdata, index, Plotly);
-                plotRef.current.on('plotly_relayout', syncPlot);
-                plotRef.current.syncPlot = syncPlot;
+            // Initialize the first Plotly chart
+            Plotly.newPlot(plotRef1.current, [data[0]], {
+                title: 'First Plotly Graph',
+                xaxis: { title: 'Timestamp' },
+                yaxis: { title: 'Signal X' },
             });
+
+            // Initialize the second Plotly chart
+            Plotly.newPlot(plotRef2.current, [data[1]], {
+                title: 'Second Plotly Graph',
+                xaxis: { title: 'Timestamp' },
+                yaxis: { title: 'Signal Y' },
+            });
+
+            // Initialize the third Plotly chart
+            Plotly.newPlot(plotRef3.current, [data[2]], {
+                title: 'Third Plotly Graph',
+                xaxis: { title: 'Timestamp' },
+                yaxis: { title: 'Signal Z' },
+            });
+
+            // Add event listener for plotly_click on the first plot
+            plotRef1.current.on('plotly_click', (eventData) => {
+                const xValue = eventData.points[0].x;
+                const yValue = eventData.points[0].y;
+                console.log(`First Plot clicked on point: (${xValue}, ${yValue})`);
+            });
+
+            // Add event listener for plotly_click on the second plot
+            plotRef2.current.on('plotly_click', (eventData) => {
+                const xValue = eventData.points[0].x;
+                const yValue = eventData.points[0].y;
+                console.log(`Second Plot clicked on point: (${xValue}, ${yValue})`);
+            });
+
+            // Add event listener for plotly_click on the third plot
+            plotRef3.current.on('plotly_click', (eventData) => {
+                const xValue = eventData.points[0].x;
+                const yValue = eventData.points[0].y;
+                console.log(`Third Plot clicked on point: (${xValue}, ${yValue})`);
+            });
+
+            // Sync the plots
+            const syncPlot = (eventdata) => syncZoom(eventdata, index, Plotly);
+            plotRef1.current.on('plotly_relayout', syncPlot);
+            plotRef2.current.on('plotly_relayout', syncPlot);
+            plotRef3.current.on('plotly_relayout', syncPlot);
+            plotRef1.current.syncPlot = syncPlot;
+            plotRef2.current.syncPlot = syncPlot;
+            plotRef3.current.syncPlot = syncPlot;
+
         }
 
+        // Cleanup on unmount
         return () => {
-            plotRefs.current.forEach((plotRef) => {
-                if (plotRef.current && plotRef.current.syncPlot) {
-                    plotRef.current.removeEventListener('plotly_relayout', plotRef.current.syncPlot);
-                }
-            });
+            // <!> Temporary fix <!>
+            // Removing examples of event listeners for now but keep in mind that they still need to exist to be purged ( page reload / page redirect )
+            if (plotRef1.current) {
+                Plotly.purge(plotRef1.current);
+                Plotly.purge(plotRef2.current);
+                Plotly.purge(plotRef3.current);
+            }
         };
     }, [data]);
-
 
     return (
         <div style={styles.container}>
@@ -119,14 +190,21 @@ const ExamplePlot = () => {
                 style={styles.fileInput}
             />
             {error && <p style={{ color: 'red' }}>{error}</p>}
+
+            {/* Conditionally render buttons only when data is loaded */}
+            {data.length > 0 && (
+                <div id="controls" style={styles.controls}>
+                    <button onClick={toggleAddMode} style={styles.button}>Add Period</button>
+                    <button onClick={toggleDeleteMode} style={styles.button}>Delete Period</button>
+                    <button onClick={resetSelection} style={styles.button}>Reset All</button>
+                    <span id="modeIndicator" style={styles.modeIndicator}>Mode: {mode}</span>
+                </div>
+            )}
+
             <div style={styles.plotContainer}>
-                {data.length > 0 && (
-                    <>
-                        <div ref={plotRefs.current[0]} style={styles.plot} />
-                        <div ref={plotRefs.current[1]} style={styles.plot} />
-                        <div ref={plotRefs.current[2]} style={styles.plot} />
-                    </>
-                )}
+                <div ref={plotRef1} style={styles.plot} />
+                <div ref={plotRef2} style={styles.plot} />
+                <div ref={plotRef3} style={styles.plot} />
             </div>
         </div>
     );
@@ -146,10 +224,32 @@ const styles = {
         alignItems: 'center',
     },
     plot: {
-        margin: '0',  // Set margin to 0 to eliminate all gaps
-        width: '95%',  // Set width to 95% of the page
-        height: '400px', // Fixed height for plots
+        margin: '20px 0',  // Add margin to create space between plots
+        width: '95%',
+        height: '400px',
     },
+    controls: {
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '10px',  // Space between buttons
+    },
+    button: {
+        padding: '10px 20px',
+        fontSize: '16px',
+        cursor: 'pointer',
+        backgroundColor: '#007BFF',
+        border: 'none',
+        borderRadius: '5px',
+        color: 'white',
+        transition: 'background-color 0.3s',
+    },
+    modeIndicator: {
+        marginLeft: '10px',
+        fontSize: '16px',
+        color: '#333',
+    }
 };
 
 export default ExamplePlot;
