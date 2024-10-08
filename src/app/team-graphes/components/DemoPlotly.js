@@ -70,11 +70,24 @@ const DemoPlotly = () => {
     };
 
     function toggleAddMode() {
-        changeMode('add');
+        changeMode('period');
+    }
+
+    function toggleEventMode() {
+        changeMode('flag');
     }
 
     function toggleDeleteMode() {
         changeMode('delete');
+    }
+
+    function setMode(newDragMode) {
+        const Plotly = require('plotly.js/dist/plotly.js');
+        console.log(`Mode set to: ${newDragMode}`);
+
+        Plotly.relayout(plotRef1.current, { dragmode: newDragMode });
+        Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
+        Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
     }
 
     function changeMode(currentMode) {
@@ -83,8 +96,28 @@ const DemoPlotly = () => {
         document.getElementById('modeIndicator').innerText = `Mode: ${mode}`;
     }
 
-    function resetSelection() {
+    function resetMode() {
         changeMode('None');
+    }
+
+    function resetEvents() {
+        const Plotly = require('plotly.js/dist/plotly.js');
+
+        Plotly.relayout(plotRef1.current, { shapes: [], annotations: [] });
+        Plotly.relayout(plotRef2.current, { shapes: [], annotations: [] });
+        Plotly.relayout(plotRef3.current, { shapes: [], annotations: [] });
+        //setSelections([]);
+        //resetMode();
+    }
+
+    function voidPlots() {
+        const Plotly = require('plotly.js/dist/plotly.js');
+        Plotly.purge(plotRef1.current);
+        Plotly.purge(plotRef2.current);
+        Plotly.purge(plotRef3.current);
+        setData([]);
+        setSelections([]);
+        setError('');
     }
 
     function highlightRegion(Plotly, start, end) {
@@ -111,6 +144,52 @@ const DemoPlotly = () => {
         Plotly.relayout(plotRef3.current, { shapes: [...plotRef3.current.layout.shapes, shape] });
     }
 
+    function highlightFlag(Plotly, xValue) {
+
+        const shape = {
+            type: 'line',
+            x0: xValue,
+            x1: xValue,
+            y0: 0,
+            y1: 1,
+            xref: 'x',
+            yref: 'paper',
+            line: {
+                width: 1,
+                color: 'blue',
+                dash: 'dashdot'
+            },
+        };
+
+        const annotation = {
+            x: xValue + 4000,
+            /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
+            from 1 to 30_000 but 1.464T to 1.513T so text need 3000 to move a bit to the right of the flag bar
+            @Antoine
+            */
+            y: 1, // Adjust this value to position the text on the y-axis
+            xref: 'x',
+            yref: 'paper',
+            text: 'Default Text', // Your default text here
+            showarrow: false,
+            font: {
+                size: 12,
+                color: 'black'
+            },
+            bordercolor: 'grey',
+            borderwidth: 2,
+            borderpad: 4,
+            align: 'left',
+            valign: 'middle',
+            
+        };
+
+        Plotly.relayout(plotRef1.current, { shapes: [...plotRef1.current.layout.shapes, shape], annotations: [...plotRef1.current.layout.annotations, annotation] });
+        Plotly.relayout(plotRef2.current, { shapes: [...plotRef2.current.layout.shapes, shape], annotations: [...plotRef2.current.layout.annotations, annotation] });
+        Plotly.relayout(plotRef3.current, { shapes: [...plotRef3.current.layout.shapes, shape], annotations: [...plotRef3.current.layout.annotations, annotation] });
+    }
+
+
     function deleteRegion(Plotly, ly_plots, xValue) {
         const layout_plot1 = ly_plots[0];
         const layout_plot2 = ly_plots[1];
@@ -127,9 +206,9 @@ const DemoPlotly = () => {
             selections.splice(regionIndex, 1);
 
             // Update the shapes on the plots
-            Plotly.relayout(plotRef1.current, { shapes: layout_plot1.shapes });
-            Plotly.relayout(plotRef2.current, { shapes: layout_plot2.shapes });
-            Plotly.relayout(plotRef3.current, { shapes: layout_plot3.shapes });
+            Plotly.relayout(plotRef1.current, { shapes: layout_plot1.shapes, annotations: layout_plot1.annotations });
+            Plotly.relayout(plotRef2.current, { shapes: layout_plot2.shapes, annotations: layout_plot2.annotations });
+            Plotly.relayout(plotRef3.current, { shapes: layout_plot3.shapes, annotations: layout_plot3.annotations });
 
             console.log(`Region removed at x: ${xValue}`);
         }
@@ -144,7 +223,7 @@ const DemoPlotly = () => {
         if (mode === 'delete') {
             deleteRegion(Plotly, [plotRef1.current.layout, plotRef2.current.layout, plotRef3.current.layout], xValue);
         } else {
-            if (mode === 'add') {
+            if (mode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
                     console.log(`Selected region: Start - ${xValue}`);
                     selections.push({ start: xValue, end: null });
@@ -156,6 +235,13 @@ const DemoPlotly = () => {
                     highlightRegion(Plotly, selections[selections.length - 1].start, xValue);
                 }
             }
+
+            if (mode === 'flag') {
+                console.log(`Flag added at x: ${xValue}`);
+                highlightFlag(Plotly, xValue);
+            }
+
+
         }
     };
 
@@ -194,12 +280,14 @@ const DemoPlotly = () => {
             const layout_plot1 = {
                 yaxis: { title: 'Signal X' },
                 shapes: [],
+                annotations: [],
                 margin: { t: 40, b: 20, l: 60, r: 20 }
             };
 
             const layout_plot2 = {
                 yaxis: { title: 'Signal Y' },
                 shapes: [],
+                annotations: [],
                 margin: { t: 40, b: 20, l: 60, r: 20 }
                 
                 
@@ -209,13 +297,15 @@ const DemoPlotly = () => {
                 xaxis: { title: 'Timestamp' },
                 yaxis: { title: 'Signal Z' },
                 shapes: [],
+                annotations: [],
                 margin: { t: 40, b: 40, l: 60, r: 20 }
             };
 
             const config = {
-                displayModeBar: false,
-                modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
-                displaylogo: false
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d' ],
+                displaylogo: false,
+                doubleClick: false
             };
 
 
@@ -263,9 +353,18 @@ const DemoPlotly = () => {
             {/* Conditionally render buttons only when data is loaded */}
             {data.length > 0 && (
                 <div id="controls" style={styles.controls}>
-                    <button onClick={toggleAddMode} style={styles.button}>Add Period</button>
-                    <button onClick={toggleDeleteMode} style={styles.button}>Delete Period</button>
-                    <button onClick={resetSelection} style={styles.button}>Reset Mode</button>
+                    
+                    <button onClick={() => { setMode('zoom'); }} style={styles.button}>Zoom</button>
+                    <button onClick={() => { setMode('pan'); }} style={styles.button}>Pan</button>
+                    <br />
+
+                    <button onClick={() => { toggleAddMode(); setMode(false);}} style={styles.button}>Add Period</button>
+                    <button onClick={() => { toggleDeleteMode(); setMode(false) ; }} style={styles.button}>Delete Period</button>
+                    <button onClick={() => { toggleEventMode(); setMode(false) ; }} style={styles.button}>Add Flag</button>
+                    <button onClick={() => { resetMode(); setMode(false); }} style={styles.button}>Reset Mode</button>
+                    <br />
+                    <button onClick={() => { resetEvents(); setMode(false) ; }} style={styles.button}>Delete All Periods/Flags</button>
+                    
                     <span id="modeIndicator" style={styles.modeIndicator}>Mode: {mode}</span>
                 </div>
             )}
