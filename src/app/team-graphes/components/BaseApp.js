@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 
 
-const DemoPlotly = () => {
+const BaseApp = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
     let mode = 'None'; // Default mode
@@ -278,6 +278,7 @@ const DemoPlotly = () => {
             // Initialize the first Plotly chart
 
             const layout_plot1 = {
+                xaxis: { showticklabels: false },
                 yaxis: { title: 'Signal X' },
                 shapes: [],
                 annotations: [],
@@ -285,6 +286,7 @@ const DemoPlotly = () => {
             };
 
             const layout_plot2 = {
+                xaxis: { showticklabels: false },
                 yaxis: { title: 'Signal Y' },
                 shapes: [],
                 annotations: [],
@@ -341,7 +343,10 @@ const DemoPlotly = () => {
 
     return (
         <div style={styles.container}>
-            <h2>Upload CSV to Create Synced Plots</h2>
+            <h2>Upload CSV to Create Synced Plots </h2>
+            <p style={{ fontWeight: 'bold', color: 'red' }}>
+                (please use modified file published on discord or remove the last line in csv file if blank)
+            </p>
             <input
                 type="file"
                 accept=".csv"
@@ -424,4 +429,4 @@ const styles = {
 };
 
 
-export default DemoPlotly;
+export default BaseApp;
