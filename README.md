@@ -70,6 +70,14 @@ bun dev
 
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
 
+## Lancement via Docker
+
+```bash
+docker-compose up -d
+```
+docker compose up --build --force-recreate --no-dep
+Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
+
 ## Déploiement
 
 La branche `main` est automatiquement déployée sur Vercel à chaque pull request fusionnée. Vous pouvez accéder à la version live du projet ici : [https://projet-touwi.vercel.app/](https://projet-touwi.vercel.app/).
