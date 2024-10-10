@@ -75,7 +75,6 @@ Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](h
 ```bash
 docker-compose up -d
 ```
-docker compose up --build --force-recreate --no-dep
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
 
 ## Déploiement
