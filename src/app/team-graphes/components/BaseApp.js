@@ -14,6 +14,10 @@ const BaseApp = () => {
     const plotRef2 = useRef(null);
     const plotRef3 = useRef(null);
 
+    const plotRef4 = useRef(null);
+
+    const dataToUseLater = [];
+
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
         Papa.parse(file, {
@@ -269,6 +273,41 @@ const BaseApp = () => {
 
     };
 
+    function addPlot() {
+        console.log('Adding plot');
+
+        const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
+
+
+        plotRef4.current = document.createElement('div');
+        Object.assign(plotRef4.current.style, styles.plot);
+        document.getElementById('plotContainer').appendChild(plotRef4.current);
+
+        const layout_plot4 = {
+            xaxis: { showticklabels: false },
+            yaxis: { title: 'Signal X' },
+            shapes: [],
+            annotations: [],
+            margin: { t: 40, b: 20, l: 60, r: 20 }
+        };
+
+        const config = {
+            displayModeBar: true,
+            modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
+            displaylogo: false,
+            doubleClick: false
+        };
+
+
+        Plotly.newPlot(plotRef4.current, dataToUseLater, layout_plot4, config);
+
+        plotRef4.current.on('plotly_click', (eventData) => handlePlotClick(eventData, Plotly));
+
+        plotRef4.current.on('plotly_relayout', (eventdata) => syncZoom(eventdata, Plotly, [plotRef2, plotRef3]));
+
+    }
+
+
 
     useEffect(() => {
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
@@ -310,6 +349,7 @@ const BaseApp = () => {
                 doubleClick: false
             };
 
+            dataToUseLater.push(data[0]);
 
             Plotly.newPlot(plotRef1.current, [data[0]], layout_plot1, config);
             Plotly.newPlot(plotRef2.current, [data[1]], layout_plot2, config);
@@ -374,11 +414,12 @@ const BaseApp = () => {
                 </div>
             )}
 
-            <div style={styles.plotContainer}>
+            <div id="plotContainer" style={styles.plotContainer}>
                 <div ref={plotRef1} style={styles.plot} />
                 <div ref={plotRef2} style={styles.plot} />
                 <div ref={plotRef3} style={styles.plot} />
             </div>
+            <button onClick={() => { addPlot(); }} style={styles.addPlotButton}>+</button>
         </div>
     );
 };
@@ -414,6 +455,26 @@ const styles = {
     button: {
         padding: '10px 20px',
         fontSize: '16px',
+        cursor: 'pointer',
+        backgroundColor: '#007BFF',
+        border: 'none',
+        borderRadius: '5px',
+        color: 'white',
+        transition: 'background-color 0.3s',
+    },
+    addPlotButton: {
+        display: 'flex',
+        marginRight: 'auto',
+        marginLeft: '3%',
+        marginTop: '40px',
+        padding: '10px 20px',
+        fontSize: '30px',
+        width: '50px',
+        height: '50px',
+        textAlign: 'center',
+        justifyContent: 'center',
+        alignItems: 'center',
+        placeItems: 'center',
         cursor: 'pointer',
         backgroundColor: '#007BFF',
         border: 'none',
