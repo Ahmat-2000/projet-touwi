@@ -12,6 +12,7 @@
     "next": "14.2.12",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.35.2",
+    "plotly.js-dist": "^2.35.2",
     "react": "^18",
     "react-dom": "^18",
     "react-plotly.js": "^2.6.0"
