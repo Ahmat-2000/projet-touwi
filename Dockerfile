@@ -1,6 +1,6 @@
-FROM node
+FROM node:18-alpine AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app
 
 COPY package*.json ./
 
@@ -10,4 +10,16 @@ COPY . .
 
 RUN npm run build
 
-CMD ["npm", "run", "dev"]
+FROM node:18-alpine AS runner
+
+ENV NODE_ENV production
+
+WORKDIR /app
+
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./
+
+# Démarrer l'application
+CMD ["npm", "start"]
