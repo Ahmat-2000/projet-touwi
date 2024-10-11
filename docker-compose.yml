@@ -1,13 +1,13 @@
-version: "4"
-
+version: '3.8'
 services:
-  web:
+  nextjs:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: web
-    restart: always
     volumes:
-      - ./:/usr/src/app
+      - ./:/app
+      - /app/node_modules
     ports:
       - "3000:3000"
+    environment:
+      NODE_ENV: development 
