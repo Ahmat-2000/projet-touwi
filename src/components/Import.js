@@ -25,13 +25,9 @@ const ImportComponent = () => {
     const { name, files: selectedFiles } = e.target;
     const file = selectedFiles[0];
 
-    // Si le fichier est un CSV, traiter les lignes
-    if (file && file.type === "text/csv") {
-      const processedFile = await processCSV(file);
-      setFiles({ ...files, [name]: processedFile });
-    } else {
-      setFiles({ ...files, [name]: file });
-    }
+    // Traiter la dernière ligne
+    const processedFile = await processCSV(file);
+    setFiles({ ...files, [name]: processedFile });
   };
 
   // Gestion de la fréquence (Hz)

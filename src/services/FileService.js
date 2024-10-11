@@ -3,14 +3,16 @@ export async function processCSV(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
+        if (file && file.type !== "text/csv") { // Test if it's a CSV
+            resolve(file);
+        }
+
         reader.onload = function (e) {
             let fileContent = e.target.result;
 
             // Vérifier si le fichier se termine par un retour chariot (\n ou \r\n)
-            if (fileContent.endsWith("\r\n")) {
-                fileContent = fileContent.slice(0, -2); // Supprimer \r\n
-            } else if (fileContent.endsWith("\n")) {
-                fileContent = fileContent.slice(0, -1); // Supprimer \n
+            if (fileContent.endsWith("\n")) {
+                fileContent = fileContent.slice(0, -2); // Supprimer \n
             }
 
             // Créer un nouveau fichier avec le contenu modifié
