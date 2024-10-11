@@ -3,20 +3,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useVariablesContext } from "@/utils/VariablesContext";
 
-const ImportPage = () => {
+const ImportComponent = () => {
   const router = useRouter();
+  const { setVariablesContext } = useVariablesContext();
   const [files, setFiles] = useState({
     accel: null,
     gyro: null,
     video: null,
-    touwi: null,
   });
   const [frequency, setFrequency] = useState("");
   const [errors, setErrors] = useState({});
 
   const redirect = () => {
-    //router.push("/TODO_Redirect");
+    router.push("/edit");
   };
 
   // Fonction pour traiter les fichiers CSV et retirer la dernière ligne vide
@@ -67,7 +68,7 @@ const ImportPage = () => {
   // Gestion de l'importation du fichier ".touwi"
   const handleReOpenTouwi = (e) => {
     const { files: selectedFiles } = e.target;
-    setFiles({ ...files, touwi: selectedFiles[0] });
+    setVariablesContext(selectedFiles);
     redirect();
   };
 
@@ -91,6 +92,7 @@ const ImportPage = () => {
       // Logique pour envoyer les fichiers et la fréquence (ex: API ou une autre page)
       console.log("Fichiers envoyés:", files);
       console.log("Fréquence:", frequency);
+      setVariablesContext(files);
       redirect();
     }
   };
@@ -184,4 +186,4 @@ const ImportPage = () => {
   );
 };
 
-export default ImportPage;
+export default ImportComponent;

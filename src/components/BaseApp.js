@@ -2,9 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
-
+import { useVariablesContext } from "@/utils/VariablesContext";
 
 const BaseApp = () => {
+    const { variablesContext } = useVariablesContext();
+  
+    console.log(variablesContext);
+
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
     let mode = 'None'; // Default mode
