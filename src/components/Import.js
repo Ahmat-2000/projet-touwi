@@ -1,9 +1,9 @@
-// pages/import.js
-"use client"; // Indique que c'est un Client Component
+"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
+import { processCSV } from '@/services/FileService'
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -18,32 +18,6 @@ const ImportComponent = () => {
 
   const redirect = () => {
     router.push("/edit");
-  };
-
-  // Fonction pour traiter les fichiers CSV et retirer la dernière ligne vide
-  const processCSV = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const fileContent = e.target.result;
-        const lines = fileContent.split("\n");
-
-        // Supprimer la dernière ligne si elle est vide
-        if (lines.length > 0 && lines[lines.length - 1].trim() === "") {
-          lines.pop();
-        }
-
-        // Reconstruire le contenu du fichier
-        const processedContent = lines.join("\n");
-        const processedFile = new Blob([processedContent], {
-          type: "text/csv",
-        });
-
-        resolve(processedFile); // Retourner le fichier traité
-      };
-      reader.onerror = reject;
-      reader.readAsText(file); // Lire le fichier CSV
-    });
   };
 
   // Gestion de l'importation des fichiers

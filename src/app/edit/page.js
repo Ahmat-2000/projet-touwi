@@ -1,10 +1,10 @@
-import BaseApp from '@/components/BaseApp';
+import Edit from '@/components/Edit';
 
-export default function Edit() {
+export default function EditPage() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Plotly.js Demo</h1>
-      <BaseApp />
+      <Edit />
     </div>
   );
 }
