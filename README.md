@@ -17,6 +17,8 @@ La branche **main** est protégée contre les push et commit directs. Toute modi
 
 - **Next.js** dernière version
 - **Node.js 18.18** ou supérieur
+- **npm** ou **yarn** ou **pnpm** ou **bun**
+- **Docker** et **docker-compose** (optionnel)
 
 ## Installation
 
@@ -26,7 +28,7 @@ Chaque membre doit cloner le dépôt et se positionner sur sa branche respective
 
 ```bash
 # Cloner le dépôt avec SSH
-git clone https://git@github.com:Ahmat-2000/projet-touwi.git
+git clone https://git@github.com/Ahmat-2000/projet-touwi.git
 
 # Se positionner sur la branche de votre équipe
 git checkout team-graphique   # Pour l'équipe graphique
@@ -54,7 +56,38 @@ pnpm install
 bun install
 ```
 
-## Lancement du Serveur de Développement
+### Définitions des variables d'environements
+Un .env est defini dans le projet, il est nécessaire de definir un `.env.local` à la racine du projet voici à quoi il doit ressembler (données d'exemple, elles peuvent variés selon les besoins) :
+
+```bash
+NODE_ENV=development # or production
+BACKEND_API_URL=http://chronos.touwi.fr/api
+DATABASE_URL=mysql://root:root@localhost:3306/chronos
+```
+
+## Lancement
+
+### Lancement via Docker
+
+```bash
+docker-compose up --build -d
+```
+Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat du frontent et [http://localhost:3000/api/example](http://localhost:3000/api/example) pour voir le résultat du backend.
+
+Si un problème survient lors du developpement, vous pouvez visualiser les logs des conteneurs en utilisant la commande suivante :
+
+```bash
+docker-compose logs -f nextjs
+```
+
+Une fois fini, faite la commande suivante pour détruire tous les conteneurs :
+
+```bash
+docker-compose down
+```
+
+
+### Lancement du Serveur de Développement (Sans Docker et sans base de données)
 
 Pour démarrer le serveur de développement, utilisez l'une des commandes ci-dessous :
 
@@ -68,13 +101,6 @@ pnpm dev
 bun dev
 ```
 
-Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
-
-## Lancement via Docker
-
-```bash
-docker-compose up -d
-```
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
 
 ## Déploiement

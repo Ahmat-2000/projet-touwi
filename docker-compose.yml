@@ -9,5 +9,8 @@ services:
       - /app/node_modules
     ports:
       - "3000:3000"
+    env_file:
+      - ./.env
+      - ./.env.local
     environment:
-      NODE_ENV: development 
+      - NODE_ENV=development
