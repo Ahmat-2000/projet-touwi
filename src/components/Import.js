@@ -8,38 +8,43 @@ import { processCSV } from '@/services/FileService'
 const ImportComponent = () => {
   const router = useRouter();
   const { setVariablesContext } = useVariablesContext();
-  const [files, setFiles] = useState({
+  const [fields, setFields] = useState({
     accel: null,
     gyro: null,
     video: null,
+    frequency: null,
   });
-  const [frequency, setFrequency] = useState("");
   const [errors, setErrors] = useState({});
 
   const redirect = () => {
     router.push("/edit");
   };
-
-  // Gestion de l'importation des fichiers
-  const handleFileChange = async (e) => {
-    const { name, files: selectedFiles } = e.target;
-    const file = selectedFiles[0];
-
-    // Traiter la dernière ligne
+  
+  // Fonction commune pour gérer l'importation des fichiers
+  const handleFile = async (e, callback) => {
+    const file = e.target.files[0];
     const processedFile = await processCSV(file);
-    setFiles({ ...files, [name]: processedFile });
+    callback(processedFile);
   };
 
-  // Gestion de la fréquence (Hz)
-  const handleFrequencyChange = (e) => {
-    setFrequency(e.target.value);
+  // Gestion de l'importation des fichiers (pour fichiers CSV)
+  const handleFileChange = (e) => {
+    handleFile(e, (processedFile) => {
+      setFields((prevFields) => ({ ...prevFields, [e.target.name]: processedFile }));
+    });
   };
 
   // Gestion de l'importation du fichier ".touwi"
   const handleReOpenTouwi = (e) => {
-    const { files: selectedFiles } = e.target;
-    setVariablesContext(selectedFiles);
-    redirect();
+    handleFile(e, (processedFile) => {
+      setVariablesContext(processedFile);
+      redirect();
+    });
+  };
+
+  // Gestion de la fréquence (Hz)
+  const handleFrequencyChange = (e) => {
+    setFields((prevFields) => ({ ...prevFields, frequency: e.target.value }));
   };
 
   // Validation et soumission du formulaire
@@ -48,11 +53,11 @@ const ImportComponent = () => {
     const newErrors = {};
 
     // Validation des fichiers
-    if (!files.accel) newErrors.accel = "Le fichier Accel est requis.";
-    if (!files.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
-    if (!files.video) newErrors.video = "La vidéo est requise.";
-    if (!frequency) newErrors.frequency = "La fréquence en Hz est requise.";
-    if (isNaN(frequency) || frequency <= 0)
+    if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
+    if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
+    if (!fields.video) newErrors.video = "La vidéo est requise.";
+    if (!fields.frequency) newErrors.frequency = "La fréquence en Hz est requise.";
+    if (isNaN(fields.frequency) || fields.frequency <= 0)
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
 
     setErrors(newErrors);
@@ -60,9 +65,8 @@ const ImportComponent = () => {
     // Si aucune erreur, redirection ou traitement
     if (Object.keys(newErrors).length === 0) {
       // Logique pour envoyer les fichiers et la fréquence (ex: API ou une autre page)
-      console.log("Fichiers envoyés:", files);
-      console.log("Fréquence:", frequency);
-      setVariablesContext(files);
+      console.log("Fichiers envoyés:", fields);
+      setVariablesContext(fields);
       redirect();
     }
   };
@@ -119,7 +123,7 @@ const ImportComponent = () => {
             Fréquence (en Hz):
             <input
               type="text"
-              value={frequency}
+              value={fields.frequency}
               onChange={handleFrequencyChange}
               placeholder="Entrez la fréquence en Hz"
             />

@@ -6,8 +6,6 @@ import { parseCSV } from '@/services/ParserService';
 
 const Edit = () => {
     const { variablesContext } = useVariablesContext();
-  
-    console.log(variablesContext);
 
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
@@ -17,13 +15,6 @@ const Edit = () => {
     const plotRef1 = useRef(null);
     const plotRef2 = useRef(null);
     const plotRef3 = useRef(null);
-
-    useEffect(() => {
-        const file = variablesContext.accel;
-        if (file) {
-            parseCSV(file, setData, setError);
-        }
-    }, []);
 
     function toggleAddMode() {
         changeMode('period');
@@ -225,8 +216,16 @@ const Edit = () => {
 
     };
 
+    useEffect(() => { // Exécuté une fois
+        if (variablesContext && 'accel' in variablesContext) {
+            const file = variablesContext.accel;
+            if (file) {
+                parseCSV(file, setData, setError);
+            }
+        }
+    }, []);
 
-    useEffect(() => {
+    useEffect(() => { // Executé quand data change
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
 
         // Only create the plots if data is available
