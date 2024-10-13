@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
-import { processCSV } from '@/services/FileService'
+import { removeUnevenLinesFromCSV } from '@/services/FileService'
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -20,26 +20,24 @@ const ImportComponent = () => {
     router.push("/edit");
   };
   
-  // Fonction commune pour gérer l'importation des fichiers
-  const handleFile = async (e, callback) => {
-    const file = e.target.files[0];
-    const processedFile = await processCSV(file);
-    callback(processedFile);
-  };
-
-  // Gestion de l'importation des fichiers (pour fichiers CSV)
-  const handleFileChange = (e) => {
-    handleFile(e, (processedFile) => {
-      setFields((prevFields) => ({ ...prevFields, [e.target.name]: processedFile }));
-    });
+  // Gestion de l'importation des fichiers
+  const handleFileChange = async (e) => {
+    const { name, files: selectedFiles } = e.target;
+    const file = selectedFiles[0];
+  
+    // Si le fichier est un CSV, traiter les lignes vides à la fin
+    const processedFile = await removeUnevenLinesFromCSV(file);
+    setFields({ ...fields, [name]: processedFile });
   };
 
   // Gestion de l'importation du fichier ".touwi"
-  const handleReOpenTouwi = (e) => {
-    handleFile(e, (processedFile) => {
-      setVariablesContext(processedFile);
-      redirect();
-    });
+  const handleReOpenTouwi = async (e) => {
+    const { files: selectedFiles } = e.target;
+    const file = selectedFiles[0];
+
+    const processedFile = await removeUnevenLinesFromCSV(file);
+    setVariablesContext(processedFile);
+    redirect();
   };
 
   // Gestion de la fréquence (Hz)
@@ -123,7 +121,7 @@ const ImportComponent = () => {
             Fréquence (en Hz):
             <input
               type="text"
-              value={fields.frequency}
+              value={fields.frequency ?? ""}
               onChange={handleFrequencyChange}
               placeholder="Entrez la fréquence en Hz"
             />

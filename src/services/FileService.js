@@ -1,35 +1,40 @@
-// Process a CSV file by removing the last newline character, if present
-export async function processCSV(file) {
+// services/FileService.js
+
+
+export const removeUnevenLinesFromCSV = (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
 
         if (file && file.type !== "text/csv" && getFileExtension(file.name) !== "touwi") { // Test if it's a CSV or touwi file
-            resolve(file);
+            resolve(file); // Return the file as is if it's not a CSV file or a touwi file
+            return;
         }
-
-        reader.onload = function (e) {
-            let fileContent = e.target.result;
-
-            // Vérifier si le fichier se termine par un retour chariot (\n ou \r\n)
-            if (fileContent.endsWith("\n")) {
-                fileContent = fileContent.slice(0, -2); // Supprimer \n
-            } else if (fileContent.endsWith("\r\n")){
-                fileContent = fileContent.slice(0, -4); // Supprimer \r\n
-            }
-
-            // Créer un nouveau fichier avec le contenu modifié
-            const processedFile = new Blob([fileContent], { type: "text/csv" });
-
-            resolve(processedFile); // Retourner le fichier traité
+    
+        reader.onload = (event) => {
+            const csvText = event.target.result;
+            const lines = csvText.split('\n');
+      
+            // Obtenir la première ligne et déterminer son nombre de colonnes
+            const firstLineLength = lines[0].split(',').length;
+      
+            // Filtrer les lignes qui ont un nombre de colonnes égal à celui de la première ligne
+            const filteredLines = lines.filter((line) => line.split(',').length === firstLineLength);
+      
+            // Reconvertir en chaîne CSV
+            const cleanedCSV = filteredLines.join('\n');
+      
+            // Créer un Blob CSV à partir de la chaîne nettoyée
+            const csvBlob = new Blob([cleanedCSV], { type: 'text/csv' });
+            resolve(csvBlob);
         };
-
-        reader.onerror = (error) => {
-            reject("Error reading file: " + error.message);
+    
+        reader.onerror = () => {
+            reject('Erreur de lecture du fichier.');
         };
-
-        reader.readAsText(file); // Lire le fichier CSV comme texte
+    
+        reader.readAsText(file);
     });
-}
+};
 
 function getFileExtension(filename) {
     const lastDotIndex = filename.lastIndexOf('.'); // Trouver le dernier point

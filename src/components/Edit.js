@@ -217,9 +217,11 @@ const Edit = () => {
     };
 
     useEffect(() => { // Exécuté une fois
+        console.log('Variables context:', variablesContext);
         if (variablesContext && 'accel' in variablesContext) {
             const file = variablesContext.accel;
             if (file) {
+                console.log('File loaded:', file);
                 parseCSV(file, setData, setError);
             }
         }

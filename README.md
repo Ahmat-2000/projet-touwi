@@ -60,8 +60,7 @@ bun install
 Un .env est defini dans le projet, il est nécessaire de definir un `.env.local` à la racine du projet voici à quoi il doit ressembler (données d'exemple, elles peuvent variés selon les besoins) :
 
 ```bash
-NODE_ENV=development # or production
-BACKEND_API_URL=http://chronos.touwi.fr/api
+BACKEND_API_URL=http://localhost:3000/api # http://chronos.touwi.fr/api
 DATABASE_URL=mysql://root:root@localhost:3306/chronos
 ```
 
