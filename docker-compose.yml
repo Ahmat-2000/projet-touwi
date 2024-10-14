@@ -10,7 +10,47 @@ services:
     ports:
       - "3000:3000"
     env_file:
-      - ./.env
-      - ./.env.local
+      - "path": '.env'
+        required: true
+      - "path": '.env.local'
+        required: false
     environment:
       - NODE_ENV=development
+    depends_on:
+      - phpmyadmin
+  
+  mariadb:
+    image: mariadb:11.2.3
+    container_name: mariadb
+    restart: always
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    env_file:
+      - "path": '.env'
+        required: true
+      - "path": '.env.local'
+        required: false
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+
+volumes:
+  mariadb_data:

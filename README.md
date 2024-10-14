@@ -57,11 +57,18 @@ bun install
 ```
 
 ### Définitions des variables d'environements
-Un .env est defini dans le projet, il est nécessaire de definir un `.env.local` à la racine du projet voici à quoi il doit ressembler (données d'exemple, elles peuvent variés selon les besoins) :
+Vous devez créer un fichier `.env` à la racine du projet et y définir les variables d'environnement suivantes en fonction de votre configuration :
 
 ```bash
-BACKEND_API_URL=http://localhost:3000/api # http://chronos.touwi.fr/api
-DATABASE_URL=mysql://root:root@localhost:3306/chronos
+BACKEND_API_URL=http://localhost:3000/api
+
+MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT )
+MYSQL_DATABASE=chronos
+MYSQL_USER=chronos_user
+MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER )
+
+# Ne pas modifier la suite :
+DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mariadb:3306/${MYSQL_DATABASE}
 ```
 
 ## Lancement
