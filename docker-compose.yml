@@ -15,9 +15,9 @@ services:
     depends_on:
       - phpmyadmin
 
-  mysql:
-    image: mysql:8.1  # Version fixe de MySQL (peut être changée en fonction des besoins)
-    container_name: mysql
+  mariadb:
+    image: mariadb:11.5.2
+    container_name: mariadb
     restart: always
     env_file:
       - .env  # Fichier contenant les variables d'environnement
@@ -29,7 +29,7 @@ services:
     ports:
       - "3306:3306"  # Port MySQL par défaut
     volumes:
-      - mysql_data:/var/lib/mysql  # Persistance des données dans un volume
+      - mariadb_data:/var/lib/mariadb  # Persistance des données dans un volume
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -38,12 +38,12 @@ services:
     env_file:
       - .env
     environment:
-      PMA_HOST: mysql
+      PMA_HOST: mariadb
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "8080:80"
     depends_on:
-      - mysql
+      - mariadb
 
 volumes:
-  mysql_data:
+  mariadb_data:

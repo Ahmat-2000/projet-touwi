@@ -68,7 +68,7 @@ MYSQL_USER=chronos_user
 MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER )
 
 # Ne pas modifier la suite :
-DATABASE_URL=mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mariadb:3306/${MYSQL_DATABASE}
+DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@127.0.0.1:3306/${MYSQL_DATABASE}
 ```
 
 ## Lancement
@@ -108,6 +108,27 @@ bun dev
 ```
 
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
+
+
+## Base de donnée
+
+### Initialisation de la base de donnée
+
+Pour initialiser la base de donnée, utilisez la commande suivante :
+
+```bash
+npx prisma migrate dev --name init
+```
+
+### Réinitialisation de la base de donnée
+
+Pour réinitialiser la base de donnée, utilisez les commandes suivantes (à faire après tout changement dans les modèles) :
+
+```bash
+npx prisma migrate reset --force
+npx prisma migrate dev --name init
+```
+
 
 ## Déploiement
 
