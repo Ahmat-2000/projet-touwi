@@ -9,7 +9,7 @@ Le projet est divisé en plusieurs branches correspondant aux différentes équi
 
 - **team-graphique** : Responsable de la partie UI/UX et design de l'application.
 - **team-graphes** : Responsable de la gestion et de la représentation des graphes de données.
-- **team-fileSystem** : Responsable de la gestion du système de fichiers et de l'import/export de données.
+- **team-back-end** : Responsable de la gestion du système de fichiers et de l'import/export de données.
 
 La branche **main** est protégée contre les push et commit directs. Toute modification doit passer par une pull request (PR).
 
@@ -28,7 +28,7 @@ Chaque membre doit cloner le dépôt et se positionner sur sa branche respective
 
 ```bash
 # Cloner le dépôt avec SSH
-git clone https://git@github.com/Ahmat-2000/projet-touwi.git
+git clone git@github.com:Ahmat-2000/projet-touwi.git
 
 # Se positionner sur la branche de votre équipe
 git checkout team-graphique   # Pour l'équipe graphique
