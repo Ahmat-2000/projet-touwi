@@ -15,8 +15,7 @@ services:
     depends_on:
       mariadb:
         condition: service_healthy
-    command: ["sh", "-c", "npx prisma db pull && npm run dev"]
-
+    command: ["sh", "-c", "npx prisma db pull && npx prisma generate && npm run dev"]
 
   mariadb:
     image: mariadb:11.5.2
@@ -39,7 +38,7 @@ services:
       start_period: 5s
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 20
 
   phpmyadmin:
     image: phpmyadmin:latest
