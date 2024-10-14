@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@prisma/client": "^5.20.0",
     "next": "14.2.12",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.35.2",
@@ -21,6 +22,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.12",
     "postcss": "^8.4.47",
+    "prisma": "^5.20.0",
     "tailwindcss": "^3.4.13"
   }
 }

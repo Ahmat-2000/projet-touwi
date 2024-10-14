@@ -15,22 +15,22 @@ services:
       - NODE_ENV=development
     depends_on:
       - phpmyadmin
-  
-  mariadb:
-    image: mariadb:11.2.3
-    container_name: mariadb
+
+  mysql:
+    image: mysql:8.1  # Version fixe de MySQL (peut être changée en fonction des besoins)
+    container_name: mysql
     restart: always
     env_file:
-      - .env
+      - .env  # Fichier contenant les variables d'environnement
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # Mot de passe root
+      MYSQL_DATABASE: ${MYSQL_DATABASE}            # Base de données à créer
+      MYSQL_USER: ${MYSQL_USER}                    # Nom de l'utilisateur
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}            # Mot de passe utilisateur
     ports:
-      - "3306:3306"
+      - "3306:3306"  # Port MySQL par défaut
     volumes:
-      - mariadb_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql  # Persistance des données dans un volume
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -39,12 +39,12 @@ services:
     env_file:
       - .env
     environment:
-      PMA_HOST: mariadb
+      PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
       - "8080:80"
     depends_on:
-      - mariadb
+      - mysql
 
 volumes:
-  mariadb_data:
+  mysql_data:

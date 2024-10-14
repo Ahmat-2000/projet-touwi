@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model File {
+  id         Int       @id @default(autoincrement())
+  name       String
+  parent_id  Int?      
+  type       String?    @db.VarChar(50)
+  size       Int?
+  created_at DateTime   @default(now()) @db.DateTime
+  updated_at DateTime   @updatedAt @db.DateTime
+  owner_id   Int?
+
+  owner      User?      @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  parent     File?      @relation("FileToFile", fields: [parent_id], references: [id], onDelete: SetNull)
+  children   File[]     @relation("FileToFile")
+
+  UserRole   UserRole[]
+  Invitation Invitation[]
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String     @db.VarChar(100)
+  email      String     @db.VarChar(255)
+  created_at DateTime   @default(now()) @db.DateTime
+  updated_at DateTime   @updatedAt @db.DateTime
+
+  files      File[]
+  roles      UserRole[]
+  ownedInvitations Invitation[] @relation("OwnerInvitations")
+  sharedInvitations Invitation[] @relation("SharedInvitations")
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String     @db.VarChar(50)
+  description String?    
+  created_at  DateTime   @default(now()) @db.DateTime
+  updated_at  DateTime   @updatedAt @db.DateTime
+
+  permissions Permission[]
+  UserRole    UserRole[]
+  Invitation  Invitation[]
+}
+
+model UserRole {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+  file_id    Int
+  assigned_at DateTime  @default(now()) @db.DateTime
+
+  user       User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  file       File       @relation(fields: [file_id], references: [id], onDelete: Cascade)
+}
+
+model Invitation {
+  id            Int       @id @default(autoincrement())
+  file_id       Int
+  owner_id      Int
+  shared_with_id Int
+  role_id       Int
+  shared_at     DateTime   @default(now()) @db.DateTime
+
+  file          File       @relation(fields: [file_id], references: [id], onDelete: Cascade)
+  owner         User       @relation("OwnerInvitations", fields: [owner_id], references: [id], onDelete: Cascade)
+  sharedWith    User       @relation("SharedInvitations", fields: [shared_with_id], references: [id], onDelete: Cascade)
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+}
+
+model Permission {
+  id          Int     @id @default(autoincrement())
+  role_id     Int
+  can_read    Boolean @default(false)
+  can_write   Boolean @default(false)
+  can_comment Boolean @default(false)
+  can_share   Boolean @default(false)
+
+  role        Role    @relation(fields: [role_id], references: [id], onDelete: Cascade)
+}
