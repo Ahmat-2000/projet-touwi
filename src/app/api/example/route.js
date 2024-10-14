@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server';
 
+
+//
+// TODO : Choisir une base de donnée et l'implémenter
+//
+
 /**
  * Cette fonction répond aux requêtes de type GET faites à l'api
- * localhost:3000/api/team-fileSystem/route.js 
+ * localhost:3000/api/example/route.js 
  */
 export async function GET(request) {
   //Todo
@@ -11,7 +16,7 @@ export async function GET(request) {
  
 /**
  * Cette fonction répond aux requêtes de type POST faites à l'api
- * localhost:3000/api/team-fileSystem/route.js 
+ * localhost:3000/api/example/route.js 
  */
 export async function POST(request) {
   // Todo
@@ -32,4 +37,3 @@ export async function DELETE(request) {
 export async function PATCH(request) {
   // Todo
 }
- 

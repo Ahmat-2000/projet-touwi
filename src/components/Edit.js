@@ -1,10 +1,12 @@
-"use client"; // Ensure this component is a Client Component
+"use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import Papa from 'papaparse';
+import { useVariablesContext } from "@/utils/VariablesContext";
+import { parseCSV } from '@/services/ParserService';
 
+const Edit = () => {
+    const { variablesContext } = useVariablesContext();
 
-const BaseApp = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
     let mode = 'None'; // Default mode
@@ -13,61 +15,6 @@ const BaseApp = () => {
     const plotRef1 = useRef(null);
     const plotRef2 = useRef(null);
     const plotRef3 = useRef(null);
-
-    // Function to parse CSV and extract data
-    const parseCSV = (file) => {
-        Papa.parse(file, {
-            header: true,
-            dynamicTyping: true,
-            complete: (results) => {
-                if (results.errors.length > 0) {
-                    setError("Error parsing CSV file. Check the console for details.");
-                    console.error("CSV Parsing Errors:", results.errors);
-                    return;
-                }
-
-                const newData = results.data.filter(row =>
-                    row.timestamp !== undefined &&
-                    row.x !== undefined &&
-                    row.y !== undefined &&
-                    row.z !== undefined &&
-                    row.timestamp !== '' &&
-                    row.x !== '' &&
-                    row.y !== '' &&
-                    row.z !== ''
-                );
-
-                if (newData.length === 0) {
-                    setError("No valid data found in CSV.");
-                    console.error("No valid data found.");
-                    return;
-                }
-
-                const newTimestamps = newData.map(row => row.timestamp);
-                const signalX = newData.map(row => row.x);
-                const signalY = newData.map(row => row.x); // Correctly map to row.y
-                const signalZ = newData.map(row => row.x); // Correctly map to row.z
-
-                setData([
-                    { x: newTimestamps, y: signalX, type: 'scatter', mode: 'lines', line: { color: 'red' } },
-                    { x: newTimestamps, y: signalY, type: 'scatter', mode: 'lines', line: { color: 'green' } },
-                    { x: newTimestamps, y: signalZ, type: 'scatter', mode: 'lines', line: { color: 'blue' } }
-                ]);
-                setError('');
-            },
-            error: (error) => {
-                setError("Error parsing CSV: " + error.message);
-                console.error("Error parsing CSV: ", error);
-            },
-        });
-    };
-
-    const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            parseCSV(file);
-        }
-    };
 
     function toggleAddMode() {
         changeMode('period');
@@ -269,8 +216,18 @@ const BaseApp = () => {
 
     };
 
+    useEffect(() => { // Exécuté une fois
+        console.log('Variables context:', variablesContext);
+        if (variablesContext && 'accel' in variablesContext) {
+            const file = variablesContext.accel;
+            if (file) {
+                console.log('File loaded:', file);
+                parseCSV(file, setData, setError);
+            }
+        }
+    }, []);
 
-    useEffect(() => {
+    useEffect(() => { // Executé quand data change
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
 
         // Only create the plots if data is available
@@ -343,18 +300,6 @@ const BaseApp = () => {
 
     return (
         <div style={styles.container}>
-            <h2>Upload CSV to Create Synced Plots </h2>
-            <p style={{ fontWeight: 'bold', color: 'red' }}>
-                (please use modified file published on discord or remove the last line in csv file if blank)
-            </p>
-            <input
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-                style={styles.fileInput}
-            />
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-
             {/* Conditionally render buttons only when data is loaded */}
             {data.length > 0 && (
                 <div id="controls" style={styles.controls}>
@@ -429,4 +374,4 @@ const styles = {
 };
 
 
-export default BaseApp;
+export default Edit;
