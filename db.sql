@@ -1,56 +1,90 @@
+-- Table Workspace
 CREATE TABLE `Workspace` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
-  `name` TEXT NOT NULL,
-  `created_at` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATE,
-  `path` TEXT NOT NULL
+  `name` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `path` VARCHAR(255) NOT NULL,
+  CONSTRAINT unique_workspace_name UNIQUE (`name`),  -- Contrainte d'unicité sur le nom du Workspace
+  CONSTRAINT unique_workspace_path UNIQUE (`path`)   -- Contrainte d'unicité sur le chemin (path)
 );
 
+-- Table User
 CREATE TABLE `User` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
-  `username` TEXT NOT NULL,
-  `password` TEXT NOT NULL,
+  `username` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   `is_admin` BOOLEAN DEFAULT false,
-  `created_at` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATE 
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT unique_username UNIQUE (`username`),  -- Contrainte d'unicité sur le nom d'utilisateur
+  CONSTRAINT chk_admin CHECK (`is_admin` IN (0, 1))  -- Contrôle pour s'assurer que le champ est booléen
 );
 
+-- Table Role
 CREATE TABLE `Role` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
-  `name` TEXT NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
   `description` TEXT,
   `can_read` BOOLEAN DEFAULT false,
   `can_write` BOOLEAN DEFAULT false,
-  `can_share` BOOLEAN DEFAULT false
+  `can_share` BOOLEAN DEFAULT false,
+  CONSTRAINT unique_role_name UNIQUE (`name`),  -- Contrainte d'unicité sur le nom du rôle
+  CONSTRAINT chk_permissions CHECK (
+    `can_read` IN (0, 1) AND
+    `can_write` IN (0, 1) AND
+    `can_share` IN (0, 1)  -- Vérification stricte des valeurs booléennes
+  )
 );
 
+-- Table UserRole
 CREATE TABLE `UserRole` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
   `user_id` INTEGER NOT NULL,
   `role_id` INTEGER NOT NULL,
   `workspace_id` INTEGER NOT NULL,
-  `assigned_at` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `assigned_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`user_id`) REFERENCES `User` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`workspace_id`) REFERENCES `Workspace` (`id`) ON DELETE CASCADE,
+  CONSTRAINT unique_user_role UNIQUE (`user_id`, `role_id`, `workspace_id`)  -- Un utilisateur ne peut avoir qu'un seul rôle par Workspace
 );
 
+-- Table Invitation
 CREATE TABLE `Invitation` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
   `workspace_id` INTEGER NOT NULL,
   `owner_id` INTEGER NOT NULL,
   `shared_with_id` INTEGER NOT NULL,
   `role_id` INTEGER NOT NULL,
-  `shared_at` DATE NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `shared_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`workspace_id`) REFERENCES `Workspace` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`owner_id`) REFERENCES `User` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`shared_with_id`) REFERENCES `User` (`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`) ON DELETE CASCADE,
+  CONSTRAINT unique_invitation UNIQUE (`workspace_id`, `shared_with_id`, `role_id`)  -- Un utilisateur ne peut avoir qu'une seule invitation pour un rôle spécifique dans un Workspace
 );
 
-ALTER TABLE `UserRole` ADD FOREIGN KEY (`user_id`) REFERENCES `User` (`id`);
+DELIMITER $$
 
-ALTER TABLE `UserRole` ADD FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`);
+-- Création du trigger pour le hachage lors de l'insertion d'un utilisateur
+CREATE TRIGGER before_insert_user
+BEFORE INSERT ON `User`
+FOR EACH ROW
+BEGIN
+  -- Hachage du mot de passe inséré avec SHA2 (256 bits)
+  SET NEW.password = SHA2(NEW.password, 256);
+END $$
 
-ALTER TABLE `UserRole` ADD FOREIGN KEY (`workspace_id`) REFERENCES `Workspace` (`id`);
+-- Création du trigger pour le hachage lors de la mise à jour du mot de passe
+CREATE TRIGGER before_update_user
+BEFORE UPDATE ON `User`
+FOR EACH ROW
+BEGIN
+  -- Hachage du mot de passe mis à jour avec SHA2 (256 bits)
+  IF NEW.password != OLD.password THEN
+    SET NEW.password = SHA2(NEW.password, 256);
+  END IF;
+END $$
 
-ALTER TABLE `Invitation` ADD FOREIGN KEY (`workspace_id`) REFERENCES `Workspace` (`id`);
-
-ALTER TABLE `Invitation` ADD FOREIGN KEY (`owner_id`) REFERENCES `User` (`id`);
-
-ALTER TABLE `Invitation` ADD FOREIGN KEY (`shared_with_id`) REFERENCES `User` (`id`);
-
-ALTER TABLE `Invitation` ADD FOREIGN KEY (`role_id`) REFERENCES `Role` (`id`);
+DELIMITER ;
