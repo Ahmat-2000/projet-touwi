@@ -13,7 +13,10 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
-      - phpmyadmin
+      mariadb:
+        condition: service_healthy
+    command: ["sh", "-c", "npx prisma db pull && npm run dev"]
+
 
   mariadb:
     image: mariadb:11.5.2
@@ -30,6 +33,13 @@ services:
       - "3306:3306"  # Port MySQL par défaut
     volumes:
       - mariadb_data:/var/lib/mariadb  # Persistance des données dans un volume
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql # Fichier SQL d'initialisation
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 5s
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   phpmyadmin:
     image: phpmyadmin:latest
