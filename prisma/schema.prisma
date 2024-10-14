@@ -8,7 +8,66 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id                                         Int          @id
+  username                                   String?      @db.Text
+  password                                   String?      @db.Text
+  created_at                                 DateTime?    @db.Date
+  updated_at                                 DateTime?    @db.Date
+  Invitation_Invitation_owner_idToUser       Invitation[] @relation("Invitation_owner_idToUser")
+  Invitation_Invitation_shared_with_idToUser Invitation[] @relation("Invitation_shared_with_idToUser")
+  UserRole                                   UserRole[]
+}
+
+model Invitation {
+  id                                   Int        @id
+  workspace_id                         Int?
+  owner_id                             Int?
+  shared_with_id                       Int?
+  role_id                              Int?
+  shared_at                            DateTime?  @db.Date
+  Workspace                            Workspace? @relation(fields: [workspace_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "Invitation_ibfk_1")
+  User_Invitation_owner_idToUser       User?      @relation("Invitation_owner_idToUser", fields: [owner_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "Invitation_ibfk_2")
+  User_Invitation_shared_with_idToUser User?      @relation("Invitation_shared_with_idToUser", fields: [shared_with_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "Invitation_ibfk_3")
+  Role                                 Role?      @relation(fields: [role_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "Invitation_ibfk_4")
+
+  @@index([owner_id], map: "owner_id")
+  @@index([role_id], map: "role_id")
+  @@index([shared_with_id], map: "shared_with_id")
+  @@index([workspace_id], map: "workspace_id")
+}
+
+model Role {
+  id          Int          @id
+  name        String?      @db.Text
+  description String?      @db.Text
+  can_read    Boolean?     @default(false)
+  can_write   Boolean?     @default(false)
+  can_share   Boolean?     @default(false)
+  Invitation  Invitation[]
+  UserRole    UserRole[]
+}
+
+model UserRole {
+  id           Int        @id
+  user_id      Int?
+  role_id      Int?
+  workspace_id Int?
+  assigned_at  DateTime?  @db.Date
+  User         User?      @relation(fields: [user_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "UserRole_ibfk_1")
+  Role         Role?      @relation(fields: [role_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "UserRole_ibfk_2")
+  Workspace    Workspace? @relation(fields: [workspace_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "UserRole_ibfk_3")
+
+  @@index([role_id], map: "role_id")
+  @@index([user_id], map: "user_id")
+  @@index([workspace_id], map: "workspace_id")
+}
+
+model Workspace {
+  id         Int          @id
+  name       String?      @db.Text
+  created_at DateTime?    @db.Date
+  updated_at DateTime?    @db.Date
+  path       String?      @db.Text
+  Invitation Invitation[]
+  UserRole   UserRole[]
 }
