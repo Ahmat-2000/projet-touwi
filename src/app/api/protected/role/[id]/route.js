@@ -1,4 +1,4 @@
-// app/api/user/[id]/route.js
+// app/api/protected/user/[id]/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 

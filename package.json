@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
+    "jose": "^5.9.4",
     "next": "14.2.12",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.35.2",

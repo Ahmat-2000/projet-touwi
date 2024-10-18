@@ -1,12 +1,8 @@
-// app/api/user/[id]/route.js
+//api/protected/workspace/[id]/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
-
-//
-// TODO : Choisir une base de donnée et l'implémenter
-//
 
 /**
  * Cette fonction répond aux requêtes de type GET faites à l'api

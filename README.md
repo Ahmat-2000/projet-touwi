@@ -66,7 +66,7 @@ MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT )
 MYSQL_DATABASE=chronos
 MYSQL_USER=chronos_user
 MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER )
-
+JWT_SECRET=( SEED_POUR_GERER_LES_JETONS )
 # Ne pas modifier la suite :
 DB_HOST=mariadb
 DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@${DB_HOST}:3306/${MYSQL_DATABASE}
@@ -76,7 +76,7 @@ DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@${DB_HOST}:3306/${MYSQL_DATABAS
 
 ### Lancement via Docker
 
-```bash
+```
 docker-compose up --build -d
 ```
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat du frontent et [http://localhost:3000/api/example](http://localhost:3000/api/example) pour voir le résultat du backend.
@@ -110,7 +110,10 @@ bun dev
 
 Ensuite, ouvrez votre navigateur et allez à l'adresse [http://localhost:3000](http://localhost:3000) pour voir le résultat.
 
-
+### Pour se connecter (possibilité de le faire sans base de données)
+```bash
+user:user
+```
 ## Déploiement
 
 La branche `main` est automatiquement déployée sur Vercel à chaque pull request fusionnée. Vous pouvez accéder à la version live du projet ici : [https://projet-touwi.vercel.app/](https://projet-touwi.vercel.app/).

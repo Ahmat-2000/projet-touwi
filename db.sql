@@ -65,26 +65,3 @@ CREATE TABLE `Invitation` (
   CONSTRAINT unique_invitation UNIQUE (`workspace_id`, `shared_with_id`, `role_id`)  -- Un utilisateur ne peut avoir qu'une seule invitation pour un rôle spécifique dans un Workspace
 );
 
-DELIMITER $$
-
--- Création du trigger pour le hachage lors de l'insertion d'un utilisateur
-CREATE TRIGGER before_insert_user
-BEFORE INSERT ON `User`
-FOR EACH ROW
-BEGIN
-  -- Hachage du mot de passe inséré avec SHA2 (256 bits)
-  SET NEW.password = SHA2(NEW.password, 256);
-END $$
-
--- Création du trigger pour le hachage lors de la mise à jour du mot de passe
-CREATE TRIGGER before_update_user
-BEFORE UPDATE ON `User`
-FOR EACH ROW
-BEGIN
-  -- Hachage du mot de passe mis à jour avec SHA2 (256 bits)
-  IF NEW.password != OLD.password THEN
-    SET NEW.password = SHA2(NEW.password, 256);
-  END IF;
-END $$
-
-DELIMITER ;
