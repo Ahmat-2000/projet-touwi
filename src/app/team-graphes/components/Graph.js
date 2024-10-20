@@ -1,12 +1,10 @@
 import React, { useState} from 'react';
 import Plot from './Plot'; // Import the Plot component
 
-const Graph = ({ data, plotRef1, plotRef2, plotRef3, mode, selections, setSelections }) => {
+const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
+    plotRef1, plotRef2, plotRef3, mode, selections, setSelections }) => {
 
     const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
-
-    const [shapes, setShapes] = useState([]);  // To store shapes (periods)
-    const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
     // Function to handle plot clicks
     const handlePlotClick = (eventData, Plotly) => {
@@ -15,9 +13,11 @@ const Graph = ({ data, plotRef1, plotRef2, plotRef3, mode, selections, setSelect
         console.log(`Current mode: ${mode}`);
 
         // Handle the different modes
-        if (mode === 'delete') {
+        if (mode === 'delete_period') {
             deleteRegion(Plotly, [plotRef1.current.layout, plotRef2.current.layout, plotRef3.current.layout], xValue);
-        } else {
+        } else if (mode === 'delete_flag') { 
+            deleteFlag(Plotly, [plotRef1.current.layout, plotRef2.current.layout, plotRef3.current.layout], xValue);
+        }else {
             if (mode === 'period') {
 
                 console.log(`Select region Start`);
@@ -135,43 +135,29 @@ const Graph = ({ data, plotRef1, plotRef2, plotRef3, mode, selections, setSelect
         }
     };
 
-    /*
-    // Function to delete a region or flag in the plot
-    const deleteRegion = (Plotly, ly_plots, xValue) => {
-        // Find the shape (either flag or period) that contains the clicked xValue from the shapes state
-        const regionIndex = shapes.findIndex(shape => {
-            if (shape.type === 'rect') {
-                // This is a period (rect), check if xValue is within the rectangle
-                return shape.x0 <= xValue && shape.x1 >= xValue;
-            } else if (shape.type === 'line') {
-                // This is a flag (line), check if xValue matches the line's position
-                return shape.x0 === xValue && shape.x1 === xValue;
-            }
-            return false;
-        });
+    // Function to delete a flag (line) in the plot
+    const deleteFlag = (Plotly, ly_plots, xValue) => {
+        // Find the flag (line) that matches the clicked xValue
+        const flagIndex = shapes.findIndex(shape => shape.type === 'line' && shape.x0 === xValue && shape.x1 === xValue);
+        const annotationIndex = annotations.findIndex(annotation => annotation.x === xValue + 4000);
 
-        if (regionIndex !== -1) {
-            // Remove the shape (flag or period) from the shapes array immutably
-            const updatedShapes = shapes.filter((_, i) => i !== regionIndex);
+        if (flagIndex !== -1 && annotationIndex !== -1) {
+            // Remove the flag (line) from the shapes array immutably
+            const updatedShapes = shapes.filter((_, i) => i !== flagIndex);
+            const updatedAnnotations = annotations.filter((_, i) => i !== annotationIndex);
 
-            // Update the plot layouts with the updated shapes
-            Plotly.relayout(plotRef1.current, { shapes: updatedShapes });
-            Plotly.relayout(plotRef2.current, { shapes: updatedShapes });
-            Plotly.relayout(plotRef3.current, { shapes: updatedShapes });
+            // Update the plot layouts with the updated shapes and annotations
+            Plotly.relayout(plotRef1.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+            Plotly.relayout(plotRef2.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+            Plotly.relayout(plotRef3.current, { shapes: updatedShapes, annotations: updatedAnnotations });
 
-            // Update the state with the updated shapes
+            // Update the state with the updated shapes and annotations
             setShapes(updatedShapes);
+            setAnnotations(updatedAnnotations);
 
-            // If the deleted shape is a period (rect), also update the selections
-            if (shapes[regionIndex].type === 'rect') {
-                const updatedSelections = selections.filter((_, i) => i !== regionIndex);
-                setSelections(updatedSelections);
-            }
-
-            console.log(`Shape (flag or period) removed at x: ${xValue}`);
+            console.log(`Flag removed at x: ${xValue}`);
         }
-    };*/
-
+    };
 
     // Function to sync zoom between plots
     const syncZoom = (eventData, Plotly, [toChange1, toChange2]) => {

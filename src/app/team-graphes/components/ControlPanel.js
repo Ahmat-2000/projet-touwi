@@ -1,7 +1,7 @@
 // ControlPanel.js
 import React from 'react';
 
-const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetMode, resetEvents, voidPlots }) => {
+const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetMode, resetEvents, voidPlots}) => {
 
     return (
         <div style={styles.controls}>
@@ -18,14 +18,21 @@ const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetMode, resetEve
             }} style={styles.button}>Add Period</button>
 
             <button onClick={() => {
-                setAppMode('delete');
+                setAppMode('delete_period');
                 setPlotlyDragMode(false);
             }} style={styles.button}>Delete Period</button>
 
             <button onClick={() => {
                 setAppMode('flag');
                 setPlotlyDragMode(false);
-                }} style={styles.button}>Add Flag</button>
+            }} style={styles.button}>Add Flag</button>
+
+            {/* Delete Flag Button */}
+            <button onClick={() => {
+                setAppMode('delete_flag');
+                setPlotlyDragMode(false);
+            }} style={styles.button}>Delete Flag</button>
+
             <button onClick={resetMode} style={styles.button}>Reset Mode</button>
             <br />
             

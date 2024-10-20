@@ -12,6 +12,8 @@ const App = () => {
     const [error, setError] = useState(''); // Error message for CSV parsing
     const [appMode, setAppMode] = useState('None'); // Default interaction mode
     const [selections, setSelections] = useState([]); // Array to store selected regions
+    const [shapes, setShapes] = useState([]);  // To store shapes (periods)
+    const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
     const plotRef1 = useRef(null);
     const plotRef2 = useRef(null);
@@ -79,12 +81,26 @@ const App = () => {
     function resetEvents() {
         const Plotly = require('plotly.js/dist/plotly.js');
 
-        Plotly.relayout(plotRef1.current, { shapes: [], annotations: [] });
-        Plotly.relayout(plotRef2.current, { shapes: [], annotations: [] });
-        Plotly.relayout(plotRef3.current, { shapes: [], annotations: [] });
+        // Clear shapes and annotations from all three plot references
+        const updatedShapes = [];
+        const updatedAnnotations = [];
+
+        // Update the shapes and annotations on each plot
+        Plotly.relayout(plotRef1.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+        Plotly.relayout(plotRef2.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+        Plotly.relayout(plotRef3.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+
+        // Clear any stored selections
+        setSelections([]);
         
-        setSelections([]); // Optionally reset selections
-        setAppMode('None'); // Optionally reset mode after clearing events
+        // Optionally reset mode after clearing events
+        setAppMode('None');
+
+        // Optionally clear global state for shapes and annotations if they are used
+        setShapes(updatedShapes);
+        setAnnotations(updatedAnnotations);
+
+        console.log('All periods and flags have been reset.');
     }
 
     // Function to completely clear plots and reset the state
@@ -119,6 +135,10 @@ const App = () => {
                     />
                     <Graph
                         data={data}
+                        shapes = {shapes}
+                        setShapes = {setShapes}
+                        annotations = {annotations}
+                        setAnnotations = {setAnnotations}
                         plotRef1={plotRef1}
                         plotRef2={plotRef2}
                         plotRef3={plotRef3}

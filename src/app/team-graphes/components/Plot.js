@@ -3,8 +3,6 @@ import React, { useEffect } from 'react';
 const Plot = ({ data, plotRef, handlePlotClick, handleRelayout, selections, setSelections, shapes, annotations}) => {
 
     useEffect(() => {
-        console.log("period added succesfuly")
-
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
 
         if (data) {
