@@ -1,12 +1,11 @@
 import Link from 'next/link';
-//import BaseApp from './team-graphes/components/BaseApp';
-import App from './team-graphes/components/App';
+import BaseApp from './team-graphes/components/BaseApp';
 
 export default function Home() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Plotly.js Demo</h1>
-      <App />
+      <BaseApp />
     </div>
   );
 }
