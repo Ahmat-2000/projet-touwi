@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
-import { removeUnevenLinesFromCSV } from '@/services/FileService'
+import { removeUnevenLinesFromCSV } from "@/services/FileService";
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -19,38 +19,30 @@ const ImportComponent = () => {
   const redirect = () => {
     router.push("/edit");
   };
-  
-  // Gestion de l'importation des fichiers
+
   const handleFileChange = async (e) => {
     const { name, files: selectedFiles } = e.target;
     const file = selectedFiles[0];
-  
-    // Si le fichier est un CSV, traiter les lignes vides à la fin
     const processedFile = await removeUnevenLinesFromCSV(file);
     setFields({ ...fields, [name]: processedFile });
   };
 
-  // Gestion de l'importation du fichier ".touwi"
   const handleReOpenTouwi = async (e) => {
     const { files: selectedFiles } = e.target;
     const file = selectedFiles[0];
-
     const processedFile = await removeUnevenLinesFromCSV(file);
     setVariablesContext(processedFile);
     redirect();
   };
 
-  // Gestion de la fréquence (Hz)
   const handleFrequencyChange = (e) => {
     setFields((prevFields) => ({ ...prevFields, frequency: e.target.value }));
   };
 
-  // Validation et soumission du formulaire
   const handleSubmit = (e) => {
     e.preventDefault();
     const newErrors = {};
 
-    // Validation des fichiers
     if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
     if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
     if (!fields.video) newErrors.video = "La vidéo est requise.";
@@ -60,9 +52,7 @@ const ImportComponent = () => {
 
     setErrors(newErrors);
 
-    // Si aucune erreur, redirection ou traitement
     if (Object.keys(newErrors).length === 0) {
-      // Logique pour envoyer les fichiers et la fréquence (ex: API ou une autre page)
       console.log("Fichiers envoyés:", fields);
       setVariablesContext(fields);
       redirect();
@@ -70,90 +60,125 @@ const ImportComponent = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Importation fichiers</h1>
-      <form onSubmit={handleSubmit}>
-        {/* ACCEL */}
-        <div>
-          <label>
-            Fichier Accel:
-            <input
-              type="file"
-              name="accel"
-              accept=".csv"
-              onChange={handleFileChange}
-            />
-          </label>
-          {errors.accel && <p style={{ color: "red" }}>{errors.accel}</p>}
-        </div>
+    <div className="bg-blue-100 p-8 min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 shadow-lg rounded-lg max-w-lg w-full">
+        <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
+          Importation fichiers
+        </h1>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* ACCEL */}
+          <div>
+            <label className="block text-lg text-gray-700 mb-2">
+              Fichier Accel:
+            </label>
+            <div className="flex items-center">
+              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Sélectionner fichier
+                <input
+                  type="file"
+                  name="accel"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+              <span className="ml-4 text-gray-500">
+                {fields.accel ? fields.accel.name : "Aucun fichier sélectionné"}
+              </span>
+            </div>
+            {errors.accel && <p className="text-red-500">{errors.accel}</p>}
+          </div>
 
-        {/* GYRO */}
-        <div>
-          <label>
-            Fichier Gyro:
-            <input
-              type="file"
-              name="gyro"
-              accept=".csv"
-              onChange={handleFileChange}
-            />
-          </label>
-          {errors.gyro && <p style={{ color: "red" }}>{errors.gyro}</p>}
-        </div>
+          {/* GYRO */}
+          <div>
+            <label className="block text-lg text-gray-700 mb-2">
+              Fichier Gyro:
+            </label>
+            <div className="flex items-center">
+              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Sélectionner fichier
+                <input
+                  type="file"
+                  name="gyro"
+                  accept=".csv"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+              <span className="ml-4 text-gray-500">
+                {fields.gyro ? fields.gyro.name : "Aucun fichier sélectionné"}
+              </span>
+            </div>
+            {errors.gyro && <p className="text-red-500">{errors.gyro}</p>}
+          </div>
 
-        {/* VIDEO */}
-        <div>
-          <label>
-            Vidéo:
-            <input
-              type="file"
-              name="video"
-              accept="video/*"
-              onChange={handleFileChange}
-            />
-          </label>
-          {errors.video && <p style={{ color: "red" }}>{errors.video}</p>}
-        </div>
+          {/* VIDEO */}
+          <div>
+            <label className="block text-lg text-gray-700 mb-2">Vidéo:</label>
+            <div className="flex items-center">
+              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Sélectionner vidéo
+                <input
+                  type="file"
+                  name="video"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+              <span className="ml-4 text-gray-500">
+                {fields.video ? fields.video.name : "Aucun fichier sélectionné"}
+              </span>
+            </div>
+            {errors.video && <p className="text-red-500">{errors.video}</p>}
+          </div>
 
-        {/* Frequency */}
-        <div>
-          <label>
-            Fréquence (en Hz):
+          {/* FREQUENCY */}
+          <div>
+            <label className="block text-lg text-gray-700 mb-2">
+              Fréquence (en Hz):
+            </label>
             <input
               type="text"
               value={fields.frequency ?? ""}
               onChange={handleFrequencyChange}
               placeholder="Entrez la fréquence en Hz"
+              className="w-full p-2 border rounded-md"
             />
-          </label>
-          {errors.frequency && (
-            <p style={{ color: "red" }}>{errors.frequency}</p>
-          )}
-        </div>
-
-        {/* VALIDATION */}
-        <div>
-          {/* OPEN */}
-          <button type="submit">Ouvrir</button>
-
-          {/* REOPEN */}
-          <div>
-            <button
-              type="button"
-              onClick={() => document.getElementById("touwiInput").click()}
-            >
-                Rouvrir
-            </button>
-            <input
-              type="file"
-              id="touwiInput"
-              accept=".touwi"
-              style={{ display: "none" }}
-              onChange={handleReOpenTouwi}
-            />
+            {errors.frequency && (
+              <p className="text-red-500">{errors.frequency}</p>
+            )}
           </div>
-        </div>
-      </form>
+
+          {/* SUBMIT BUTTON */}
+          <div className="flex justify-between items-center">
+            <button
+              type="submit"
+              className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+            >
+              Ouvrir
+            </button>
+
+            {/* REOPEN */}
+            <div>
+              <button
+                type="button"
+                onClick={() => document.getElementById("touwiInput").click()}
+                className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+              >
+                Rouvrir
+              </button>
+              <input
+                type="file"
+                id="touwiInput"
+                accept=".touwi"
+                style={{ display: "none" }}
+                onChange={handleReOpenTouwi}
+              />
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

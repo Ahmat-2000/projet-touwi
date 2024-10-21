@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.12",
+    "next": "^14.2.12",
     "papaparse": "^5.4.1",
     "plotly.js": "^2.35.2",
     "react": "^18",
