@@ -66,8 +66,8 @@ const ImportComponent = () => {
       {/* Formulaire centré */}
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
         {/* Logo repositionné pour être en haut à gauche de la boîte */}
-        <div className="absolute top-[-60px] left-[-60px]">
-         <Image src={Image11} alt="Logo" width={130} height={50} />
+        <div className="absolute top-[-55px] left-[-120px]">
+         <Image src={Image11} alt="Logo" width={150} height={50} />
         </div>
 
 
