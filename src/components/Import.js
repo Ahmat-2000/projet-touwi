@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
 import { removeUnevenLinesFromCSV } from "@/services/FileService";
 import Image from "next/image";
-import Image11 from "../Images/image11.svg"; // Path to the logo
+import Image11 from "../Images/image11.svg"; // Chemin vers le logo
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -62,14 +62,15 @@ const ImportComponent = () => {
   };
 
   return (
-    <div className="bg-[#EFEFEF] p-8 min-h-screen flex items-center justify-center relative">
-      {/* Logo positioned at the top-left corner of the page */}
-      <div className="absolute top-4 left-4">
-        <Image src={Image11} alt="Logo" width={150} height={60} />
-      </div>
+    <div className="bg-[#EFEFEF] min-h-screen flex flex-col items-center justify-center relative">
+      {/* Formulaire centré */}
+      <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
+        {/* Logo repositionné pour être en haut à gauche de la boîte */}
+        <div className="absolute top-[-60px] left-[-60px]">
+         <Image src={Image11} alt="Logo" width={130} height={50} />
+        </div>
 
-      {/* Form container */}
-      <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full">
+
         <h1 className="text-2xl font-bold mb-6 text-center text-[#1B649F]">
           Files Import
         </h1>
