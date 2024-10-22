@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
 import { removeUnevenLinesFromCSV } from "@/services/FileService";
+import Image from "next/image";
+import Image11 from "../Images/image11.svg"; // Path to the logo
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -60,20 +62,25 @@ const ImportComponent = () => {
   };
 
   return (
-    <div className="bg-blue-100 p-8 min-h-screen flex items-center justify-center">
-      <div className="bg-white p-8 shadow-lg rounded-lg max-w-lg w-full">
-        <h1 className="text-2xl font-bold mb-6 text-center text-blue-700">
-          Importation fichiers
+    <div className="bg-[#EFEFEF] p-8 min-h-screen flex items-center justify-center relative">
+      {/* Logo positioned at the top-left corner of the page */}
+      <div className="absolute top-4 left-4">
+        <Image src={Image11} alt="Logo" width={150} height={60} />
+      </div>
+
+      {/* Form container */}
+      <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full">
+        <h1 className="text-2xl font-bold mb-6 text-center text-[#1B649F]">
+          Files Import
         </h1>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ACCEL */}
           <div>
-            <label className="block text-lg text-gray-700 mb-2">
-              Fichier Accel:
-            </label>
+            <label className="block text-lg text-gray-700 mb-2">Accel file:</label>
             <div className="flex items-center">
-              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
-                Sélectionner fichier
+              <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Select accel file
                 <input
                   type="file"
                   name="accel"
@@ -83,7 +90,7 @@ const ImportComponent = () => {
                 />
               </label>
               <span className="ml-4 text-gray-500">
-                {fields.accel ? fields.accel.name : "Aucun fichier sélectionné"}
+                {fields.accel ? fields.accel.name : "No file selected"}
               </span>
             </div>
             {errors.accel && <p className="text-red-500">{errors.accel}</p>}
@@ -91,12 +98,10 @@ const ImportComponent = () => {
 
           {/* GYRO */}
           <div>
-            <label className="block text-lg text-gray-700 mb-2">
-              Fichier Gyro:
-            </label>
+            <label className="block text-lg text-gray-700 mb-2">Gyro file:</label>
             <div className="flex items-center">
-              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
-                Sélectionner fichier
+              <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Select gyro file
                 <input
                   type="file"
                   name="gyro"
@@ -106,7 +111,7 @@ const ImportComponent = () => {
                 />
               </label>
               <span className="ml-4 text-gray-500">
-                {fields.gyro ? fields.gyro.name : "Aucun fichier sélectionné"}
+                {fields.gyro ? fields.gyro.name : "No file selected"}
               </span>
             </div>
             {errors.gyro && <p className="text-red-500">{errors.gyro}</p>}
@@ -114,10 +119,10 @@ const ImportComponent = () => {
 
           {/* VIDEO */}
           <div>
-            <label className="block text-lg text-gray-700 mb-2">Vidéo:</label>
+            <label className="block text-lg text-gray-700 mb-2">Video:</label>
             <div className="flex items-center">
-              <label className="cursor-pointer bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
-                Sélectionner vidéo
+              <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                Select a video
                 <input
                   type="file"
                   name="video"
@@ -127,7 +132,7 @@ const ImportComponent = () => {
                 />
               </label>
               <span className="ml-4 text-gray-500">
-                {fields.video ? fields.video.name : "Aucun fichier sélectionné"}
+                {fields.video ? fields.video.name : "No file selected"}
               </span>
             </div>
             {errors.video && <p className="text-red-500">{errors.video}</p>}
@@ -135,28 +140,24 @@ const ImportComponent = () => {
 
           {/* FREQUENCY */}
           <div>
-            <label className="block text-lg text-gray-700 mb-2">
-              Fréquence (en Hz):
-            </label>
+            <label className="block text-lg text-gray-700 mb-2">Frequency (in Hz):</label>
             <input
               type="text"
               value={fields.frequency ?? ""}
               onChange={handleFrequencyChange}
-              placeholder="Entrez la fréquence en Hz"
+              placeholder="Enter the frequency in Hz"
               className="w-full p-2 border rounded-md"
             />
-            {errors.frequency && (
-              <p className="text-red-500">{errors.frequency}</p>
-            )}
+            {errors.frequency && <p className="text-red-500">{errors.frequency}</p>}
           </div>
 
           {/* SUBMIT BUTTON */}
           <div className="flex justify-between items-center">
             <button
               type="submit"
-              className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+              className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
             >
-              Ouvrir
+              Open
             </button>
 
             {/* REOPEN */}
@@ -164,9 +165,9 @@ const ImportComponent = () => {
               <button
                 type="button"
                 onClick={() => document.getElementById("touwiInput").click()}
-                className="bg-blue-500 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
               >
-                Rouvrir
+                Reopen
               </button>
               <input
                 type="file"
