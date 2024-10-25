@@ -77,6 +77,15 @@ const App = () => {
         Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
     }
 
+    // Function to reset the zoom on all three plots
+    const resetZoom = () => {
+        const Plotly = require('plotly.js/dist/plotly.js');
+        
+        Plotly.relayout(plotRef1.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        Plotly.relayout(plotRef2.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        Plotly.relayout(plotRef3.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+    };
+
     // Clear all events like periods/flags from the Plotly plots
     function resetEvents() {
         const Plotly = require('plotly.js/dist/plotly.js');
@@ -130,7 +139,8 @@ const App = () => {
                         setAppMode={setAppMode}          // App interaction mode setter
                         setPlotlyDragMode={setPlotlyDragMode}  // Plotly drag mode setter
                         resetMode={() => setAppMode('None')}  // Reset app interaction mode
-                        resetEvents={resetEvents}        // Clear annotations and shapes
+                        resetEvents={resetEvents}       // Clear annotations and shapes
+                        resetZoom={resetZoom}
                         voidPlots={voidPlots}            // Clear all data and plots
                     />
                     <Graph

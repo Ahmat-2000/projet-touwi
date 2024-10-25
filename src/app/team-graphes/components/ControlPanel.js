@@ -1,7 +1,7 @@
 // ControlPanel.js
 import React from 'react';
 
-const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetMode, resetEvents, voidPlots}) => {
+const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetZoom, resetMode, resetEvents, voidPlots}) => {
 
     return (
         <div style={styles.controls}>
@@ -33,6 +33,11 @@ const ControlPanel = ({ mode, setAppMode, setPlotlyDragMode, resetMode, resetEve
                 setPlotlyDragMode(false);
             }} style={styles.button}>Delete Flag</button>
 
+            <button onClick={() => { 
+                setPlotlyDragMode('zoom');
+                resetZoom(); 
+                }} style={styles.button}>Reset Zoom</button>
+            
             <button onClick={resetMode} style={styles.button}>Reset Mode</button>
             <br />
             

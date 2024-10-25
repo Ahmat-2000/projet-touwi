@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const Plot = ({ data, plotRef, handlePlotClick, handleRelayout, selections, setSelections, shapes, annotations}) => {
+const Plot = ({ data, plotRef, handlePlotClick, handleRelayout,mode, selections, setSelections, shapes, annotations}) => {
 
     useEffect(() => {
         const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
@@ -20,9 +20,6 @@ const Plot = ({ data, plotRef, handlePlotClick, handleRelayout, selections, setS
                 doubleClick: false
             });
 
-            // Add event listeners for plot interactions
-            plotRef.current.on('plotly_click', handlePlotClick);
-            plotRef.current.on('plotly_relayout', handleRelayout);
         }
 
         // Cleanup on unmount
@@ -31,8 +28,25 @@ const Plot = ({ data, plotRef, handlePlotClick, handleRelayout, selections, setS
                 Plotly.purge(plotRef.current);
             }
         };
-    }, [data, plotRef, handlePlotClick, handleRelayout, selections, setSelections]);
+    }, [data]);
 
+    // Effect to handle mode changes (add_period, add_flag, etc.)
+    useEffect(() => {
+        const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
+
+        // Remove any previous event listeners before adding new ones
+        const currentPlot = plotRef.current;
+
+        if (currentPlot) {
+            currentPlot.removeAllListeners('plotly_click');    // Clean previous 'plotly_click' listeners
+            currentPlot.removeAllListeners('plotly_relayout'); // Clean previous 'plotly_relayout' listeners
+        }
+
+        // Add event listeners for plot interactions
+        plotRef.current.on('plotly_click', handlePlotClick);
+        plotRef.current.on('plotly_relayout', handleRelayout);
+
+    }, [mode, handlePlotClick, handleRelayout]);
     return <div ref={plotRef} style={{ width: '95%', height: '400px' }} />;
 };
 

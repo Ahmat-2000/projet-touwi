@@ -4,8 +4,8 @@ import Plot from './Plot'; // Import the Plot component
 const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
     plotRef1, plotRef2, plotRef3, mode, selections, setSelections }) => {
 
-    const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
-
+    const Plotly = require('plotly.js/dist/plotly.js'); 
+    
     // Function to handle plot clicks
     const handlePlotClick = (eventData, Plotly) => {
         const xValue = eventData.points[0].x;
@@ -87,6 +87,7 @@ const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
             yref: 'paper',
             line: { width: 1, color: 'blue', dash: 'dashdot' },
         };
+
         const annotation = {
             x: xValue + 4000,
             y: 1,
@@ -98,8 +99,8 @@ const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
             bordercolor: 'grey',
             borderwidth: 2,
             borderpad: 4,
-            align: 'left',
-            valign: 'middle',
+            align: 'center',  // Keeps the text horizontally centered
+            valign: 'middle'
         };
 
         setShapes([...shapes, shape]); // Save shapes globally
@@ -183,6 +184,7 @@ const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
                 setSelections = {setSelections}
                 shapes={shapes}
                 annotations={annotations}
+                mode={mode}
             />
             <Plot
                 data={data[1]}
@@ -193,6 +195,7 @@ const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
                 setSelections = {setSelections}
                 shapes={shapes}
                 annotations={annotations}
+                mode={mode}
             />
             <Plot
                 data={data[2]}
@@ -203,6 +206,7 @@ const Graph = ({ data,shapes, annotations, setShapes, setAnnotations,
                 setSelections = {setSelections}
                 shapes={shapes}
                 annotations={annotations}
+                mode={mode}
             />
         </div>
     );
