@@ -2,74 +2,45 @@ import React from 'react';
 
 const FrontEndComponent = () => {
   return (
-    <div className="min-h-screen bg-body p-6 relative">
+    <div className="min-h-screen bg-gray-100 p-6 pt-0 relative">
       {/* Header section */}
-      <div className="flex justify-between items-start sm:flex-row flex-col sm:space-y-0 space-y-4">
-        {/* Logo and text */}
+      <div className="flex justify-between items-center sm:flex-row flex-col sm:space-y-0 space-y-4 px-6 pt-2 overflow-hidden">
+        {/* Logo agrandi */}
+        <div className="flex items-center space-x-2 m-0 p-0">
+          <img src="/images/image11.svg" alt="Logo" className="w-40 h-auto m-0 p-0" />
+        </div>
+
+        {/* Label input, Add Label button et Bouton Sign out dans le même conteneur */}
         <div className="flex items-center space-x-2">
-          <img src="/images/logo.png" alt="Logo" className="w-12 h-12 rounded-lg" />
-          <span className="text-2xl font-bold">Logo</span>
-        </div>
-
-        {/* Buttons on the right (responsive behavior) */}
-        <div className="space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row sm:flex-wrap">
-          {/* Other Buttons */}
-          <button className="bg-gradient-to-r from-[#2481D9] to-[#5EB1FF] text-white text-xl w-64 py-4 rounded">Flag</button>
-          <button className="bg-gradient-to-r from-[#2481D9] to-[#5EB1FF] text-white text-xl w-64 py-4 rounded">Event</button>
-          <button className="bg-gradient-to-r from-[#2481D9] to-[#5EB1FF] text-white text-xl w-64 py-4 rounded">Sync</button>
-
-          {/* Deconnecter Button */}
-          <button className="bg-[#514A4A] text-white px-10 py-4 rounded">Deconnecter</button>
+          <input
+            type="text"
+            placeholder="Enter a label"
+            className="border w-80 py-2 px-4 rounded-l placeholder-gray-600 text-lg"
+          />
+          <button className="bg-[#297DCB] text-white text-lg px-4 py-2 rounded-r">Add Label</button>
+          <button className="bg-[#514A4A] text-white px-6 py-2 rounded">Sign out</button>
         </div>
       </div>
 
-      {/* Images in the middle of the page, vertically aligned */}
-      <div className="flex flex-col items-center mt-12 w-4.5/5 mx-auto">
-        <img
-          src="/images/Signal1.png"
-          alt="Signal 1"
-          className="w-full h-auto object-cover mb-4 rounded-lg"
-        />
-        <img
-          src="/images/Signal1.png"
-          alt="Signal 2"
-          className="w-full h-auto object-cover rounded-lg"
-        />
+      {/* Boutons de contrôle - prend toute la largeur */}
+      <div className="flex justify-between space-x-2 mt-4 w-full items-end">
+        {["Zoom", "Pan", "Add Period", "Delete Period", "Add Flag", "Reset Mode", "Delete All"].map((text) => (
+          <button key={text} className="bg-[#297DCB] text-white text-2xl w-full flex justify-center items-center py-2 rounded ">
+            {text}
+          </button>
+        ))}
+        <span className="ml-4 text-gray-700 text-xl font-bold whitespace-nowrap">Mode: none</span>
       </div>
 
-      {/* Section with Input, Footer buttons, and Image on the right */}
-      <div className="flex justify-between items-start mt-8">
-        {/* Left column with Input and Add Label button + Footer buttons */}
-        <div className="flex flex-col w-full sm:w-auto">
-          {/* Input and Add Label button (aligned with top of video image) */}
-          <div className="flex items-start">
-            <input
-              type="text"
-              placeholder="Enter a label"
-              className="border w-[32rem] py-4 px-4 mr-2 rounded placeholder-gray-600 text-xl"
-            />
-            <button className="bg-gradient-to-r from-[#2481D9] to-[#5EB1FF] text-white text-xl w-64 py-4 rounded">Add Label</button>
-          </div>
+      {/* Images des signaux - prend toute la largeur */}
+      <div className="flex flex-col items-center mt-4 w-full border border-blue-300 p-4 rounded">
+        <img src="/images/Signal1.png" alt="Signal X" className="w-full h-auto object-cover mb-2" />
+        <img src="/images/Signal2.png" alt="Signal Y" className="w-full h-auto object-cover" />
+      </div>
 
-          {/* Footer buttons (aligned with bottom of video image) */}
-          <div className="flex space-x-2 items-end mt-28"> {/* Ajout de mt-12 pour plus d'espace */}
-            <button className="bg-gradient-to-r from-[#584BB4] to-[#465D9A] text-white text-xl w-64 py-4 rounded">Upload Video</button>
-            <button className="bg-gradient-to-r from-[#584BB4] to-[#465D9A] text-white text-xl w-64 py-4 rounded">Upload File</button>
-            <button className="bg-gradient-to-r from-[#584BB4] to-[#465D9A] text-white text-xl w-64 py-4 rounded">Download File</button>
-          </div>
-        </div>
-
-        {/* Right column with Image, aligned with footer buttons */}
-        <div className="ml-4 flex flex-col justify-between">
-          {/* Image at the top */}
-          <div>
-            <img
-              src="/images/video.png"
-              alt="video 3"
-              className="w-50 h-50 object-cover rounded-lg"
-            />
-          </div>
-        </div>
+      {/* Placeholder vidéo, positionné à gauche et plus petit */}
+      <div className="flex justify-start mt-4">
+        <img src="/images/video.png" alt="Video Placeholder" className="w-1/3 h-auto object-cover rounded" />
       </div>
     </div>
   );
