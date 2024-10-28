@@ -6,12 +6,12 @@ import Signal from './Signal';
 
 
 
-const Graph = () => {
+const Graph = ({ plotList, appMode }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [signals, setSignals] = useState([]);
-    let mode = 'None';
+    const [selections, setSelections] = useState([]);
     
-    const plotList = useRef([]);
+
 
     // Example data sets
     const dataSets = {
@@ -65,13 +65,13 @@ const Graph = () => {
     function handlePlotClick (eventData, Plotly) {
         const xValue = eventData.points[0].x;
         console.log(`Clicked at x: ${xValue}`);
-        console.log(`Current mode: ${mode}`);
+        console.log(`Current appMode: ${appMode}`);
 
         // Handle the different modes
-        if (mode === 'delete') {
-            deleteRegion(Plotly, [plotRef1.current.layout, plotRef2.current.layout, plotRef3.current.layout], xValue);
+        if (appMode === 'delete') {
+            deleteRegion(Plotly, plotList, xValue);
         } else {
-            if (mode === 'period') {
+            if (appMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
                     console.log(`Selected region: Start - ${xValue}`);
                     selections.push({ start: xValue, end: null });
@@ -84,7 +84,7 @@ const Graph = () => {
                 }
             }
 
-            if (mode === 'flag') {
+            if (appMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
                 highlightFlag(Plotly, xValue);
             }
@@ -92,6 +92,108 @@ const Graph = () => {
 
         }
     };
+
+    function highlightRegion(Plotly, start, end) {
+        if (start > end) {
+            [start, end] = [end, start];
+        }
+
+        const shape = {
+            type: 'rect',
+            x0: start,
+            x1: end,
+            y0: 0,
+            y1: 1,
+            xref: 'x',
+            yref: 'paper',
+            fillcolor: 'rgba(255, 0, 0, 0.35)',
+            line: {
+                width: 0
+            }
+        };
+
+        console.log('Highgh');
+
+
+
+        
+        plotList.current.forEach(plotRef => {
+            Plotly.relayout(plotRef, { shapes: [...plotRef.layout.shapes, shape] });
+        });
+        
+    }
+
+    function highlightFlag(Plotly, xValue) {
+
+        const shape = {
+            type: 'line',
+            x0: xValue,
+            x1: xValue,
+            y0: 0,
+            y1: 1,
+            xref: 'x',
+            yref: 'paper',
+            line: {
+                width: 1,
+                color: 'blue',
+                dash: 'dashdot'
+            },
+        };
+
+        const annotation = {
+            x: xValue, //+ 3000,
+            /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
+            from 1 to 30_000 but 1.464T to 1.513T so text need 3000 to move a bit to the right of the flag bar
+            @Antoine
+            */
+            y: 1, // Adjust this value to position the text on the y-axis
+            xref: 'x',
+            yref: 'paper',
+            text: 'Default Text', // Your default text here
+            showarrow: false,
+            font: {
+                size: 12,
+                color: 'black'
+            },
+            bordercolor: 'grey',
+            borderwidth: 2,
+            borderpad: 4,
+            align: 'left',
+            valign: 'middle',
+
+        };
+
+        plotList.current.forEach(plotRef =>{
+            Plotly.relayout(plotRef, { shapes: [...plotRef.layout.shapes, shape], annotations: [...plotRef.layout.annotations, annotation] });
+        });
+    }
+
+
+    function deleteRegion(Plotly, plotList, xValue) {
+
+
+        // Find the region that contains the clicked xValue
+        let regionIndex = plotList.current[0].layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
+        if (regionIndex !== -1) {
+            // Remove the region from both layout.shapes and selections
+            plotList.current.forEach(plotRef => {
+                plotRef.layout.shapes.splice(regionIndex, 1);
+            });
+
+            //layout_plot1.shapes.splice(regionIndex, 1);
+            //layout_plot2.shapes.splice(regionIndex, 1);
+            //layout_plot3.shapes.splice(regionIndex, 1);
+
+            selections.splice(regionIndex, 1);
+
+            // Update the shapes on the plots
+            plotList.current.forEach(plotRef => {
+                Plotly.relayout(plotRef, { shapes: plotRef.layout.shapes, annotations: plotRef.layout.annotations });
+            });
+
+            console.log(`Region removed at x: ${xValue}`);
+        }
+    }
 
     function handlePlotHover (eventData, Plotly) {
         const xValue = eventData.points[0].x;
@@ -152,15 +254,12 @@ const Graph = () => {
             hover: handlePlotHover,
             sync: syncZoom,
             plotRefList: plotList.current,
-            selections: [],
-            setSelections: [],
+            selections: selections,
+            setSelections: setSelections,
             shapes: [],
             annotations: [],
             dragMode: 'zoom',
         };
-
-        console.log(props);
-        console.log(props.title);
 
         const newSignal = <Signal key={props.title} propsData={props} />;
 

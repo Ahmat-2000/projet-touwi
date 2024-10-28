@@ -4,6 +4,7 @@
 import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import Graph from './Graph';
+import ControlPanel from './ControlPanel';
 
 const App = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
@@ -13,9 +14,7 @@ const App = () => {
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
-    const plotRef1 = useRef(null);
-    const plotRef2 = useRef(null);
-    const plotRef3 = useRef(null);
+    const plotList = useRef([]);
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -70,18 +69,15 @@ const App = () => {
         const Plotly = require('plotly.js/dist/plotly.js');
         console.log(`Plotly drag mode set to: ${newDragMode}`);
 
-        Plotly.relayout(plotRef1.current, { dragmode: newDragMode });
-        Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
-        Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
     }
 
     // Function to reset the zoom on all three plots
     const resetZoom = () => {
         const Plotly = require('plotly.js/dist/plotly.js');
 
-        Plotly.relayout(plotRef1.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
-        Plotly.relayout(plotRef2.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
-        Plotly.relayout(plotRef3.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        plotList.current.forEach((plotRef) => {
+            Plotly.relayout(plotRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        });
     };
 
     // Clear all events like periods/flags from the Plotly plots
@@ -93,9 +89,11 @@ const App = () => {
         const updatedAnnotations = [];
 
         // Update the shapes and annotations on each plot
-        Plotly.relayout(plotRef1.current, { shapes: updatedShapes, annotations: updatedAnnotations });
-        Plotly.relayout(plotRef2.current, { shapes: updatedShapes, annotations: updatedAnnotations });
-        Plotly.relayout(plotRef3.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+        plotList.current.forEach((plotRef) => {
+            Plotly.relayout(plotRef, { shapes: updatedShapes, annotations: updatedAnnotations });
+        });
+
+
 
         // Clear any stored selections
         setSelections([]);
@@ -113,9 +111,14 @@ const App = () => {
     // Function to completely clear plots and reset the state
     function voidPlots() {
         const Plotly = require('plotly.js/dist/plotly.js');
-        Plotly.purge(plotRef1.current);
-        Plotly.purge(plotRef2.current);
-        Plotly.purge(plotRef3.current);
+
+        plotList.current.forEach((plotRef) => {
+            Plotly.purge(plotRef.current);
+        });
+
+        //Plotly.purge(plotRef1.current);
+        //Plotly.purge(plotRef2.current);
+        //Plotly.purge(plotRef3.current);
         setData([]);
         setSelections([]);
         setError('');
@@ -127,7 +130,17 @@ const App = () => {
             <p style={{ fontWeight: 'bold', color: 'red' }}>
                 (please use modified file published on discord or remove the last line in csv file if blank)
             </p>
-            <Graph/>
+            <ControlPanel
+                appMode={appMode}
+                setAppMode={setAppMode}
+                setPlotlyDragMode={setPlotlyDragMode}
+                resetZoom={resetZoom}
+                resetEvents={resetEvents}
+                voidPlots={voidPlots}
+                plotList={plotList}
+            />
+
+            <Graph plotList={plotList} appMode={appMode} />
            
         </div>
     );
