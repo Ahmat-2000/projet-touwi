@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
 import { removeUnevenLinesFromCSV } from "@/services/FileService";
@@ -9,6 +9,9 @@ import Image11 from "../Images/image11.svg"; // Chemin vers le logo
 
 const ImportComponent = () => {
   const router = useRouter();
+  const accelInputRef = useRef(null);
+  const gyroInputRef = useRef(null);
+  const videoInputRef = useRef(null);
   const { setVariablesContext } = useVariablesContext();
   const [fields, setFields] = useState({
     accel: null,
@@ -47,7 +50,6 @@ const ImportComponent = () => {
 
     if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
     if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
-    //if (!fields.video) newErrors.video = "La vidéo est requise.";
     if (!fields.frequency) newErrors.frequency = "La fréquence en Hz est requise.";
     if (isNaN(fields.frequency) || fields.frequency <= 0)
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
@@ -58,6 +60,18 @@ const ImportComponent = () => {
       console.log("Fichiers envoyés:", fields);
       setVariablesContext(fields);
       redirect();
+    }
+  };
+
+  const handleRemoveFile = (name) => {
+    setFields({ ...fields, [name]: null });
+    // Reset the input field so it can trigger the onChange event with the same file
+    if (name === "accel" && accelInputRef.current) {
+      accelInputRef.current.value = null;
+    } else if (name === "gyro" && gyroInputRef.current) {
+      gyroInputRef.current.value = null;
+    } else if (name === "video" && videoInputRef.current) {
+      videoInputRef.current.value = null;
     }
   };
 
@@ -87,12 +101,22 @@ const ImportComponent = () => {
                   name="accel"
                   accept=".csv"
                   onChange={handleFileChange}
+                  ref={accelInputRef}
                   className="hidden"
                 />
               </label>
               <span className="ml-4 text-gray-500">
                 {fields.accel ? fields.accel.name : "No file selected"}
               </span>
+                {fields.accel && (
+                  <button 
+                    type="button" 
+                    className="ml-2 text-red-500 hover:text-red-700" 
+                    onClick={() => handleRemoveFile("accel")}
+                  >
+                      X
+                  </button>
+                )}
             </div>
             {errors.accel && <p className="text-red-500">{errors.accel}</p>}
           </div>
@@ -108,12 +132,22 @@ const ImportComponent = () => {
                   name="gyro"
                   accept=".csv"
                   onChange={handleFileChange}
+                  ref={gyroInputRef}
                   className="hidden"
                 />
               </label>
               <span className="ml-4 text-gray-500">
                 {fields.gyro ? fields.gyro.name : "No file selected"}
               </span>
+              {fields.gyro && (
+                <button 
+                  type="button" 
+                  className="ml-2 text-red-500 hover:text-red-700" 
+                 onClick={() => handleRemoveFile("gyro")}
+                >
+                    X
+                </button>
+              )}
             </div>
             {errors.gyro && <p className="text-red-500">{errors.gyro}</p>}
           </div>
@@ -129,12 +163,22 @@ const ImportComponent = () => {
                   name="video"
                   accept="video/*"
                   onChange={handleFileChange}
+                  ref={videoInputRef}
                   className="hidden"
                 />
               </label>
               <span className="ml-4 text-gray-500">
                 {fields.video ? fields.video.name : "No file selected"}
               </span>
+              {fields.video && (
+                <button 
+                  type="button" 
+                  className="ml-2 text-red-500 hover:text-red-700" 
+                 onClick={() => handleRemoveFile("video")}
+                >
+                    X
+                </button>
+              )}
             </div>
             {errors.video && <p className="text-red-500">{errors.video}</p>}
           </div>
