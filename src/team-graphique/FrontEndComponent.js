@@ -16,6 +16,7 @@ const FrontEndComponent = () => {
             type="text"
             placeholder="Enter a label"
             className="border w-80 py-2 px-4 rounded-l placeholder-gray-600 text-lg"
+            style={{ color: "#297DCB" }}
           />
           <button className="bg-[#297DCB] text-white text-lg px-4 py-2 rounded-r">Add Label</button>
           <button className="bg-[#514A4A] text-white px-6 py-2 rounded">Sign out</button>
