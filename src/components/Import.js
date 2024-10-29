@@ -85,9 +85,26 @@ const ImportComponent = () => {
         </div>
 
 
-        <h1 className="text-2xl font-bold mb-6 text-center text-[#1B649F]">
-          Files Import
-        </h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold text-[#1B649F]">
+            Files Import
+          </h1>
+          <button
+            type="button"
+            onClick={() => document.getElementById("touwiInput").click()}
+            className="bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 ml-4"
+          >
+            Reopen
+          </button>
+          <input
+            type="file"
+            id="touwiInput"
+            accept=".touwi"
+            style={{ display: "none" }}
+            onChange={handleReOpenTouwi}
+          />
+        </div>
+
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* ACCEL */}
@@ -206,23 +223,7 @@ const ImportComponent = () => {
               Open
             </button>
 
-            {/* REOPEN */}
-            <div>
-              <button
-                type="button"
-                onClick={() => document.getElementById("touwiInput").click()}
-                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
-              >
-                Reopen
-              </button>
-              <input
-                type="file"
-                id="touwiInput"
-                accept=".touwi"
-                style={{ display: "none" }}
-                onChange={handleReOpenTouwi}
-              />
-            </div>
+            
           </div>
         </form>
       </div>
