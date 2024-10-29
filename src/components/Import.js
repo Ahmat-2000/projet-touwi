@@ -26,7 +26,7 @@ const ImportComponent = () => {
     const { name, files: selectedFiles } = e.target;
     const file = selectedFiles[0];
     const processedFile = await removeUnevenLinesFromCSV(file);
-    setFields({ ...fields, [name]: processedFile });
+    setFields({ ...fields, [name]: { file: processedFile, name: file.name } });
   };
 
   const handleReOpenTouwi = async (e) => {
@@ -47,7 +47,7 @@ const ImportComponent = () => {
 
     if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
     if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
-    if (!fields.video) newErrors.video = "La vidéo est requise.";
+    //if (!fields.video) newErrors.video = "La vidéo est requise.";
     if (!fields.frequency) newErrors.frequency = "La fréquence en Hz est requise.";
     if (isNaN(fields.frequency) || fields.frequency <= 0)
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
@@ -148,6 +148,7 @@ const ImportComponent = () => {
               onChange={handleFrequencyChange}
               placeholder="Enter the frequency in Hz"
               className="w-full p-2 border rounded-md"
+              style={{ color: "#297DCB" }}
             />
             {errors.frequency && <p className="text-red-500">{errors.frequency}</p>}
           </div>
