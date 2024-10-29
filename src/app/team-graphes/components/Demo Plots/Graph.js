@@ -6,11 +6,10 @@ import Signal from './Signal';
 
 
 
-const Graph = ({ plotList, appMode }) => {
+const Graph = ({ plotList, appMode, setAppMode }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [signals, setSignals] = useState([]);
     const [selections, setSelections] = useState([]);
-    
 
 
     // Example data sets
@@ -65,10 +64,10 @@ const Graph = ({ plotList, appMode }) => {
     function handlePlotClick (eventData, Plotly) {
         const xValue = eventData.points[0].x;
         console.log(`Clicked at x: ${xValue}`);
-        console.log(`Current appMode: ${appMode}`);
+        console.log(`App mode: ${appMode}`);
 
         // Handle the different modes
-        if (appMode === 'delete') {
+        if ( appMode === 'delete') {
             deleteRegion(Plotly, plotList, xValue);
         } else {
             if (appMode === 'period') {
@@ -112,11 +111,6 @@ const Graph = ({ plotList, appMode }) => {
             }
         };
 
-        console.log('Highgh');
-
-
-
-        
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef, { shapes: [...plotRef.layout.shapes, shape] });
         });
@@ -203,9 +197,8 @@ const Graph = ({ plotList, appMode }) => {
 
 
     function syncZoom (eventdata, Plotly, plotRefList) {
-        console.log('Syncing zoom');
-        console.log(eventdata);
-        console.log(plotRefList);
+        console.log("Sync fired")
+
         //get the x and y range of the plot
         const layoutUpdate = {
             'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
@@ -229,17 +222,15 @@ const Graph = ({ plotList, appMode }) => {
             Plotly.relayout(toChange2.current, layoutUpdate);
         }
         */
-       console.log('Syncing zoom done');
-
 
     };
     
-    
-
-
-    
 
     function createPlot(sensor, axis, filename) {
+
+        const Plotly = require('plotly.js/dist/plotly.js');
+
+        
         const data = fetchData(sensor, axis);
         // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
 
@@ -250,18 +241,18 @@ const Graph = ({ plotList, appMode }) => {
             title: filename + ' ' + sensor + ' ' + axis,
             timestamp: data[1],
             plotRef: newPlotRef,
-            click: handlePlotClick,
+            handlePlotClick: (eventData) => handlePlotClick(eventData, Plotly),
             hover: handlePlotHover,
-            sync: syncZoom,
+            handleRelayout: (eventData) => syncZoom(eventData, Plotly, plotList.current),
             plotRefList: plotList.current,
             selections: selections,
             setSelections: setSelections,
             shapes: [],
             annotations: [],
-            dragMode: 'zoom',
+            appMode: appMode,
         };
 
-        const newSignal = <Signal key={props.title} propsData={props} />;
+        const newSignal = <Signal key={props.title} propsData={props} setAppMode={setAppMode} />;
 
 
         setSignals((prevSignals) => [...prevSignals, newSignal]);

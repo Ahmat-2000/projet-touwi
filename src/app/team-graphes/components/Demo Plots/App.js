@@ -9,7 +9,9 @@ import ControlPanel from './ControlPanel';
 const App = () => {
     const [data, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
-    const [appMode, setAppMode] = useState('None'); // Default interaction mode
+
+    const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
+    
     const [selections, setSelections] = useState([]); // Array to store selected regions
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
@@ -64,21 +66,21 @@ const App = () => {
         });
     };
 
-    // Set the drag mode for Plotly plots (zoom, pan, etc.)
-    function setPlotlyDragMode(newDragMode) {
-        const Plotly = require('plotly.js/dist/plotly.js');
-        console.log(`Plotly drag mode set to: ${newDragMode}`);
 
-    }
 
     // Function to reset the zoom on all three plots
-    const resetZoom = () => {
+    function resetZoom() {
         const Plotly = require('plotly.js/dist/plotly.js');
 
         plotList.current.forEach((plotRef) => {
             Plotly.relayout(plotRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
         });
     };
+
+    function resetMode() {
+        setAppMode('None');
+        setPlotlyDragMode(false);
+    }
 
     // Clear all events like periods/flags from the Plotly plots
     function resetEvents() {
@@ -124,23 +126,38 @@ const App = () => {
         setError('');
     }
 
+    function setPlotlyDragMode(newDragMode) {
+        const Plotly = require('plotly.js/dist/plotly.js');
+        console.log(`Plotly drag mode set to: ${newDragMode}`);
+
+        plotList.current.forEach((plotRef) => {
+            Plotly.relayout(plotRef, { dragmode: newDragMode });
+        });
+
+        //Plotly.relayout(plotRef1.current, { dragmode: newDragMode });
+        //Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
+        //Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
+    }
+    
     return (
         <div style={styles.container}>
             <h2>Upload CSV to Create Synced Plots</h2>
             <p style={{ fontWeight: 'bold', color: 'red' }}>
                 (please use modified file published on discord or remove the last line in csv file if blank)
             </p>
+
             <ControlPanel
-                appMode={appMode}
-                setAppMode={setAppMode}
-                setPlotlyDragMode={setPlotlyDragMode}
                 resetZoom={resetZoom}
+                resetMode={() => setAppMode('None')}
                 resetEvents={resetEvents}
                 voidPlots={voidPlots}
                 plotList={plotList}
+                setAppMode={setAppMode}
+                setPlotlyDragMode={setPlotlyDragMode}
+                appMode={appMode}
             />
 
-            <Graph plotList={plotList} appMode={appMode} />
+            <Graph plotList={plotList} appMode={appMode} setAppMode={setAppMode} />
            
         </div>
     );

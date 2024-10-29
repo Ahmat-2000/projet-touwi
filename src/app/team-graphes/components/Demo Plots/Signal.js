@@ -1,12 +1,14 @@
 // Signal.js
 import React, { useEffect, useRef } from 'react';
 
-const Signal = ({ propsData }) => {
+const Signal = ({ propsData, appMode, setAppMode }) => {
     const plotRef = useRef(null);
 
-    function test(eventData, Plotly) {
 
-        console.log('List of plots:', propsData.plotRefList);
+    function changeAppModeDeBZ() {
+        console.log('changeAppModeDeBZ');
+        appMode = 'period';
+        setAppMode('period');
 
     }
 
@@ -18,13 +20,10 @@ const Signal = ({ propsData }) => {
                 {
                     x: propsData.data,
                     y: propsData.timestamp,
-                    type: 'scatter',
-                    mode: 'lines+markers',
-                    marker: { color: 'blue' },
                 },
             ], {
                 title: propsData.title,
-                dragmode: propsData.dragMode,
+                
 
                 shapes: propsData.shapes || [],  // Apply existing shapes
                 annotations: propsData.annotations || [],  // Apply existing annotations
@@ -36,37 +35,33 @@ const Signal = ({ propsData }) => {
                 doubleClick: false
             });
 
-            // Add the plot reference to the list of plots
-            if (!propsData.plotRefList.includes(plotRef.current)) {
-                propsData.plotRefList.push(plotRef.current);
-            }
-
-            // Add event listener click
-            if (propsData.click) {
-                plotRef.current.on('plotly_click', (eventData) =>
-                    propsData.click(eventData, Plotly)
-                );
-            }
-
-            // Add event listener hover
-            if (propsData.hover) {
-                /*
-                plotRef.current.on('plotly_hover', (eventData) =>
-                    propsData.hover(eventData, Plotly)
-                );
-                */
-            }
-
-            // Add event listener relayout
-            if (propsData.sync) {
-                plotRef.current.on('plotly_relayout', (eventData) =>
-                    propsData.sync(eventData, Plotly, propsData.plotRefList)
-                );
-            }
         }
-    }, [propsData]); // Re-run the effect if propsData changes
+        
+        // Add the plot reference to the list of plots
+        if (!propsData.plotRefList.includes(plotRef.current)) {
+            propsData.plotRefList.push(plotRef.current);
+        }
 
-    return <div ref={plotRef} style={{ width: '100%', height: '400px' }} />;
+        plotRef.current.on('plotly_click', propsData.handlePlotClick);
+        plotRef.current.on('plotly_relayout', propsData.handleRelayout);
+
+        // Add event listener hover
+        if (propsData.hover) {
+            /*
+            plotRef.current.on('plotly_hover', (eventData) =>
+                propsData.hover(eventData, Plotly)
+            );
+            */
+        }
+
+    }, [propsData]);
+    
+
+    return <div>
+        <div ref={plotRef} style={{ width: '100%', height: '400px' }} />;
+        <button onClick={changeAppModeDeBZ}>Change App Mode</button>
+    </div>
+
 };
 
 export default Signal;
