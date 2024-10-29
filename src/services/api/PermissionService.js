@@ -1,0 +1,1 @@
+// Page that contains the functions to interact with the API for testing permissions in the application

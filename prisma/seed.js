@@ -16,10 +16,6 @@ async function seedDatabase() {
       const tableName = path.basename(file, path.extname(file));
       const data = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
 
-      console.log(`Ajout des données pour la table: ${tableName}`);
-
-      console.log('data : ', data);
-
       // Utilisation dynamique de Prisma pour ajouter les données
       await prisma[tableName].createMany({
         data,

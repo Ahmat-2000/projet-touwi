@@ -28,12 +28,16 @@ CREATE TABLE `Role` (
   `description` TEXT,
   `can_read` BOOLEAN DEFAULT false,
   `can_write` BOOLEAN DEFAULT false,
-  `can_share` BOOLEAN DEFAULT false,
+  `can_manage_invitations` BOOLEAN DEFAULT false,
+  `can_manage_workspace` BOOLEAN DEFAULT false,
+  `can_manage_users` BOOLEAN DEFAULT false,
   CONSTRAINT unique_role_name UNIQUE (`name`),  -- Contrainte d'unicité sur le nom du rôle
   CONSTRAINT chk_permissions CHECK (
     `can_read` IN (0, 1) AND
     `can_write` IN (0, 1) AND
-    `can_share` IN (0, 1)  -- Vérification stricte des valeurs booléennes
+    `can_manage_invitations` IN (0, 1) AND
+    `can_manage_workspace` IN (0, 1) AND
+    `can_manage_users` IN (0, 1) -- Contrôle pour s'assurer que les champs sont booléens
   )
 );
 

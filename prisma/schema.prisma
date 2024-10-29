@@ -26,14 +26,16 @@ model Invitation {
 }
 
 model Role {
-  id          Int          @id @default(autoincrement())
-  name        String       @unique(map: "unique_role_name") @db.VarChar(100)
-  description String?      @db.Text
-  can_read    Boolean?     @default(false)
-  can_write   Boolean?     @default(false)
-  can_share   Boolean?     @default(false)
-  Invitation  Invitation[]
-  UserRole    UserRole[]
+  id                     Int          @id @default(autoincrement())
+  name                   String       @unique(map: "unique_role_name") @db.VarChar(100)
+  description            String?      @db.Text
+  can_read               Boolean?     @default(false)
+  can_write              Boolean?     @default(false)
+  can_manage_invitations Boolean?     @default(false)
+  can_manage_workspace   Boolean?     @default(false)
+  can_manage_users       Boolean?     @default(false)
+  Invitation             Invitation[]
+  UserRole               UserRole[]
 }
 
 model User {
