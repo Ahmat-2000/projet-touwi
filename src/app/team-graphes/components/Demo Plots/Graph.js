@@ -1,31 +1,30 @@
 // Graph.js
-"use client"; // Indicates this is a client component
 
-import React, { useState, useRef } from 'react';
-import Signal from './Signal';
-
+import React, { useState, useRef, useEffect } from 'react';
+import Plot from './Plot';
 
 
-const Graph = ({ plotList, appMode, setAppMode }) => {
-    const [showMenu, setShowMenu] = useState(false);
-    const [signals, setSignals] = useState([]);
+
+const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
+    const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
+    const appModeRef = useRef(appMode);
+    let test = 5;
 
-    // Example data sets
-    const dataSets = {
-        DataSet1: { x: [1, 2, 3, 4], y: [10, 15, 13, 17] },
-        DataSet2: { x: [1, 2, 3, 4], y: [16, 5, 11, 9] },
-        DataSet3: { x: [1, 2, 3, 4], y: [12, 9, 15, 11] },
-    };
+    useEffect(() => {
+        appModeRef.current = appMode;
+    }, [appMode]);
 
-    const handleSelectDataSet = (key) => {
-        setSignals((prevSignals) => [
-            ...prevSignals,
-            { data: dataSets[key], title: key }
-        ]);
-        setShowMenu(false);
-    };
+
+    useEffect(() => {
+        if (test === 5) {
+            test = 6;
+            console.log('USE EFFECT CALLED');
+            createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']);
+        }
+    }, []); // Empty dependency array to ensure it runs only once
+
 
     
     function fetchData(sensor, axis) {
@@ -63,14 +62,17 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
 
     function handlePlotClick (eventData, Plotly) {
         const xValue = eventData.points[0].x;
+
+        const currentAppMode = appModeRef.current;
+
         console.log(`Clicked at x: ${xValue}`);
-        console.log(`App mode: ${appMode}`);
+        console.log(`App mode: ${currentAppMode}`);
 
         // Handle the different modes
-        if ( appMode === 'delete') {
+        if ( currentAppMode === 'delete') {
             deleteRegion(Plotly, plotList, xValue);
         } else {
-            if (appMode === 'period') {
+            if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
                     console.log(`Selected region: Start - ${xValue}`);
                     selections.push({ start: xValue, end: null });
@@ -83,7 +85,7 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
                 }
             }
 
-            if (appMode === 'flag') {
+            if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
                 highlightFlag(Plotly, xValue);
             }
@@ -93,6 +95,7 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
     };
 
     function highlightRegion(Plotly, start, end) {
+        console.log('Highlighting region');
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -226,20 +229,29 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
     };
     
 
-    function createPlot(sensor, axis, filename) {
+    function createPlot(sensor, axis, filename, data) {
+
+        if (data === undefined) {
+            console.log('data is undefined');
+            const tmp = fetchData(sensor, axis);
+            data = tmp[1];
+
+
+            // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
+        }
+
+        console.log('Data:', data);
+        console.log('Timestamp:', Array.from({ length: data.length }, (_, i) => i), 'Length:', data.length);
+
 
         const Plotly = require('plotly.js/dist/plotly.js');
-
-        
-        const data = fetchData(sensor, axis);
-        // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
 
         const newPlotRef = React.createRef();
         
         const props = {
-            data: data[0],
+            data: data,
             title: filename + ' ' + sensor + ' ' + axis,
-            timestamp: data[1],
+            timestamp: Array.from({ length: data.length }, (_, i) => i),
             plotRef: newPlotRef,
             handlePlotClick: (eventData) => handlePlotClick(eventData, Plotly),
             hover: handlePlotHover,
@@ -252,40 +264,18 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
             appMode: appMode,
         };
 
-        const newSignal = <Signal key={props.title} propsData={props} setAppMode={setAppMode} />;
+        const newPlot = <Plot key={props.title} propsData={props} setAppMode={setAppMode} />;
 
 
-        setSignals((prevSignals) => [...prevSignals, newSignal]);
+        setPlots((prevPlots) => [...prevPlots, newPlot]);
 
         
     }
 
 
-
-
-
     return (
-        <div>
-            <button onClick={() => setShowMenu(!showMenu)}>
-                {showMenu ? 'Close Menu' : 'Open Menu'}
-            </button>
 
-            {showMenu && (
-                <div style={{ margin: '10px 0' }}>
-                    <h4>Select a Data Set:</h4>
-                    <ul>
-                        {Object.keys(dataSets).map((key) => (
-                            <li 
-                                key={key} 
-                                onClick={() => handleSelectDataSet(key)} 
-                                style={{ cursor: 'pointer', color: 'blue' }}
-                            >
-                                {key}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
+        <div>
 
             <div>
                 <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
@@ -295,17 +285,29 @@ const Graph = ({ plotList, appMode, setAppMode }) => {
                 <button onClick={() => console.log(plotList.current)}>Print plotList</button>
             </div>
 
-           
 
             <div>
-                {signals.map((signal, index) => (
+                {plots.map((plot, index) => (
                     <div key={index} style={{ marginTop: '20px' }}>
-                        {signal}
+                        {plot}
                     </div>
                 ))}
             </div>
+        
+
         </div>
-    );
-}
+);
+};
+
+const styles = {
+    plotContainer: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        height: 'auto',
+        width: '100%',
+        overflow: 'hidden'
+    }
+};
 
 export default Graph;

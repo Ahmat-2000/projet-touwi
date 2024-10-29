@@ -17,7 +17,6 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
             { /* Actions */ }
 
             <button onClick={() => { console.log(`Period add clicked`); setAppMode('period'); setPlotlyDragMode(false); }} style={styles.button}>Add Period</button>
-            {/* <button onClick={() => { setPlotlyDragMode(false); setAppMode('period'); }} style={styles.button} >Add Period </button> */}
             <button onClick={() => { setPlotlyDragMode(false); setAppMode('flag');   }} style={styles.button} >Add Flag </button>
 
             {/* Delete Flag Button */}

@@ -2,8 +2,8 @@
 import React, { useEffect, useRef } from 'react';
 
 const Signal = ({ propsData, appMode, setAppMode }) => {
-    const plotRef = useRef(null);
 
+    const plotRef = useRef(null);
 
     function changeAppModeDeBZ() {
         console.log('changeAppModeDeBZ');
@@ -18,8 +18,8 @@ const Signal = ({ propsData, appMode, setAppMode }) => {
         if (propsData && plotRef.current) {
             Plotly.newPlot(plotRef.current, [
                 {
-                    x: propsData.data,
-                    y: propsData.timestamp,
+                    x: propsData.timestamp,
+                    y: propsData.data,
                 },
             ], {
                 title: propsData.title,
@@ -42,8 +42,8 @@ const Signal = ({ propsData, appMode, setAppMode }) => {
             propsData.plotRefList.push(plotRef.current);
         }
 
-        plotRef.current.on('plotly_click', propsData.handlePlotClick);
-        plotRef.current.on('plotly_relayout', propsData.handleRelayout);
+        //plotRef.current.on('plotly_click', propsData.handlePlotClick);
+        //plotRef.current.on('plotly_relayout', propsData.handleRelayout);
 
         // Add event listener hover
         if (propsData.hover) {
@@ -55,6 +55,19 @@ const Signal = ({ propsData, appMode, setAppMode }) => {
         }
 
     }, [propsData]);
+
+
+    useEffect(() => {
+        const Plotly = require('plotly.js/dist/plotly.js'); // Keep your import as is
+
+        // Remove any previous event listeners before adding new ones
+        const currentPlot = propsData.plotRef.current;
+
+        // Add event listeners for plot interactions
+        plotRef.current.on('plotly_click',    propsData.handlePlotClick);
+        plotRef.current.on('plotly_relayout', propsData.handleRelayout);
+
+    }, [propsData.appMode, propsData.handlePlotClick, propsData.handleRelayout]);
     
 
     return <div>

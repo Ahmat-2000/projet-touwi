@@ -5,9 +5,11 @@ import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import Graph from './Graph';
 import ControlPanel from './ControlPanel';
+import CSVUpload from './CSVUpload';
+import Signal from './Plot';
 
 const App = () => {
-    const [data, setData] = useState([]); // Array to store data for the plots
+    const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
 
     const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
@@ -73,7 +75,7 @@ const App = () => {
         const Plotly = require('plotly.js/dist/plotly.js');
 
         plotList.current.forEach((plotRef) => {
-            Plotly.relayout(plotRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+            Plotly.relayout(plotRef, { 'xaxis.autorange': true, 'yaxis.autorange': true });
         });
     };
 
@@ -115,7 +117,7 @@ const App = () => {
         const Plotly = require('plotly.js/dist/plotly.js');
 
         plotList.current.forEach((plotRef) => {
-            Plotly.purge(plotRef.current);
+            Plotly.purge(plotRef);
         });
 
         //Plotly.purge(plotRef1.current);
@@ -138,13 +140,17 @@ const App = () => {
         //Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
         //Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
     }
-    
     return (
         <div style={styles.container}>
             <h2>Upload CSV to Create Synced Plots</h2>
             <p style={{ fontWeight: 'bold', color: 'red' }}>
                 (please use modified file published on discord or remove the last line in csv file if blank)
             </p>
+
+            <CSVUpload parseCSV={parseCSV} error={error} />
+
+            {temporaryData.length > 0 && (
+                <>
 
             <ControlPanel
                 resetZoom={resetZoom}
@@ -157,7 +163,11 @@ const App = () => {
                 appMode={appMode}
             />
 
-            <Graph plotList={plotList} appMode={appMode} setAppMode={setAppMode} />
+            <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} />
+
+            </>
+        
+            )}
            
         </div>
     );
