@@ -8,16 +8,16 @@ import ControlPanel from './ControlPanel';
 import CSVUpload from './CSVUpload';
 
 const App = () => {
-    const [data, setData] = useState([]); // Array to store data for the plots
+    const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
-    const [appMode, setAppMode] = useState('None'); // Default interaction mode
+
+    const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
+    
     const [selections, setSelections] = useState([]); // Array to store selected regions
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
-    const plotRef1 = useRef(null);
-    const plotRef2 = useRef(null);
-    const plotRef3 = useRef(null);
+    const plotList = useRef([]);
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -50,7 +50,7 @@ const App = () => {
 
                 const newTimestamps = newData.map(row => row.timestamp);
                 const signalX = newData.map(row => row.x);
-                const signalY = newData.map(row => row.y); 
+                const signalY = newData.map(row => row.y);
                 const signalZ = newData.map(row => row.z);
 
                 setData([
@@ -67,24 +67,21 @@ const App = () => {
         });
     };
 
-    // Set the drag mode for Plotly plots (zoom, pan, etc.)
-    function setPlotlyDragMode(newDragMode) {
-        const Plotly = require('plotly.js/dist/plotly.js');
-        console.log(`Plotly drag mode set to: ${newDragMode}`);
 
-        Plotly.relayout(plotRef1.current, { dragmode: newDragMode });
-        Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
-        Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
-    }
 
     // Function to reset the zoom on all three plots
-    const resetZoom = () => {
+    function resetZoom() {
         const Plotly = require('plotly.js/dist/plotly.js');
-        
-        Plotly.relayout(plotRef1.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
-        Plotly.relayout(plotRef2.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
-        Plotly.relayout(plotRef3.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+
+        plotList.current.forEach((plotRef) => {
+            Plotly.relayout(plotRef, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        });
     };
+
+    function resetMode() {
+        setAppMode('None');
+        setPlotlyDragMode(false);
+    }
 
     // Clear all events like periods/flags from the Plotly plots
     function resetEvents() {
@@ -95,17 +92,17 @@ const App = () => {
         const updatedAnnotations = [];
 
         // Update the shapes and annotations on each plot
-        Plotly.relayout(plotRef1.current, { shapes: updatedShapes, annotations: updatedAnnotations });
-        Plotly.relayout(plotRef2.current, { shapes: updatedShapes, annotations: updatedAnnotations });
-        Plotly.relayout(plotRef3.current, { shapes: updatedShapes, annotations: updatedAnnotations });
+        plotList.current.forEach((plotRef) => {
+            Plotly.relayout(plotRef, { shapes: updatedShapes, annotations: updatedAnnotations });
+        });
 
         // Clear any stored selections
         setSelections([]);
-        
-        // Optionally reset mode after clearing events
+
+        // Reset mode after clearing events
         setAppMode('None');
 
-        // Optionally clear global state for shapes and annotations if they are used
+        // Clear global state for shapes and annotations if they are used
         setShapes(updatedShapes);
         setAnnotations(updatedAnnotations);
 
@@ -115,13 +112,49 @@ const App = () => {
     // Function to completely clear plots and reset the state
     function voidPlots() {
         const Plotly = require('plotly.js/dist/plotly.js');
-        Plotly.purge(plotRef1.current);
-        Plotly.purge(plotRef2.current);
-        Plotly.purge(plotRef3.current);
+
+        plotList.current.forEach((plotRef) => {
+            Plotly.purge(plotRef);
+        });
+
         setData([]);
         setSelections([]);
         setError('');
     }
+
+    function setPlotlyDragMode(newDragMode) {
+        const Plotly = require('plotly.js/dist/plotly.js');
+
+        console.log(`Plotly drag mode set to: ${newDragMode}`);
+
+        plotList.current.forEach((plotRef) => {
+
+            //if we don't use scrollzoom just use
+            //Plotly.relayout(plotRef, { dragmode: newDragMode });
+
+            // Get the current layout of the plot
+            const currentLayout = plotRef._fullLayout;
+
+            // Set the scrollZoom configuration based on the new drag mode
+            const config = { scrollZoom: newDragMode === 'pan' };
+
+            // Use Plotly.react to update the axis ranges and scrollZoom
+            Plotly.react(plotRef, plotRef.data, {
+                dragmode: newDragMode,
+                xaxis: { range: currentLayout.xaxis.range },
+                yaxis: { range: currentLayout.yaxis.range },
+                shapes: currentLayout.shapes,
+                annotations: currentLayout.annotations,
+                margin: currentLayout.margin
+            }, config);
+        });
+    }
+
+
+
+    
+
+
 
     return (
         <div style={styles.container}>
@@ -132,32 +165,26 @@ const App = () => {
 
             <CSVUpload parseCSV={parseCSV} error={error} />
 
-            {data.length > 0 && (
+            {temporaryData.length > 0 && (
                 <>
-                    <ControlPanel
-                        mode={appMode}                  // Current interaction mode
-                        setAppMode={setAppMode}          // App interaction mode setter
-                        setPlotlyDragMode={setPlotlyDragMode}  // Plotly drag mode setter
-                        resetMode={() => setAppMode('None')}  // Reset app interaction mode
-                        resetEvents={resetEvents}       // Clear annotations and shapes
-                        resetZoom={resetZoom}
-                        voidPlots={voidPlots}            // Clear all data and plots
-                    />
-                    <Graph
-                        data={data}
-                        shapes = {shapes}
-                        setShapes = {setShapes}
-                        annotations = {annotations}
-                        setAnnotations = {setAnnotations}
-                        plotRef1={plotRef1}
-                        plotRef2={plotRef2}
-                        plotRef3={plotRef3}
-                        selections={selections}
-                        setSelections={setSelections}
-                        mode={appMode}  // Passing the current interaction mode to Graph component
-                    />
-                </>
+
+            <ControlPanel
+                resetZoom={resetZoom}
+                resetMode={() => setAppMode('None')}
+                resetEvents={resetEvents}
+                voidPlots={voidPlots}
+                plotList={plotList}
+                setAppMode={setAppMode}
+                setPlotlyDragMode={setPlotlyDragMode}
+                appMode={appMode}
+            />
+
+            <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} />
+
+            </>
+        
             )}
+           
         </div>
     );
 };
