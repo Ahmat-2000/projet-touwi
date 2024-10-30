@@ -41,7 +41,7 @@ export default async function csvToChronos(file1, file2, name) {
     const filteredData2 = data2.filter(row => row[0] >= startTimestamp && row[0] <= endTimestamp);
 
     // Combine the data
-    const combinedHeaders = ["timestamp", ...headers1.slice(1), ...headers2.slice(1)];
+    const combinedHeaders = ["timestamp", "gyro_x", "gyro_y", "gyro_z", "accel_x", "accel_y", "accel_z", "label"];
     let combinedData = combinedHeaders.join(",") + "\n";
 
     for (let i = 0; i < filteredData1.length; i++) {

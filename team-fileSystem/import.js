@@ -102,13 +102,20 @@ const ImportPage = () => {
       // Logique pour envoyer les fichiers et la fréquence (ex: API ou une autre page)
 
       const combinedFile = await csvToChronos(files.accel, files.gyro, 'combined_output.csv');
-      exportFile(combinedFile);
+      //exportFile(combinedFile);
+      handleFileUpload(combinedFile);
       console.log("Fichiers envoyés:", files);
       console.log("Fréquence:", frequency);
       redirect();
     }
+  };
 
-
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      sessionStorage.setItem('uploadedFile', reader.result); // Sauvegarde en session
+    };
+    reader.readAsDataURL(file); // Convertir en base64
   };
 
   return (
