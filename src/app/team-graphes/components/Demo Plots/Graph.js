@@ -10,7 +10,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
     const [selections, setSelections] = useState([]);
 
     const appModeRef = useRef(appMode);
-    let test = 5;
 
     useEffect(() => {
         appModeRef.current = appMode;
@@ -18,12 +17,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
 
 
     useEffect(() => {
-        if (test === 5) {
-            test = 6;
-            console.log('USE EFFECT CALLED');
-            createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']);
-        }
-    }, []); // Empty dependency array to ensure it runs only once
+        createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
+    }, []);
 
 
     
@@ -39,16 +34,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
         
         const simulatedData = {
             Accelerometer: {
-                x: Array.from({ length: 1000 }, () => Math.random() * 100),
-                y: Array.from({ length: 1000 }, () => Math.random() * 100),
-                z: Array.from({ length: 1000 }, () => Math.random() * 100)
+                x: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
             },
             Gyroscope: {
-                x: Array.from({ length: 1000}, () => Math.random() * 100),    
-                y: Array.from({ length: 1000}, () => Math.random() * 100),
-                z: Array.from({ length: 1000}, () => Math.random() * 100)
+                x: Array.from({ length: 30157}, () => Math.random() * 200 - 50),    
+                y: Array.from({ length: 30157}, () => Math.random() * 200 - 50),
+                z: Array.from({ length: 30157}, () => Math.random() * 200 - 50)
             },
-            timestamp: Array.from({ length: 1000 }, (_, i) => i)
+            timestamp: Array.from({ length: 30157 }, (_, i) => i)
         };
 
         // Case we want Timestamps
@@ -65,8 +60,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
 
         const currentAppMode = appModeRef.current;
 
-        console.log(`Clicked at x: ${xValue}`);
-        console.log(`App mode: ${currentAppMode}`);
+        console.log(`Clicked at x: ${xValue} App mode: ${currentAppMode}`);
 
         // Handle the different modes
         if ( currentAppMode === 'delete') {
@@ -95,7 +89,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
     };
 
     function highlightRegion(Plotly, start, end) {
-        console.log('Highlighting region');
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -177,10 +170,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
                 plotRef.layout.shapes.splice(regionIndex, 1);
             });
 
-            //layout_plot1.shapes.splice(regionIndex, 1);
-            //layout_plot2.shapes.splice(regionIndex, 1);
-            //layout_plot3.shapes.splice(regionIndex, 1);
-
             selections.splice(regionIndex, 1);
 
             // Update the shapes on the plots
@@ -200,7 +189,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
 
 
     function syncZoom (eventdata, Plotly, plotRefList) {
-        console.log("Sync fired")
 
         //get the x and y range of the plot
         const layoutUpdate = {
@@ -215,60 +203,43 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
                 Plotly.relayout(plotRef, layoutUpdate);
             });
             
-           //Plotly.relayout( plotRefList[0].current, layoutUpdate);
-           //Plotly.relayout( plotRefList[1].current, layoutUpdate);
         }
-
-        /*
-        if (eventdata['xaxis.range[0]'] && eventdata['xaxis.range[1]']) {
-            Plotly.relayout(toChange1.current, layoutUpdate);
-            Plotly.relayout(toChange2.current, layoutUpdate);
-        }
-        */
-
     };
     
 
     function createPlot(sensor, axis, filename, data) {
-
+        
+        // bricolage en attendant de pouvoir fetch les données du .touwi
         if (data === undefined) {
-            console.log('data is undefined');
             const tmp = fetchData(sensor, axis);
             data = tmp[1];
-
-
             // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
+
         }
-
-        console.log('Data:', data);
-        console.log('Timestamp:', Array.from({ length: data.length }, (_, i) => i), 'Length:', data.length);
-
+        
+        const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
         const Plotly = require('plotly.js/dist/plotly.js');
 
-        const newPlotRef = React.createRef();
         
         const props = {
             data: data,
             title: filename + ' ' + sensor + ' ' + axis,
-            timestamp: Array.from({ length: data.length }, (_, i) => i),
-            plotRef: newPlotRef,
+            timestamp: timestamp,
             handlePlotClick: (eventData) => handlePlotClick(eventData, Plotly),
             hover: handlePlotHover,
             handleRelayout: (eventData) => syncZoom(eventData, Plotly, plotList.current),
             plotRefList: plotList.current,
-            selections: selections,
-            setSelections: setSelections,
             shapes: [],
             annotations: [],
             appMode: appMode,
+            
         };
 
-        const newPlot = <Plot key={props.title} propsData={props} setAppMode={setAppMode} />;
+        const newPlot = <Plot key={props.title} propsData={props} />;
 
 
-        setPlots((prevPlots) => [...prevPlots, newPlot]);
-
+        setPlots([...plots, newPlot]);
         
     }
 
@@ -280,11 +251,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
             <div>
                 <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
             </div>
-
-            <div>
-                <button onClick={() => console.log(plotList.current)}>Print plotList</button>
-            </div>
-
 
             <div>
                 {plots.map((plot, index) => (

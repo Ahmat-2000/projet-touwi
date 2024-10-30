@@ -3,14 +3,14 @@ import React from 'react';
 
 
 
-const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, plotlyMode }) => {
+const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode }) => {
 
     return (
         <div style={styles.controls}>
             
             {/* Signal Navigation */}
             <button onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }} style={styles.button}>Zoom</button>
-            <button onClick={() => setPlotlyDragMode('pan')  /* ;setAppMode('None'); */ } style={styles.button}>Pan</button>
+            <button onClick={() => { setPlotlyDragMode('pan');  setAppMode('None'); }} style={styles.button}>Navigate</button>
 
             <br />
 
@@ -22,7 +22,7 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
             {/* Delete Flag Button */}
             <button onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }} style={styles.button}>Delete</button>
 
-            <button onClick={() => { resetZoom(); }} style={styles.button}>Reset Zoom</button>
+            <button onClick={() => { resetZoom(); }} style={styles.button}>Home</button>
             <button onClick={() => { resetMode(); }} style={styles.button}>Reset Mode</button>
 
             <br />
@@ -38,7 +38,6 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
 
             {/* Display current mode */}
             <span className="mode-indicator" style={styles.modeIndicator}>Mode :{appMode} </span>
-            <span className="mode-indicator" style={styles.modeIndicator}>Plotly Mode :{plotlyMode} </span>
 
         </div>
     );

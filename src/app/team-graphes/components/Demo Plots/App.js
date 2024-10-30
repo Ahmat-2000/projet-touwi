@@ -6,7 +6,6 @@ import Papa from 'papaparse';
 import Graph from './Graph';
 import ControlPanel from './ControlPanel';
 import CSVUpload from './CSVUpload';
-import Signal from './Plot';
 
 const App = () => {
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
@@ -97,15 +96,13 @@ const App = () => {
             Plotly.relayout(plotRef, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
-
-
         // Clear any stored selections
         setSelections([]);
 
-        // Optionally reset mode after clearing events
+        // Reset mode after clearing events
         setAppMode('None');
 
-        // Optionally clear global state for shapes and annotations if they are used
+        // Clear global state for shapes and annotations if they are used
         setShapes(updatedShapes);
         setAnnotations(updatedAnnotations);
 
@@ -120,26 +117,58 @@ const App = () => {
             Plotly.purge(plotRef);
         });
 
-        //Plotly.purge(plotRef1.current);
-        //Plotly.purge(plotRef2.current);
-        //Plotly.purge(plotRef3.current);
         setData([]);
         setSelections([]);
         setError('');
     }
 
-    function setPlotlyDragMode(newDragMode) {
+    function setPlotlyDragMode2(newDragMode) {
         const Plotly = require('plotly.js/dist/plotly.js');
+
         console.log(`Plotly drag mode set to: ${newDragMode}`);
 
         plotList.current.forEach((plotRef) => {
+            const config = { scrollZoom: newDragMode === 'pan' };
             Plotly.relayout(plotRef, { dragmode: newDragMode });
+            
         });
 
-        //Plotly.relayout(plotRef1.current, { dragmode: newDragMode });
-        //Plotly.relayout(plotRef2.current, { dragmode: newDragMode });
-        //Plotly.relayout(plotRef3.current, { dragmode: newDragMode });
     }
+
+    function setPlotlyDragMode(newDragMode) {
+        const Plotly = require('plotly.js/dist/plotly.js');
+
+        console.log(`Plotly drag mode set to: ${newDragMode}`);
+
+        plotList.current.forEach((plotRef) => {
+
+            //if we don't use scrollzoom just use
+            //Plotly.relayout(plotRef, { dragmode: newDragMode });
+
+            // Get the current layout of the plot
+            const currentLayout = plotRef._fullLayout;
+
+            // Set the scrollZoom configuration based on the new drag mode
+            const config = { scrollZoom: newDragMode === 'pan' };
+
+            // Use Plotly.react to update the axis ranges and scrollZoom
+            Plotly.react(plotRef, plotRef.data, {
+                dragmode: newDragMode,
+                xaxis: { range: currentLayout.xaxis.range },
+                yaxis: { range: currentLayout.yaxis.range },
+                shapes: currentLayout.shapes,
+                annotations: currentLayout.annotations,
+                margin: currentLayout.margin
+            }, config);
+        });
+    }
+
+
+
+    
+
+
+
     return (
         <div style={styles.container}>
             <h2>Upload CSV to Create Synced Plots</h2>
