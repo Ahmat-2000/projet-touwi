@@ -124,7 +124,7 @@ const ImportPage = () => {
               name="accel"
               ref={(el) => (fileRef.current[0] = el)}
               accept=".csv"
-              //onChange={handleFileChange}
+              onChange={handleFileChange}
             />
           </label>
           <button onClick={() => resetFile(0)}>Cancel</button>
@@ -141,7 +141,7 @@ const ImportPage = () => {
               name="gyro"
               ref={(el) => (fileRef.current[1] = el)}
               accept=".csv"
-              //onChange={handleFileChange}
+              onChange={handleFileChange}
             />
             <button onClick={() => resetFile(1)}>Cancel</button>
           </label>
@@ -157,7 +157,7 @@ const ImportPage = () => {
               name="video"
               ref={(el) => (fileRef.current[2] = el)}
               accept="video/*"
-              //onChange={handleFileChange}
+              onChange={handleFileChange}
             />
             <button onClick={() => resetFile(2)}>Cancel</button>
           </label>
