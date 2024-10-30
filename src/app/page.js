@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import App from './team-graphes/components/App';
+
+import App from './team-graphes/components/Demo Plots/App';
 
 export default function Home() {
   return (
