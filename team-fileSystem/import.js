@@ -2,6 +2,7 @@
 "use client"; // Indique que c'est un Client Component
 
 import { useState } from "react";
+import { useRef } from "react";
 import { useRouter } from "next/navigation";
 
 import csvToChronos from './csvToChronos';
@@ -23,6 +24,13 @@ const ImportPage = () => {
     
   };
 
+  const fileRef = useRef([]);
+  const resetFile = (index) =>{
+    if(fileRef.current[index]){
+      fileRef.current[index].value = '';
+    }
+  };
+
   // Fonction pour traiter les fichiers CSV et retirer la dernière ligne vide
   const processCSV = (file) => {
     return new Promise((resolve, reject) => {
@@ -30,7 +38,7 @@ const ImportPage = () => {
       reader.onload = function (e) {
         const fileContent = e.target.result;
         const lines = fileContent.split("\n");
-
+        
         // Supprimer la dernière ligne si elle est vide
         if (lines.length > 0 && lines[lines.length - 1].trim() === "") {
           lines.pop();
@@ -105,7 +113,7 @@ const ImportPage = () => {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Importation fichiers</h1>
+      <h1>Import files</h1>
       <form onSubmit={handleSubmit}>
         {/* ACCEL */}
         <div>
@@ -114,13 +122,16 @@ const ImportPage = () => {
             <input
               type="file"
               name="accel"
+              ref={(el) => (fileRef.current[0] = el)}
               accept=".csv"
-              onChange={handleFileChange}
+              //onChange={handleFileChange}
             />
           </label>
+          <button onClick={() => resetFile(0)}>Cancel</button>
+
           {errors.accel && <p style={{ color: "red" }}>{errors.accel}</p>}
         </div>
-
+      
         {/* GYRO */}
         <div>
           <label>
@@ -128,9 +139,11 @@ const ImportPage = () => {
             <input
               type="file"
               name="gyro"
+              ref={(el) => (fileRef.current[1] = el)}
               accept=".csv"
-              onChange={handleFileChange}
+              //onChange={handleFileChange}
             />
+            <button onClick={() => resetFile(1)}>Cancel</button>
           </label>
           {errors.gyro && <p style={{ color: "red" }}>{errors.gyro}</p>}
         </div>
@@ -142,9 +155,11 @@ const ImportPage = () => {
             <input
               type="file"
               name="video"
+              ref={(el) => (fileRef.current[2] = el)}
               accept="video/*"
-              onChange={handleFileChange}
+              //onChange={handleFileChange}
             />
+            <button onClick={() => resetFile(2)}>Cancel</button>
           </label>
           {errors.video && <p style={{ color: "red" }}>{errors.video}</p>}
         </div>
@@ -189,6 +204,7 @@ const ImportPage = () => {
         </div>
       </form>
     </div>
+ 
   );
 };
 
