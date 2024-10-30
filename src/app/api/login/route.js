@@ -5,7 +5,7 @@ export async function POST(request) {
   const { username, password } = await request.json();
 
   // Vérification des informations d'identification en dur (à des fins de démonstration uniquement)
-  if (username === 'test' && password === 'test') {
+  if (username === 'user' && password === 'user') {
     // Créer un token JWT
     const token = await new SignJWT({ username })
       .setProtectedHeader({ alg: 'HS256' })
