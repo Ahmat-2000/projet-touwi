@@ -7,6 +7,10 @@ import Graph from './Graph';
 import ControlPanel from './ControlPanel';
 import CSVUpload from './CSVUpload';
 
+import VideoControls from './VideoControls';
+import Plotly from 'plotly.js-dist';
+import { update } from 'plotly.js';
+
 const App = () => {
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
@@ -17,7 +21,11 @@ const App = () => {
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
+    const [hasVideo, setHasVideo] = useState(null); // Check if video is on or off
+    
+
     const plotList = useRef([]);
+    const videoRef = useRef(null);
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -71,10 +79,9 @@ const App = () => {
 
     // Function to reset the zoom on all three plots
     function resetZoom() {
-        const Plotly = require('plotly.js/dist/plotly.js');
 
         plotList.current.forEach((plotRef) => {
-            Plotly.relayout(plotRef, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+            Plotly.relayout(plotRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
         });
     };
 
@@ -85,7 +92,6 @@ const App = () => {
 
     // Clear all events like periods/flags from the Plotly plots
     function resetEvents() {
-        const Plotly = require('plotly.js/dist/plotly.js');
 
         // Clear shapes and annotations from all three plot references
         const updatedShapes = [];
@@ -93,7 +99,7 @@ const App = () => {
 
         // Update the shapes and annotations on each plot
         plotList.current.forEach((plotRef) => {
-            Plotly.relayout(plotRef, { shapes: updatedShapes, annotations: updatedAnnotations });
+            Plotly.relayout(plotRef.current, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
         // Clear any stored selections
@@ -111,10 +117,9 @@ const App = () => {
 
     // Function to completely clear plots and reset the state
     function voidPlots() {
-        const Plotly = require('plotly.js/dist/plotly.js');
 
         plotList.current.forEach((plotRef) => {
-            Plotly.purge(plotRef);
+            Plotly.purge(plotRef.current);
         });
 
         setData([]);
@@ -123,33 +128,75 @@ const App = () => {
     }
 
     function setPlotlyDragMode(newDragMode) {
-        const Plotly = require('plotly.js/dist/plotly.js');
 
         console.log(`Plotly drag mode set to: ${newDragMode}`);
 
         plotList.current.forEach((plotRef) => {
 
             //if we don't use scrollzoom just use
-            //Plotly.relayout(plotRef, { dragmode: newDragMode });
+            //Plotly.relayout(plotRef.current, { dragmode: newDragMode });
+
 
             // Get the current layout of the plot
-            const currentLayout = plotRef._fullLayout;
+            const currentLayout = plotRef.current._fullLayout;
+
+            const updatedLayout = {
+                ...currentLayout,
+                dragmode: newDragMode,
+                xaxis: { range: currentLayout.xaxis.range },
+                yaxis: { range: currentLayout.yaxis.range },
+            };
+
 
             // Set the scrollZoom configuration based on the new drag mode
             const config = { scrollZoom: newDragMode === 'pan' };
 
             // Use Plotly.react to update the axis ranges and scrollZoom
-            Plotly.react(plotRef, plotRef.data, {
-                dragmode: newDragMode,
-                xaxis: { range: currentLayout.xaxis.range },
-                yaxis: { range: currentLayout.yaxis.range },
-                shapes: currentLayout.shapes,
-                annotations: currentLayout.annotations,
-                margin: currentLayout.margin
-            }, config);
+            Plotly.react(
+
+                plotRef.current, 
+                
+                plotRef.current.data, 
+                
+                updatedLayout,
+                
+                updateConfig
+            );
+
+
+
         });
+
     }
 
+    function launchVideoMode() {
+        console.log('Video Mode launched');
+
+    }
+
+    function syncZoom(eventdata, plotRefList) {
+
+        console.log('//', plotRefList);
+        console.log(plotRefList.current);
+        console.log(plotRefList[0]);
+
+        //get the x and y range of the plot
+        const layoutUpdate = {
+            'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+            'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']]
+        };
+
+        //update the x and y range of the other plots
+        if (eventdata['xaxis.range[0]'] !== undefined) {
+
+            console.log('?');
+            plotRefList.forEach((plotRef) => {
+                Plotly.relayout(plotRef.current, layoutUpdate);
+            });
+
+
+        }
+    };
 
 
     
@@ -162,6 +209,13 @@ const App = () => {
             <p style={{ fontWeight: 'bold', color: 'red' }}>
                 (please use modified file published on discord or remove the last line in csv file if blank)
             </p>
+
+            <VideoControls propsData={{
+                pathVideo: '/images/placeholder.webm',
+                plotList: plotList,
+                syncZoom: syncZoom,
+                videoRef: videoRef,
+            }} />
 
             <CSVUpload parseCSV={parseCSV} error={error} />
 
@@ -179,7 +233,7 @@ const App = () => {
                 appMode={appMode}
             />
 
-            <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} />
+                    <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} hasVideo={hasVideo} syncZoom={syncZoom} />
 
             </>
         

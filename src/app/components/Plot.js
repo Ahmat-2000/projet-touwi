@@ -1,40 +1,48 @@
 // Signal.js
 import React, { useEffect, useRef } from 'react';
+import Plotly from 'plotly.js-dist';
 
 const Signal = ({ propsData }) => {
 
     const plotRef = useRef(null);
 
     useEffect(() => {
-        const Plotly = require('plotly.js/dist/plotly.js');
 
         if (propsData && plotRef.current) {
 
-            Plotly.newPlot(plotRef.current, [
-                {
+            Plotly.newPlot(
+                
+                plotRef.current, 
+                
+                [{
                     x: propsData.timestamp,
                     y: propsData.data,
-                },
-            ], {
-                title: propsData.title,
+                },], 
                 
-                dragmode: propsData.appMode,
-                shapes: propsData.shapes,
-                annotations: propsData.annotations,
-                margin: { t: 40, b: 20, l: 60, r: 20 }
-            }, {
-                displayModeBar: true,
-                modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
-                displaylogo: false,
-                doubleClick: false,
-                scrollZoom: false,
-            });
+                {
+                    title: propsData.title,
+                    
+                    dragmode: propsData.appMode,
+                    shapes: propsData.shapes,
+                    annotations: propsData.annotations,
+                    margin: { t: 40, b: 20, l: 60, r: 20 }
+                }, 
+                
+                {
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
+                    displaylogo: false,
+                    doubleClick: false,
+                    scrollZoom: false,
+                }
+            
+            );
 
         }
 
         // Add the plot reference to the list of plots
-        if (!propsData.plotRefList.includes(plotRef.current)) {
-            propsData.plotRefList.push(plotRef.current);
+        if (!propsData.plotRefList.includes(plotRef)) {
+            propsData.plotRefList.push(plotRef);
         }
 
         if (propsData.plotRefList.length > 1) {
@@ -45,14 +53,13 @@ const Signal = ({ propsData }) => {
 
             //Zoom
             const currentLayout = {
-                'xaxis.range': propsData.plotRefList[0].layout.xaxis.range,
-                'yaxis.range': propsData.plotRefList[0].layout.yaxis.range
-            };
+                'xaxis.range': propsData.plotRefList[0].current.layout.xaxis.range,
+                'yaxis.range': propsData.plotRefList[0].current.layout.yaxis.range
+            };        
             
-            
-            const currentDragMode = propsData.plotRefList[0]._fullLayout.dragmode;
-            const currentShapes = propsData.plotRefList[0].layout.shapes;
-            const currentAnnotations = propsData.plotRefList[0].layout.annotations;
+            const currentDragMode =    propsData.plotRefList[0].current._fullLayout.dragmode;
+            const currentShapes =      propsData.plotRefList[0].current.layout.shapes;
+            const currentAnnotations = propsData.plotRefList[0].current.layout.annotations;
 
             Plotly.relayout(plotRef.current, currentLayout);
             Plotly.relayout(plotRef.current, { shapes: currentShapes, annotations: currentAnnotations });
@@ -61,10 +68,10 @@ const Signal = ({ propsData }) => {
         }
 
         // Add event listeners for plot interactions
-        plotRef.current.on('plotly_click',    propsData.handlePlotClick);
-        plotRef.current.on('plotly_relayout', propsData.handleRelayout);
+        plotRef.current.on('plotly_click',    (eventData) => propsData.handlePlotClick(eventData));
+        plotRef.current.on('plotly_relayout', (eventData) => propsData.handleRelayout(eventData, propsData.plotRefList));
 
-        if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData, Plotly) ); */ }
+        if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
     }, [propsData]);
     

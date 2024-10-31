@@ -3,42 +3,46 @@ import React from 'react';
 
 
 
-const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode }) => {
+const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, launchVideoMode }) => {
 
     return (
-        <div style={styles.controls}>
-            
-            {/* Signal Navigation */}
-            <button onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }} style={styles.button}>Zoom</button>
-            <button onClick={() => { setPlotlyDragMode('pan');  setAppMode('None'); }} style={styles.button}>Navigate</button>
+        <div>
+            <div style={styles.controls}>
 
-            <br />
+                {/* Signal Navigation */}
+                <button onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }} style={styles.button}>Zoom</button>
+                <button onClick={() => { setPlotlyDragMode('pan'); setAppMode('None'); }} style={styles.button}>Navigate</button>
 
-            { /* Actions */ }
+                <br />
 
-            <button onClick={() => { console.log(`Period add clicked`); setAppMode('period'); setPlotlyDragMode(false); }} style={styles.button}>Add Period</button>
-            <button onClick={() => { setPlotlyDragMode(false); setAppMode('flag');   }} style={styles.button} >Add Flag </button>
+                { /* Actions */}
 
-            {/* Delete Flag Button */}
-            <button onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }} style={styles.button}>Delete</button>
+                <button onClick={() => { console.log(`Period add clicked`); setAppMode('period'); setPlotlyDragMode(false); }} style={styles.button}>Add Period</button>
+                <button onClick={() => { setPlotlyDragMode(false); setAppMode('flag'); }} style={styles.button} >Add Flag </button>
 
-            <button onClick={() => { resetZoom(); }} style={styles.button}>Home</button>
-            <button onClick={() => { resetMode(); }} style={styles.button}>Reset Mode</button>
+                {/* Delete Flag Button */}
+                <button onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }} style={styles.button}>Delete</button>
 
-            <br />
+                <button onClick={() => { resetZoom(); }} style={styles.button}>Home</button>
+                <button onClick={() => { resetMode(); }} style={styles.button}>Reset Mode</button>
 
-            {/* Event clearing */}
-            <button onClick={() => { resetEvents(); }} style={styles.button}>Delete All Periods/Flags</button>
+                <br />
 
-            {/* Complete clear */}
-            <button onClick={() => { voidPlots(); }} style={styles.button}>Clear All</button>
+                {/* Event clearing */}
+                <button onClick={() => { resetEvents(); }} style={styles.button}>Delete All Periods/Flags</button>
 
-            {/* Dev mode, ensures plotlist is synced in ControlPanel */}
-            <button onClick={() => console.log(plotList.current)} style={styles.button}>Log PlotList</button>
+                {/* Complete clear */}
+                <button onClick={() => { voidPlots(); }} style={styles.button}>Clear All</button>
 
-            {/* Display current mode */}
-            <span className="mode-indicator" style={styles.modeIndicator}>Mode :{appMode} </span>
+                {/* Dev mode, ensures plotlist is synced in ControlPanel */}
+                <button onClick={() => console.log(plotList.current)} style={styles.button}>Log PlotList</button>
 
+                {/* Display current mode */}
+                <span className="mode-indicator" style={styles.modeIndicator}>Mode :{appMode} </span>
+
+            </div>
+
+            <button onClick={() => {launchVideoMode(); }} style={styles.button}>Video Mode</button>
         </div>
     );
 };

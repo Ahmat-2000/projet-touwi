@@ -1,5 +1,6 @@
 
 import App from './components/App';
+import VideoSignalSync from './components/tmp/VideoSignalSync';
 
 export default function Home() {
   return (

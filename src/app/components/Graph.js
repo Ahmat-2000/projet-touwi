@@ -2,10 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Plot from './Plot';
+import Plotly from 'plotly.js-dist';
 
 
-
-const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
+const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
@@ -55,16 +55,23 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
         return simulatedData[sensor][axis];
     }
 
-    function handlePlotClick (eventData, Plotly) {
+    function handlePlotClick (eventData) {
         const xValue = eventData.points[0].x;
 
         const currentAppMode = appModeRef.current;
 
         console.log(`Clicked at x: ${xValue} App mode: ${currentAppMode}`);
 
+        // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
+        if (currentAppMode === 'None') {
+            if (hasVideo) {
+                video.currentTime = xValue / 1000; // might be (xValue - videoStartTimestamp) / 1000 if we are using tstamps
+            }
+        }
+
         // Handle the different modes
         if ( currentAppMode === 'delete') {
-            deleteRegion(Plotly, plotList, xValue);
+            deleteRegion(plotList, xValue);
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
@@ -75,20 +82,20 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     selections[selections.length - 1].end = xValue;
                     // Highlight the region across all plots
-                    highlightRegion(Plotly, selections[selections.length - 1].start, xValue);
+                    highlightRegion( selections[selections.length - 1].start, xValue);
                 }
             }
 
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
-                highlightFlag(Plotly, xValue);
+                highlightFlag( xValue);
             }
 
 
         }
     };
 
-    function highlightRegion(Plotly, start, end) {
+    function highlightRegion(start, end) {
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -108,12 +115,12 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
         };
 
         plotList.current.forEach(plotRef => {
-            Plotly.relayout(plotRef, { shapes: [...plotRef.layout.shapes, shape] });
+            Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
         
     }
 
-    function highlightFlag(Plotly, xValue) {
+    function highlightFlag(xValue) {
 
         const shape = {
             type: 'line',
@@ -154,56 +161,37 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
         };
 
         plotList.current.forEach(plotRef =>{
-            Plotly.relayout(plotRef, { shapes: [...plotRef.layout.shapes, shape], annotations: [...plotRef.layout.annotations, annotation] });
+            Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
         });
+
     }
 
 
-    function deleteRegion(Plotly, plotList, xValue) {
+    function deleteRegion(plotList, xValue) {
 
 
         // Find the region that contains the clicked xValue
-        let regionIndex = plotList.current[0].layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
+        let regionIndex = plotList.current[0].current.layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
         if (regionIndex !== -1) {
             // Remove the region from both layout.shapes and selections
             plotList.current.forEach(plotRef => {
-                plotRef.layout.shapes.splice(regionIndex, 1);
+                plotRef.current.layout.shapes.splice(regionIndex, 1);
             });
 
             selections.splice(regionIndex, 1);
 
             // Update the shapes on the plots
             plotList.current.forEach(plotRef => {
-                Plotly.relayout(plotRef, { shapes: plotRef.layout.shapes, annotations: plotRef.layout.annotations });
+                Plotly.relayout(plotRef.current, { shapes: plotRef.current.layout.shapes, annotations: plotRef.current.layout.annotations });
             });
 
             console.log(`Region removed at x: ${xValue}`);
         }
     }
 
-    function handlePlotHover (eventData, Plotly) {
+    function handlePlotHover (eventData) {
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
-    };
-
-
-
-    function syncZoom (eventdata, Plotly, plotRefList) {
-
-        //get the x and y range of the plot
-        const layoutUpdate = {
-            'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-            'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']]
-        };
-
-        //update the x and y range of the other plots
-        if (eventdata['xaxis.range[0]'] !== undefined) {
-            
-            plotRefList.forEach((plotRef) => {
-                Plotly.relayout(plotRef, layoutUpdate);
-            });
-            
-        }
     };
     
 
@@ -219,16 +207,14 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode }) => {
         
         const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
-        const Plotly = require('plotly.js/dist/plotly.js');
-
         
         const props = {
             data: data,
             title: filename + ' ' + sensor + ' ' + axis,
             timestamp: timestamp,
-            handlePlotClick: (eventData) => handlePlotClick(eventData, Plotly),
+            handlePlotClick: (eventData) => handlePlotClick(eventData),
             hover: handlePlotHover,
-            handleRelayout: (eventData) => syncZoom(eventData, Plotly, plotList.current),
+            handleRelayout: syncZoom,
             plotRefList: plotList.current,
             shapes: [],
             annotations: [],
