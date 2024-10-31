@@ -1,8 +1,6 @@
 // ControlPanel.js
 import React from 'react';
 
-
-
 const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, launchVideoMode }) => {
 
     return (

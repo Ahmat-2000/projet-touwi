@@ -9,7 +9,6 @@ import CSVUpload from './CSVUpload';
 
 import VideoControls from './VideoControls';
 import Plotly from 'plotly.js-dist';
-import { update } from 'plotly.js';
 
 const App = () => {
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
@@ -127,7 +126,41 @@ const App = () => {
         setError('');
     }
 
+
     function setPlotlyDragMode(newDragMode) {
+
+
+        console.log(`Plotly drag mode set to: ${newDragMode}`);
+
+        plotList.current.forEach((plotRef) => {
+
+            //if we don't use scrollzoom just use
+            //Plotly.relayout(plotRef, { dragmode: newDragMode });
+
+            // Get the current layout of the plot
+            const currentLayout = {
+                ...plotRef.current_fullLayout,
+                annotations: plotRef.current.layout.annotations,
+                dragmode: newDragMode,
+                margin: plotRef.current.layout.margin,
+                shapes: plotRef.current.layout.shapes,
+                title: plotRef.current.layout.title,
+                xaxis: { range: plotRef.current.layout.xaxis.range },
+                yaxis: { range: plotRef.current.layout.yaxis.range },
+            };
+
+            // Set the scrollZoom configuration based on the new drag mode
+            const config = {
+                displayModeBar: false,
+                doubleClick: false,
+                scrollZoom: newDragMode === 'pan' };
+
+            // Use Plotly.react to update the axis ranges and scrollZoom
+            Plotly.react(plotRef.current, plotRef.current.data, currentLayout, config);
+        });
+    }
+
+    function setPlotlyDragMode2(newDragMode) {
 
         console.log(`Plotly drag mode set to: ${newDragMode}`);
 
@@ -136,37 +169,49 @@ const App = () => {
             //if we don't use scrollzoom just use
             //Plotly.relayout(plotRef.current, { dragmode: newDragMode });
 
-
+            
+            //Giving up on scrollZoom for now this shit is too much of a hassle
+            
             // Get the current layout of the plot
-            const currentLayout = plotRef.current._fullLayout;
-
-            const updatedLayout = {
-                ...currentLayout,
-                dragmode: newDragMode,
-                xaxis: { range: currentLayout.xaxis.range },
-                yaxis: { range: currentLayout.yaxis.range },
-            };
-
+            const currentLayout = plotRef.current_fullLayout;
 
             // Set the scrollZoom configuration based on the new drag mode
-            const config = { scrollZoom: newDragMode === 'pan' };
+            const config = { 
+                scrollZoom: newDragMode === 'pan',
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
+                displaylogo: false,
+                doubleClick: false,
+            };
 
             // Use Plotly.react to update the axis ranges and scrollZoom
+            console.log("here?");
+            console.log(plotRef.current.on);
             Plotly.react(
-
-                plotRef.current, 
                 
+                plotRef.current, 
+
                 plotRef.current.data, 
                 
-                updatedLayout,
+                {
+                    annotations: plotRef.current.layout.annotations,
+                    dragmode: newDragMode,
+                    margin: plotRef.current.layout.margin,
+                    shapes: plotRef.current.layout.shapes,
+                    xaxis: { range: plotRef.current.layout.xaxis.range },
+                    yaxis: { range: plotRef.current.layout.yaxis.range },
+                    title: plotRef.current.layout.title,
+
+                }, 
                 
-                updateConfig
+                config
             );
+            console.log("there?");
 
+            
 
-
+            
         });
-
     }
 
     function launchVideoMode() {
@@ -200,9 +245,6 @@ const App = () => {
 
 
     
-
-
-
     return (
         <div style={styles.container}>
             <h2>Upload CSV to Create Synced Plots</h2>
@@ -233,7 +275,7 @@ const App = () => {
                 appMode={appMode}
             />
 
-                    <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} hasVideo={hasVideo} syncZoom={syncZoom} />
+            <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} hasVideo={hasVideo} syncZoom={syncZoom} />
 
             </>
         
@@ -241,6 +283,7 @@ const App = () => {
            
         </div>
     );
+    
 };
 
 const styles = {

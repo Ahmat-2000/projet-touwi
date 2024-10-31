@@ -29,11 +29,9 @@ const Signal = ({ propsData }) => {
                 }, 
                 
                 {
-                    displayModeBar: true,
-                    modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
-                    displaylogo: false,
-                    doubleClick: false,
                     scrollZoom: false,
+                    displayModeBar: false,
+                    doubleClick: false,
                 }
             
             );
