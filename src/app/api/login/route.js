@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
-import bcrypt from 'bcrypt'; 
+import bcrypt from 'bcrypt';
 
 export async function POST(request) {
   const { username, password } = await request.json();
@@ -10,7 +10,7 @@ export async function POST(request) {
   }
 
   // Vérification des informations d'identification
-  if (username == "test" && password == "test") {
+  if (username == "user" && password == "user") {
     // Créer un token JWT avec l'ID de l'utilisateur avec payload `sub`
     const token = await new SignJWT({ sub: 2 })
       .setProtectedHeader({ alg: 'HS256' })

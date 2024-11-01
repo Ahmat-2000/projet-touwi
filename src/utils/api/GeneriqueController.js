@@ -40,13 +40,12 @@ export class GenericController {
 
     async create(request) {
         try {
-            const method = request.method.toUpperCase();
             const body = await request.json();
 
             if (!body) return NextResponse.json({ message: 'Body is required.' }, { status: 400 });
 
             // Validation of required fields
-            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, method) : [];
+            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, "POST") : [];
             if (errors.length > 0) return NextResponse.json({ errors }, { status: 400 });
 
             // Create the element
@@ -64,7 +63,6 @@ export class GenericController {
     async update(request, params) {
         try {
             const { id } = params;
-            const method = request.method.toUpperCase();
             const body = await request.json();
 
             if (!id) return NextResponse.json({ message: 'Id is required.' }, { status: 400 });
@@ -72,7 +70,7 @@ export class GenericController {
             if (!body) return NextResponse.json({ message: 'Body is required.' }, { status: 400 });
 
             // Validation of required fields
-            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, method) : [];
+            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, "PUT") : [];
             if (errors.length > 0) return NextResponse.json({ errors }, { status: 400 });
 
             // Update the element
