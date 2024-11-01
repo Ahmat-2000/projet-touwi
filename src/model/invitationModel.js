@@ -1,7 +1,7 @@
 
 // Purpose: DTO for user model. 
 // We use DTOs to hide some fields from the client in the response.
-export class invitationDTO {
+export class InvitationDTO {
     constructor(invitation) {
         this.id = invitation.id;
         this.workspace_id = invitation.workspace_id;
@@ -12,8 +12,8 @@ export class invitationDTO {
 }
 
 export const invitationFieldValidations = [
-    { field: 'workspace_id', required: true, type: 'string' },
-    { field: 'owner_id', required: true, type: 'string' },
-    { field: 'role_id', required: true, type: 'string' },
-    { field: 'shared_with_id', required: true, type: 'string' }
+    { field: 'workspace_id', required: true, type: 'number', applyTo: ['POST'] },
+    { field: 'owner_id', required: true, type: 'number', applyTo: [ ] },
+    { field: 'role_id', required: true, type: 'number', applyTo: ['POST'] },
+    { field: 'shared_with_id', required: true, type: 'number', applyTo: ['POST'] }
 ];

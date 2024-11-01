@@ -10,7 +10,7 @@ export class UserDTO {
 }
 
 export const userFieldValidations = [
-    { field: 'username', required: true, type: 'string' },
-    { field: 'password', required: true, type: 'string' },
-    { field: 'is_admin', required: false, type: 'boolean' }
+    { field: 'username', required: true, type: 'string', applyTo: ['POST', 'PUT'] },
+    { field: 'password', required: true, type: 'string', applyTo: ['POST'] },
+    { field: 'is_admin', required: false, type: 'boolean', applyTo: ['POST', 'PUT'] }
 ];

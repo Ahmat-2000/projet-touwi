@@ -1,0 +1,8 @@
+// app/api/protected/invitation/accept/[id]/route.js
+import { InvitationHandler } from '@/utils/api/InvitationHandler';
+
+const invitationHandler = new InvitationHandler();
+
+export async function POST(request, { params }) {
+    return invitationHandler.accept(params);
+}

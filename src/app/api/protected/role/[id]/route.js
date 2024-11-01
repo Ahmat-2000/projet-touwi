@@ -1,10 +1,10 @@
 // app/api/protected/user/[id]/route.js
 import { PrismaClient } from '@prisma/client';
-import { roleFieldValidations, roleDTO } from '@/model/roleModel';
-import { GenericController } from '@/services/api/GeneriqueController';
+import { roleFieldValidations, RoleDTO } from '@/model/roleModel';
+import { GenericController } from '@/utils/api/GeneriqueController';
 
 const prisma = new PrismaClient();
-const roleController = new GenericController(prisma.role, roleDTO, roleFieldValidations);
+const roleController = new GenericController(prisma.role, RoleDTO, roleFieldValidations);
 
 export async function GET(request, { params }) {
     return roleController.getById(params);

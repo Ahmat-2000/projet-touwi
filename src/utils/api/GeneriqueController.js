@@ -3,10 +3,10 @@ import { NextResponse } from 'next/server';
 import { validateFields } from '@/services/api/ValidationService';
 
 export class GenericController {
-    constructor(prismaModel, fieldValidations, DTO) {
+    constructor(prismaModel, DTO, fieldValidations) {
         this.prismaModel = prismaModel;
-        this.fieldValidations = fieldValidations;
         this.DTO = DTO;
+        this.fieldValidations = fieldValidations;
     }
 
     async getAll() {
@@ -40,12 +40,13 @@ export class GenericController {
 
     async create(request) {
         try {
+            const method = request.method.toUpperCase();
             const body = await request.json();
 
             if (!body) return NextResponse.json({ message: 'Body is required.' }, { status: 400 });
 
             // Validation of required fields
-            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations) : [];
+            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, method) : [];
             if (errors.length > 0) return NextResponse.json({ errors }, { status: 400 });
 
             // Create the element
@@ -63,6 +64,7 @@ export class GenericController {
     async update(request, params) {
         try {
             const { id } = params;
+            const method = request.method.toUpperCase();
             const body = await request.json();
 
             if (!id) return NextResponse.json({ message: 'Id is required.' }, { status: 400 });
@@ -70,7 +72,7 @@ export class GenericController {
             if (!body) return NextResponse.json({ message: 'Body is required.' }, { status: 400 });
 
             // Validation of required fields
-            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations) : [];
+            const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, method) : [];
             if (errors.length > 0) return NextResponse.json({ errors }, { status: 400 });
 
             // Update the element
@@ -94,9 +96,12 @@ export class GenericController {
 
             if (!id) return NextResponse.json({ message: 'Id is required.' }, { status: 400 });
 
+            // Element not found
+            const item = await this.prismaModel.findUnique({ where: { id: parseInt(id) } });
+            if (!item) return NextResponse.json({ message: 'Element not found.' }, { status: 404 });
+
             // Delete the element
             await this.prismaModel.delete({ where: { id: parseInt(id) } });
-
             return NextResponse.json({ message: 'Element deleted.' }, { status: 200 });
         } catch (error) {
             console.error(error);

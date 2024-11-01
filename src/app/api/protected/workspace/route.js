@@ -1,11 +1,11 @@
 // app/api/protected/workspace/route.js
 import { PrismaClient } from '@prisma/client';
-import { workspaceFieldValidations, workspaceDTO } from '@/model/workspaceModel';
-import { GenericController } from '@/services/api/GeneriqueController';
+import { workspaceFieldValidations, WorkspaceDTO } from '@/model/workspaceModel';
+import { GenericController } from '@/utils/api/GeneriqueController';
 
 
 const prisma = new PrismaClient();
-const workspaceController = new GenericController(prisma.workspace, workspaceDTO, workspaceFieldValidations);
+const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO, workspaceFieldValidations);
 
 
 export async function GET(request) {
@@ -13,5 +13,10 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  return workspaceController.create(request);
+  const body = await request.json();
+
+  // Create a new path for the workspace
+  body.path = "uuid_workspace"; // TODO : Generate a UUID for the workspace
+
+  return workspaceController.create({ json: () => Promise.resolve(body) });
 }

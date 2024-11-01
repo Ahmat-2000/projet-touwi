@@ -11,7 +11,7 @@ export class UserRoleDTO {
 }
 
 export const userRoleFieldValidations = [
-    { field: 'user_id', required: true, type: 'string' },
-    { field: 'role_id', required: true, type: 'string' },
-    { field: 'workspace_id', required: true, type: 'string' }
+    { field: 'user_id', required: true, type: 'number', applyTo: ['POST'] },
+    { field: 'role_id', required: true, type: 'number', applyTo: ['POST', 'PUT'] },
+    { field: 'workspace_id', required: true, type: 'number', applyTo: ['POST'] }
 ];
