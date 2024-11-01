@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt'; // Assurez-vous d'utiliser bcrypt pour le hachage des mots de passe
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
