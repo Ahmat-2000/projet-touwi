@@ -5,7 +5,7 @@ import Plot from './Plot';
 import Plotly from 'plotly.js-dist';
 
 
-const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom }) => {
+const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
@@ -65,7 +65,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
             if (hasVideo) {
-                video.currentTime = xValue / 1000; // might be (xValue - videoStartTimestamp) / 1000 if we are using tstamps
+                const video = videoRef.current;
+                const videoDuration = video.duration; // Get video duration in seconds
+                const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
+                
+                // Convert signal index to video time using linear mapping
+                const videoTime = (xValue / signalLength) * videoDuration;
+                
+                // Set video current time
+                video.currentTime = videoTime;
+                console.log(`Jumping to video time: ${videoTime}s`);
             }
         }
 
@@ -88,7 +97,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
-                highlightFlag( xValue);
+                highlightFlag( xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
             }
 
 
@@ -120,74 +129,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         
     }
 
-    function highlightFlag(xValue) {
 
-        const shape = {
-            type: 'line',
-            x0: xValue,
-            x1: xValue,
-            y0: 0,
-            y1: 1,
-            xref: 'x',
-            yref: 'paper',
-            line: {
-                width: 1,
-                color: 'blue',
-                dash: 'dashdot'
-            },
-        };
-
-        const annotation = {
-            x: xValue, //+ 3000,
-            /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
-            from 1 to 30_000 but 1.464T to 1.513T so text need 3000 to move a bit to the right of the flag bar
-            @Antoine
-            */
-            y: 1, // Adjust this value to position the text on the y-axis
-            xref: 'x',
-            yref: 'paper',
-            text: 'Default Text', // Your default text here
-            showarrow: false,
-            font: {
-                size: 12,
-                color: 'black'
-            },
-            bordercolor: 'grey',
-            borderwidth: 2,
-            borderpad: 4,
-            align: 'left',
-            valign: 'middle',
-
-        };
-
-        plotList.current.forEach(plotRef =>{
-            Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
-        });
-
-    }
-
-
-    function deleteRegion(plotList, xValue) {
-
-
-        // Find the region that contains the clicked xValue
-        let regionIndex = plotList.current[0].current.layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
-        if (regionIndex !== -1) {
-            // Remove the region from both layout.shapes and selections
-            plotList.current.forEach(plotRef => {
-                plotRef.current.layout.shapes.splice(regionIndex, 1);
-            });
-
-            selections.splice(regionIndex, 1);
-
-            // Update the shapes on the plots
-            plotList.current.forEach(plotRef => {
-                Plotly.relayout(plotRef.current, { shapes: plotRef.current.layout.shapes, annotations: plotRef.current.layout.annotations });
-            });
-
-            console.log(`Region removed at x: ${xValue}`);
-        }
-    }
+    
 
     function handlePlotHover (eventData) {
         const xValue = eventData.points[0].x;

@@ -1,12 +1,10 @@
-
 import App from './components/App';
-import VideoSignalSync from './components/tmp/VideoSignalSync';
 
 export default function Home() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>Plotly.js Demo</h1>
-      <App />
+      <App/>
     </div>
   );
 }

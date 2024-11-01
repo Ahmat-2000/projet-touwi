@@ -10,7 +10,7 @@ import CSVUpload from './CSVUpload';
 import VideoControls from './VideoControls';
 import Plotly from 'plotly.js-dist';
 
-const App = () => {
+const App = ({ hasVideo = true }) => {
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
 
@@ -20,8 +20,8 @@ const App = () => {
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
-    const [hasVideo, setHasVideo] = useState(null); // Check if video is on or off
-    
+    const prevMidPointRef = useRef(null);
+    const [prevMidPoint, setPrevMidPoint] = useState(null);
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
@@ -160,60 +160,6 @@ const App = () => {
         });
     }
 
-    function setPlotlyDragMode2(newDragMode) {
-
-        console.log(`Plotly drag mode set to: ${newDragMode}`);
-
-        plotList.current.forEach((plotRef) => {
-
-            //if we don't use scrollzoom just use
-            //Plotly.relayout(plotRef.current, { dragmode: newDragMode });
-
-            
-            //Giving up on scrollZoom for now this shit is too much of a hassle
-            
-            // Get the current layout of the plot
-            const currentLayout = plotRef.current_fullLayout;
-
-            // Set the scrollZoom configuration based on the new drag mode
-            const config = { 
-                scrollZoom: newDragMode === 'pan',
-                displayModeBar: true,
-                modeBarButtonsToRemove: ['zoom', 'pan', 'toImage', 'sendDataToCloud', 'autoScale2d', 'resetScale2d'],
-                displaylogo: false,
-                doubleClick: false,
-            };
-
-            // Use Plotly.react to update the axis ranges and scrollZoom
-            console.log("here?");
-            console.log(plotRef.current.on);
-            Plotly.react(
-                
-                plotRef.current, 
-
-                plotRef.current.data, 
-                
-                {
-                    annotations: plotRef.current.layout.annotations,
-                    dragmode: newDragMode,
-                    margin: plotRef.current.layout.margin,
-                    shapes: plotRef.current.layout.shapes,
-                    xaxis: { range: plotRef.current.layout.xaxis.range },
-                    yaxis: { range: plotRef.current.layout.yaxis.range },
-                    title: plotRef.current.layout.title,
-
-                }, 
-                
-                config
-            );
-            console.log("there?");
-
-            
-
-            
-        });
-    }
-
     function launchVideoMode() {
         console.log('Video Mode launched');
 
@@ -221,9 +167,12 @@ const App = () => {
 
     function syncZoom(eventdata, plotRefList) {
 
-        console.log('//', plotRefList);
-        console.log(plotRefList.current);
-        console.log(plotRefList[0]);
+        console.log('prevMidPointRef:', prevMidPointRef);
+
+        if (prevMidPointRef.current !== null) {
+            //delete the previous flag
+            deleteRegion(propsData.plotList, prevMidPointRef.current);
+        }
 
         //get the x and y range of the plot
         const layoutUpdate = {
@@ -234,14 +183,90 @@ const App = () => {
         //update the x and y range of the other plots
         if (eventdata['xaxis.range[0]'] !== undefined) {
 
-            console.log('?');
+            const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
+
+            prevMidPointRef.current = midPoint;
+
             plotRefList.forEach((plotRef) => {
                 Plotly.relayout(plotRef.current, layoutUpdate);
+
+                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
+
+
             });
-
-
         }
     };
+
+    function highlightFlag(xValue, style, text) {
+
+        const shape = {
+            type: 'line',
+            x0: xValue,
+            x1: xValue,
+            y0: 0,
+            y1: 1,
+            xref: 'x',
+            yref: 'paper',
+            line: style,
+        };
+
+        const annotation = {
+            x: xValue, //+ 3000,
+            /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
+            from 1 to 30_000 but 1.464T to 1.513T so text need 3000 to move a bit to the right of the flag bar
+            @Antoine
+            */
+            y: 1, // Adjust this value to position the text on the y-axis
+            xref: 'x',
+            yref: 'paper',
+            text: text,
+            showarrow: false,
+            font: {
+                size: 12,
+                color: 'black'
+            },
+            bordercolor: 'grey',
+            borderwidth: 2,
+            borderpad: 4,
+            align: 'left',
+            valign: 'middle',
+
+        };
+
+        plotList.current.forEach(plotRef => {
+            Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
+        });
+
+    }
+
+    function deleteRegion(plotList, xValue) {
+        // Find the region that contains the clicked xValue
+        let regionIndex = plotList.current[0].current.layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
+        if (regionIndex !== -1) {
+            // Remove the region from both layout.shapes and selections
+            plotList.current.forEach(plotRef => {
+                plotRef.current.layout.shapes.splice(regionIndex, 1);
+                
+                // Check if there is a corresponding annotation before deleting
+                if (plotRef.current.layout.annotations && 
+                    plotRef.current.layout.annotations.length > regionIndex) {
+                    plotRef.current.layout.annotations.splice(regionIndex, 1);
+                }
+            });
+
+            selections.splice(regionIndex, 1);
+
+            // Update the shapes and annotations on the plots
+            plotList.current.forEach(plotRef => {
+                Plotly.relayout(plotRef.current, { 
+                    shapes: plotRef.current.layout.shapes,
+                    annotations: plotRef.current.layout.annotations || []
+                });
+            });
+
+            console.log(`Region and any associated annotation removed at x: ${xValue}`);
+        }
+    }
 
 
     
@@ -252,33 +277,44 @@ const App = () => {
                 (please use modified file published on discord or remove the last line in csv file if blank)
             </p>
 
-            <VideoControls propsData={{
-                pathVideo: '/images/placeholder.webm',
-                plotList: plotList,
-                syncZoom: syncZoom,
-                videoRef: videoRef,
-            }} />
+            {hasVideo && (
+                <VideoControls propsData={{
+                    pathVideo: '/images/placeholder.webm',
+                    plotList: plotList,
+                    syncZoom: syncZoom,
+                    videoRef: videoRef,
+                    highlightFlag: highlightFlag,
+                    deleteRegion: deleteRegion
+                }} />
+            )}
 
             <CSVUpload parseCSV={parseCSV} error={error} />
 
             {temporaryData.length > 0 && (
                 <>
+                    <ControlPanel
+                        resetZoom={resetZoom}
+                        resetMode={() => setAppMode('None')}
+                        resetEvents={resetEvents}
+                        voidPlots={voidPlots}
+                        plotList={plotList}
+                        setAppMode={setAppMode}
+                        setPlotlyDragMode={setPlotlyDragMode}
+                        appMode={appMode}
+                    />
 
-            <ControlPanel
-                resetZoom={resetZoom}
-                resetMode={() => setAppMode('None')}
-                resetEvents={resetEvents}
-                voidPlots={voidPlots}
-                plotList={plotList}
-                setAppMode={setAppMode}
-                setPlotlyDragMode={setPlotlyDragMode}
-                appMode={appMode}
-            />
-
-            <Graph temporaryData={temporaryData} plotList={plotList} appMode={appMode} setAppMode={setAppMode} hasVideo={hasVideo} syncZoom={syncZoom} />
-
-            </>
-        
+                    <Graph 
+                        temporaryData={temporaryData} 
+                        plotList={plotList} 
+                        appMode={appMode} 
+                        setAppMode={setAppMode} 
+                        hasVideo={hasVideo} 
+                        syncZoom={syncZoom}
+                        videoRef={videoRef}
+                        highlightFlag={highlightFlag}
+                        deleteRegion={deleteRegion}
+                    />
+                </>
             )}
            
         </div>

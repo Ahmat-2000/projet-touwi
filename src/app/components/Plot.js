@@ -66,7 +66,19 @@ const Signal = ({ propsData }) => {
         }
 
         // Add event listeners for plot interactions
-        plotRef.current.on('plotly_click',    (eventData) => propsData.handlePlotClick(eventData));
+        plotRef.current.on('plotly_click', (eventData) => {
+            if (propsData.videoRef && propsData.videoRef.current) {
+                const clickedTime = eventData.points[0].x;
+                // Convert timestamp to video time (assuming timestamp is in milliseconds)
+                const videoTime = clickedTime / 1000;
+                propsData.videoRef.current.currentTime = videoTime;
+            }
+            // Call the original click handler if it exists
+            if (propsData.handlePlotClick) {
+                propsData.handlePlotClick(eventData);
+            }
+        });
+
         plotRef.current.on('plotly_relayout', (eventData) => propsData.handleRelayout(eventData, propsData.plotRefList));
 
         if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
