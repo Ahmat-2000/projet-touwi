@@ -61,6 +61,7 @@ Vous devez créer un fichier `.env` à la racine du projet et y définir les var
 
 ```bash
 BACKEND_API_URL=http://localhost:3000/api
+JWT_SECRET=( SECRET_COMPLIQUÉ )
 
 MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT )
 MYSQL_DATABASE=chronos
