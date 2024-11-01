@@ -60,7 +60,6 @@ export async function middleware(request) {
     }
 
     return NextResponse.next(); // Allow access to the requested route if all checks pass
-
   } catch (err) {
     console.error(err); // Log any errors that occur during JWT verification or processing
     return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login if an error occurs

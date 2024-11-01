@@ -19,7 +19,7 @@ export async function POST(request) {
 
   // Vérification des informations d'identification
   if (user && await bcrypt.compare(password, user.password)) {
-$    // Créer un token JWT avec l'ID de l'utilisateur (payload.sub)
+    // Créer un token JWT avec l'ID de l'utilisateur (payload.sub)
     const token = await new SignJWT({ sub: user }) // Utiliser l'ID de l'utilisateur pour le champ `sub`
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('1h')
