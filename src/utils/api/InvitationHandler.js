@@ -14,7 +14,7 @@ export class InvitationHandler {
     }
     
     async handleInvitationAction(params, actionType) {
-        const user = { id: 2 }; // À remplacer par la récupération réelle de l’utilisateur depuis le token
+        const user = { id: 2 }; // TODO : To replace with the actual user
 
         const { id } = params;
 
