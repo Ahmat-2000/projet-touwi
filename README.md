@@ -61,13 +61,13 @@ Vous devez créer un fichier `.env` à la racine du projet et y définir les var
 
 ```bash
 BACKEND_API_URL=http://localhost:3000/api
-JWT_SECRET=( SECRET_COMPLIQUÉ )
+JWT_SECRET=( SEED_POUR_GERER_LES_JETONS )
 
 MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT )
 MYSQL_DATABASE=chronos
 MYSQL_USER=chronos_user
 MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER )
-JWT_SECRET=( SEED_POUR_GERER_LES_JETONS )
+
 # Ne pas modifier la suite :
 DB_HOST=mariadb
 DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@${DB_HOST}:3306/${MYSQL_DATABASE}

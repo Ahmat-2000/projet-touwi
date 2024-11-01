@@ -12,7 +12,6 @@ import permissionsConfig from '@/app/api/permissionsConfig';
 export async function middleware(request) {
   // Retrieve the JWT from cookies
   const token = request.cookies.get('token')?.value;
-  console.log("Token:", token);
   
   // Check if the token is missing
   if (!token) {
