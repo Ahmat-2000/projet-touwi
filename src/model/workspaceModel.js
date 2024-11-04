@@ -5,6 +5,7 @@ export class WorkspaceDTO {
     constructor(workspace) {
         this.id = workspace.id;
         this.name = workspace.name;
+        this.path = workspace.path;
     }
 }
 
