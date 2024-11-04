@@ -1,4 +1,4 @@
-import { prisma } from '@prisma/client';
+import prisma from "@/lib/prisma";
 
 /**
  * Génére une liste des permissions pour un utilisateur donné dans un workspace spécifique.

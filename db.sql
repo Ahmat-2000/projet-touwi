@@ -5,7 +5,6 @@ CREATE TABLE `Workspace` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `path` VARCHAR(255) NOT NULL,
-  CONSTRAINT unique_workspace_name UNIQUE (`name`),  -- Contrainte d'unicité sur le nom du Workspace
   CONSTRAINT unique_workspace_path UNIQUE (`path`)   -- Contrainte d'unicité sur le chemin (path)
 );
 

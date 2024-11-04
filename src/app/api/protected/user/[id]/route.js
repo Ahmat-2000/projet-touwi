@@ -1,9 +1,8 @@
 // app/api/protected/user/[id]/route.js
-import { PrismaClient } from '@prisma/client';
 import { userFieldValidations, UserDTO } from '@/model/userModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const userController = new GenericController(prisma.user, UserDTO, userFieldValidations);
 
 export async function GET(request, { params }) {
