@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 const workspacesPath = path.join(process.cwd(), 'workspaces');
 
+if(!fs.existsSync(workspacesPath)) fs.mkdirSync(workspacesPath, { recursive: true });
+
 /**
  * Get a workspace
  * @param {string} path The path of the workspace
