@@ -1,8 +1,6 @@
 // services/api/InvitationHandler.js
-import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
+import prisma from '@/lib/prisma';
 
 export class InvitationHandler {
     async accept(params) {

@@ -1,10 +1,9 @@
 // app/api/protected/workspace/route.js
-import { PrismaClient } from '@prisma/client';
 import { workspaceFieldValidations, WorkspaceDTO } from '@/model/workspaceModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
 import { createWorkspace } from '@/services/api/WorkspaceDiskService';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO, workspaceFieldValidations);
 
 
