@@ -1,18 +1,18 @@
 // Graph.js
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Plot from './Plot';
 import Plotly from 'plotly.js-dist';
 
 
-const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
+const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, syncVideo, highlightFlag, deleteRegion }, ref) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
     const appModeRef = useRef(appMode);
 
     useEffect(() => {
-        appModeRef.current = appMode;
+        appModeRef.current = appMode;   
     }, [appMode]);
 
 
@@ -57,24 +57,17 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
     function handlePlotClick (eventData) {
         const xValue = eventData.points[0].x;
-
         const currentAppMode = appModeRef.current;
+ 
+        syncVideo(xValue)
+
 
         console.log(`Clicked at x: ${xValue} App mode: ${currentAppMode}`);
 
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
             if (hasVideo) {
-                const video = videoRef.current;
-                const videoDuration = video.duration; // Get video duration in seconds
-                const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
-                
-                // Convert signal index to video time using linear mapping
-                const videoTime = (xValue / signalLength) * videoDuration;
-                
-                // Set video current time
-                video.currentTime = videoTime;
-                console.log(`Jumping to video time: ${videoTime}s`);
+                videoRef.current.handlePlotClick(xValue)
             }
         }
 
@@ -100,11 +93,10 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 highlightFlag( xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
             }
 
-
         }
     };
 
-    function highlightRegion(start, end) {
+    function highlightRegion(start, end, color='rgba(255, 0, 0, 0.35)') {
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -117,7 +109,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             y1: 1,
             xref: 'x',
             yref: 'paper',
-            fillcolor: 'rgba(255, 0, 0, 0.35)',
+            fillcolor: color,
             line: {
                 width: 0
             }
@@ -126,7 +118,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
+
+        return shape
         
+    }
+
+    function deleteHighlight(shape) {
+        plotList.current.forEach(plotRef => {
+            const currentShapes = plotRef.current.layout.shapes.filter(highlights => highlights !== shape);
+            Plotly.relayout(plotRef.current, { shapes: currentShapes });
+        });
     }
 
 
@@ -172,6 +173,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         
     }
 
+    useImperativeHandle(ref, () => ({
+        highlightRegion, 
+        deleteHighlight
+    }));
+
 
     return (
 
@@ -191,8 +197,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         
 
         </div>
-);
-};
+    );
+});
 
 const styles = {
     plotContainer: {

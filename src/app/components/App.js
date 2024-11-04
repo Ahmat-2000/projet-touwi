@@ -25,6 +25,7 @@ const App = ({ hasVideo = true }) => {
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
+    const graphRef = useRef(null);
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -160,19 +161,18 @@ const App = ({ hasVideo = true }) => {
         });
     }
 
-    function launchVideoMode() {
-        console.log('Video Mode launched');
-
+    function syncVideo(idx) {
+        videoRef.current.syncVideo(idx, temporaryData[0])
     }
 
     function syncZoom(eventdata, plotRefList) {
 
         console.log('prevMidPointRef:', prevMidPointRef);
 
-        if (prevMidPointRef.current !== null) {
-            //delete the previous flag
-            deleteRegion(propsData.plotList, prevMidPointRef.current);
-        }
+        // if (prevMidPointRef.current !== null) {
+        //     //delete the previous flag
+        //     deleteRegion(propsData.plotList, prevMidPointRef.current);
+        // }
 
         //get the x and y range of the plot
         const layoutUpdate = {
@@ -278,14 +278,20 @@ const App = ({ hasVideo = true }) => {
             </p>
 
             {hasVideo && (
-                <VideoControls propsData={{
-                    pathVideo: '/images/placeholder.webm',
-                    plotList: plotList,
-                    syncZoom: syncZoom,
-                    videoRef: videoRef,
-                    highlightFlag: highlightFlag,
-                    deleteRegion: deleteRegion
-                }} />
+                <VideoControls 
+                    ref={videoRef}
+                    propsData={{
+                        pathVideo: '/images/placeholder.webm',
+                        plotList: plotList,
+                        syncZoom: syncZoom,
+                        graphRef:graphRef,
+                        timelist:temporaryData[0],
+                        resetMode:resetMode,
+                        highlightFlag: highlightFlag,
+                        deleteRegion: deleteRegion,
+                        appMode:appMode
+                    }} 
+                />
             )}
 
             <CSVUpload parseCSV={parseCSV} error={error} />
@@ -304,15 +310,18 @@ const App = ({ hasVideo = true }) => {
                     />
 
                     <Graph 
+                        ref={graphRef}
                         temporaryData={temporaryData} 
                         plotList={plotList} 
                         appMode={appMode} 
                         setAppMode={setAppMode} 
                         hasVideo={hasVideo} 
                         syncZoom={syncZoom}
+                        syncVideo={syncVideo}
                         videoRef={videoRef}
                         highlightFlag={highlightFlag}
                         deleteRegion={deleteRegion}
+
                     />
                 </>
             )}

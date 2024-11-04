@@ -1,19 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 
-const VideoControls = ({ propsData }) => {
+const VideoControls = forwardRef(({ propsData }, ref) => {
 
-    const videoRef = propsData.videoRef;
+    const videoElementRef = useRef(null);
+
+    const timeUpdateHandlerRef = useRef(null);
+
+    const appModeRef = useRef(propsData.appMode);
+
+    const highlightedVideoPart = useRef(null);
+
+    useEffect(() => {
+        appModeRef.current = propsData.appMode;   
+    }, [propsData.appMode]);
+
     const [, forceUpdate] = useState({});
 
     const adjustSpeed = (increment) => {
         try {
-            const currentSpeed = videoRef.current.playbackRate;
+            const currentSpeed = videoElementRef.playbackRate;
             let newSpeed = increment ? currentSpeed * 2 : currentSpeed / 2;
              
             // Limit the speed between 0.1 and 16
             newSpeed = Math.min(16, Math.max(0.1, newSpeed));
             
-            videoRef.current.playbackRate = newSpeed;
+            videoElementRef.playbackRate = newSpeed;
             forceUpdate({});
         } catch (error) {
             console.warn('Playback speed not supported:', error);
@@ -21,7 +32,7 @@ const VideoControls = ({ propsData }) => {
     };
 
     const resetSpeed = () => {
-        videoRef.current.playbackRate = 1;
+        videoElementRef.playbackRate = 1;
         forceUpdate({});
     };
 
@@ -58,77 +69,108 @@ const VideoControls = ({ propsData }) => {
         transition: 'background-color 0.2s',
     };
 
-    useEffect(() => {
-        const handleKeydown = (event) => {
-            // Ensure video element is defined
-            if (!videoRef) return;
+    const cropVideo = (start, end) => {
+        const video = videoElementRef.current;
 
-            // Base jump time in seconds
-            const baseJumpTime = 0.5;
-            // Scale jump by playback rate (faster playback = bigger jumps)
-            const scaledJumpTime = baseJumpTime * videoRef.current.playbackRate;
+        if (video) {
 
-            switch (event.code) {
-                case 'Space':
-                    event.preventDefault();
-                    videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
-                    break;
-                case 'ArrowLeft':
-                    event.preventDefault();
-                    videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - scaledJumpTime);
-                    videoRef.current.pause();
-                    break;
-                case 'ArrowRight':
-                    event.preventDefault();
-                    videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + scaledJumpTime);
-                    videoRef.current.pause();
-                    break;
-                default:
-                    break;
+            if (timeUpdateHandlerRef.current) {
+                video.removeEventListener('timeupdate', timeUpdateHandlerRef.current);
             }
-        };
 
-        // Add event listener for keydown
-        window.addEventListener('keydown', handleKeydown);
+            const handleTimeUpdate = () => {
+                if (video.currentTime >= end || video.currentTime <= start) {
+                    video.currentTime = start;
+                }
+            };
+            timeUpdateHandlerRef.current = handleTimeUpdate;
 
-        
+            video.addEventListener('timeupdate', handleTimeUpdate);
 
+            return () => {
+                video.removeEventListener('timeupdate', handleTimeUpdate);
+            };
+        }
+    };
 
-        //add an update function to the video to update the plot when currentTime changes
-        videoRef.current.addEventListener('timeupdate', () => {
-            
-            if (propsData.plotList.current.length > 0) {
-                const video = videoRef.current;
-                const currentVideoTime = video.currentTime;
-                const videoDuration = video.duration;
-                const signalLength = propsData.plotList.current[0].current.data[0].x.length;
+    function syncVideo(idx, timestampList) {
+
+        if (appModeRef.current === 'videoSync') {
+
+            timestampList = propsData.timelist.x
+
+            let endVideoTimestamp = findClosestNumber(timestampList, parseInt(timestampList[idx]) + ((videoElementRef.current.duration-videoElementRef.current.currentTime)*1000)) 
                 
-                // Convert video time to signal index using linear mapping
-                const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
-
-                const windowSize = 1000; // No exact idea what value this represents in seconds and/or points
-
-                const newLayout = {
-                    'xaxis.range[0]': currentSignalIndex - windowSize,
-                    'xaxis.range[1]': currentSignalIndex + windowSize,
-                    'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
-                    'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
-
-                };
-
-                propsData.syncZoom(newLayout, propsData.plotList.current);
+            let timestampData = {
+                synchronize : "true",
+                start : {
+                    'idx' : idx,
+                    'startVideoSync' : timestampList[idx],
+                    'startVideoTime' : videoElementRef.current.currentTime
+                },
+                end : {
+                    'idx' : timestampList.indexOf(endVideoTimestamp),
+                    'endVideoSync' : endVideoTimestamp,
+                    'endVideoTime' : videoElementRef.current.currentTime+((endVideoTimestamp-timestampList[idx])/1000)
+                }
+                
             }
-        });
+            localStorage.setItem('videoDelayIdx', JSON.stringify(timestampData))
+            
+            if (highlightedVideoPart.current) {propsData.graphRef.current.deleteHighlight(highlightedVideoPart.current)}
 
-        // Cleanup event listener on component unmount
-        return () => {
-            window.removeEventListener('keydown', handleKeydown);
-        };
-    }, []);
+ 
+            highlightedVideoPart.current = propsData.graphRef.current.highlightRegion(idx,timestampList.indexOf(endVideoTimestamp), 'rgba(255, 215, 0, 0.35)')
+            propsData.resetMode()
+
+            cropVideo(timestampData['start']['startVideoTime'],timestampData['end']['endVideoTime'])
+        }
+  
+    }
+
+    function findClosestNumber(arr, target) {
+        let left = 0;
+        let right = arr.length - 1;
+    
+        while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+            if (arr[mid] < target) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        
+        const closestIndex = left;
+        
+        let closest = arr[closestIndex];
+        if (closestIndex > 0) {
+            const leftNeighbor = arr[closestIndex - 1];
+            closest = Math.abs(leftNeighbor - target) < Math.abs(closest - target) ? leftNeighbor : closest;
+        }
+    
+        return closest; 
+    }
+
+    function handlePlotClick(xvalue) {
+        let ls = JSON.parse(localStorage.getItem('videoDelayIdx'))
+        if (ls.synchronize === "true") {
+            let timestampX = propsData.timelist.x[xvalue]
+            if (parseInt(ls.start.startVideoSync) <= timestampX && parseInt(ls.end.endVideoSync) >= timestampX) {
+                videoElementRef.current.currentTime = ((timestampX - (ls.start.startVideoSync))/1000)+ ls.start.startVideoTime
+            }
+        }
+    }
+
+
+    useImperativeHandle(ref, () => ({
+        syncVideo, 
+        handlePlotClick
+    }));
 
     return (
         <div>
-            <video ref={videoRef} id="syncVideo" width="600" height="400" controls>
+            <video ref={videoElementRef} id="syncVideo" width="600" height="400" controls>
                 <source src={propsData.pathVideo} type="video/webm" />
                 Your browser does not support the video tag.
             </video>
@@ -147,7 +189,7 @@ const VideoControls = ({ propsData }) => {
                     onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
                     onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
-                    {(videoRef.current && videoRef.current.playbackRate) ? videoRef.current.playbackRate.toFixed(2) : '1.00'}x
+                    {(videoElementRef && videoElementRef.playbackRate) ? videoElementRef.playbackRate.toFixed(2) : '1.00'}x
                 </span>
                 <button 
                     onClick={() => adjustSpeed(true)}
@@ -160,6 +202,6 @@ const VideoControls = ({ propsData }) => {
             </div>
         </div>
     );
-};
+});
 
 export default VideoControls;
