@@ -3,25 +3,33 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app
-      - /app/node_modules
+      args:
+        ENV: ${ENV}
+      target: ${ENV} # Cible du Dockerfile en fonction de l'environnement
     ports:
       - "3000:3000"
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${ENV}
     depends_on:
       mariadb:
         condition: service_healthy
-    command: > 
+    command: >
       sh -c "
-        npx prisma db pull &&
-        npx prisma generate &&
-        npx prisma migrate reset --force &&
-        npx prisma migrate dev --name 'init' &&
-        npm run dev
+        if [ '$ENV' = 'production' ]; then
+          npm install &&
+          npx prisma generate && 
+          npm run build &&
+          npm run start; 
+        elif [ '$ENV' = 'development' ]; then
+          npm install &&
+          npx prisma db pull &&
+          npx prisma generate &&
+          npx prisma migrate reset --force &&
+          npx prisma migrate dev --name 'init' &&
+          npm run dev; 
+        fi
       "
 
   mariadb:

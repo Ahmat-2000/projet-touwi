@@ -60,15 +60,17 @@ bun install
 Vous devez créer un fichier `.env` à la racine du projet et y définir les variables d'environnement suivantes en fonction de votre configuration :
 
 ```bash
-BACKEND_API_URL=http://localhost:3000/api
-JWT_SECRET=( SEED_POUR_GERER_LES_JETONS )
+ENV=( ENVIRONNEMENT ) # development / production
+BACKEND_API_URL=( URL_DE_VOTRE_API ) # Ex : http://localhost:3000/api
+JWT_SECRET=( SEED_POUR_GERER_LES_JETONS ) # Ex : secret
 
-MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT )
-MYSQL_DATABASE=chronos
-MYSQL_USER=chronos_user
-MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER )
+MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT ) # Ex : root (Utilisez root:root dans ce cas pour phpMyAdmin)
+MYSQL_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_CHRONOS_USER ) # Ex : chronos_password (Utilisez chronos_user:chronos_password dans ce cas pour phpMyAdmin)
 
 # Ne pas modifier la suite :
+MYSQL_DATABASE=chronos
+MYSQL_USER=chronos_user
+
 DB_HOST=mariadb
 DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@${DB_HOST}:3306/${MYSQL_DATABASE}
 ```
