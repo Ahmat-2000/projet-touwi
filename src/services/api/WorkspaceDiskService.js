@@ -56,7 +56,7 @@ export async function deleteWorkspace(path) {
         if (!fs.existsSync(path)) {
             return { message: 'Workspace not found.' };
         }
-        fs.rmdirSync(path, { recursive: true });
+        fs.rmdirSync(path, { recursive: true, force: true });
         return { message: `Workspace deleted successfully.` };
 
     } catch (error) {
