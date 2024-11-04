@@ -32,8 +32,8 @@ model Role {
   can_read               Boolean?     @default(false)
   can_write              Boolean?     @default(false)
   can_manage_invitations Boolean?     @default(false)
-  can_manage_workspace   Boolean?     @default(false)
   can_manage_users       Boolean?     @default(false)
+  can_manage_workspace   Boolean?     @default(false)
   Invitation             Invitation[]
   UserRole               UserRole[]
 }
