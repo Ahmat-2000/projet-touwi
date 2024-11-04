@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client';
 import { workspaceFieldValidations, WorkspaceDTO } from '@/model/workspaceModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
 
-
 const prisma = new PrismaClient();
 const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO, workspaceFieldValidations);
 
