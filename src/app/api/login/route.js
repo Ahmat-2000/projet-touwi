@@ -1,13 +1,26 @@
 import { NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+const prisma = new PrismaClient();
 
 export async function POST(request) {
   const { username, password } = await request.json();
 
-  // Vérification des informations d'identification en dur (à des fins de démonstration uniquement)
-  if (username === 'test' && password === 'test') {
-    // Créer un token JWT
-    const token = await new SignJWT({ username })
+  if (!username || !password) {
+    return NextResponse.json({ message: 'Veuillez fournir un nom d\'utilisateur et un mot de passe' }, { status: 400 });
+  }
+
+  // Récupérer l'utilisateur de la base de données
+  const user = await prisma.user.findUnique({
+    where: { username }, // Rechercher l'utilisateur par son nom d'utilisateur
+  });
+
+  // Vérification des informations d'identification
+  if (user && await bcrypt.compare(password, user.password)) {
+    // Créer un token JWT avec l'ID de l'utilisateur (payload.sub)
+    const token = await new SignJWT({ sub: user }) // Utiliser l'ID de l'utilisateur pour le champ `sub`
       .setProtectedHeader({ alg: 'HS256' })
       .setExpirationTime('1h')
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
