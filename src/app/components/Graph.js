@@ -1,8 +1,10 @@
 // Graph.js
+"use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import Plotly from 'plotly.js-basic-dist-min';
+
 import Plot from './Plot';
-import Plotly from 'plotly.js-dist';
 
 
 const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
@@ -17,6 +19,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
 
     useEffect(() => {
+        console.log('Graph useEffect');
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
 
@@ -80,7 +83,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
         // Handle the different modes
         if ( currentAppMode === 'delete') {
-            deleteRegion(plotList, xValue);
+            deleteRegion(plotList, xValue, false);
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
@@ -122,10 +125,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 width: 0
             }
         };
-
+        
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
+        
         
     }
 
@@ -148,6 +152,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
         }
         
+        // Create timestamp array from 0 to data length
         const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
         
@@ -165,18 +170,17 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             
         };
 
+        // Create new plot
         const newPlot = <Plot key={props.title} propsData={props} />;
 
-
+        // Add new plot to plots list
         setPlots([...plots, newPlot]);
         
     }
 
 
     return (
-
         <div>
-
             <div>
                 <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
             </div>
@@ -188,8 +192,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                     </div>
                 ))}
             </div>
-        
-
         </div>
 );
 };

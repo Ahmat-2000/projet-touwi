@@ -1,7 +1,12 @@
 // ControlPanel.js
-import React from 'react';
+"use client";
 
-const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, launchVideoMode }) => {
+import React from 'react';
+import Plotly from 'plotly.js-basic-dist-min';
+
+
+const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, hasVideo }) => {
+    
 
     return (
         <div>
@@ -22,7 +27,7 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
                 <button onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }} style={styles.button}>Delete</button>
 
                 <button onClick={() => { resetZoom(); }} style={styles.button}>Home</button>
-                <button onClick={() => { resetMode(); }} style={styles.button}>Reset Mode</button>
+                {hasVideo && <button onClick={() => { resetMode(); }} style={styles.button}>Reset Mode</button>}
 
                 <br />
 
@@ -39,8 +44,6 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
                 <span className="mode-indicator" style={styles.modeIndicator}>Mode :{appMode} </span>
 
             </div>
-
-            <button onClick={() => {launchVideoMode(); }} style={styles.button}>Video Mode</button>
         </div>
     );
 };

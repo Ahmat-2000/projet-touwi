@@ -1,9 +1,15 @@
+// VideoControls.js
+
 import React, { useEffect, useRef, useState } from 'react';
+import Plotly from 'plotly.js-basic-dist-min';
 
 const VideoControls = ({ propsData }) => {
 
+    
+
     const videoRef = propsData.videoRef;
     const [, forceUpdate] = useState({});
+    const [syncEnabled, setSyncEnabled] = useState(true);
 
     const adjustSpeed = (increment) => {
         try {
@@ -58,6 +64,38 @@ const VideoControls = ({ propsData }) => {
         transition: 'background-color 0.2s',
     };
 
+    const timeUpdateListener = () => {
+        if (propsData.plotList.current.length > 0) {
+            const video = videoRef.current;
+            const currentVideoTime = video.currentTime;
+            const videoDuration = video.duration;
+            const signalLength = propsData.plotList.current[0].current.data[0].x.length;
+            
+            // Convert video time to signal index using linear mapping
+            const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
+
+            const windowSize = 1000;
+
+            const newLayout = {
+                'xaxis.range[0]': currentSignalIndex - windowSize,
+                'xaxis.range[1]': currentSignalIndex + windowSize,
+                'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
+                'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
+            };
+
+            propsData.syncZoom(newLayout, propsData.plotList.current);
+        }
+    };
+
+    const toggleSync = () => {
+        if (syncEnabled) {
+            videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
+        } else {
+            videoRef.current.addEventListener('timeupdate', timeUpdateListener);
+        }
+        setSyncEnabled(!syncEnabled);
+    };
+
     useEffect(() => {
         const handleKeydown = (event) => {
             // Ensure video element is defined
@@ -94,37 +132,18 @@ const VideoControls = ({ propsData }) => {
         
 
 
-        //add an update function to the video to update the plot when currentTime changes
-        videoRef.current.addEventListener('timeupdate', () => {
-            
-            if (propsData.plotList.current.length > 0) {
-                const video = videoRef.current;
-                const currentVideoTime = video.currentTime;
-                const videoDuration = video.duration;
-                const signalLength = propsData.plotList.current[0].current.data[0].x.length;
-                
-                // Convert video time to signal index using linear mapping
-                const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
-
-                const windowSize = 1000; // No exact idea what value this represents in seconds and/or points
-
-                const newLayout = {
-                    'xaxis.range[0]': currentSignalIndex - windowSize,
-                    'xaxis.range[1]': currentSignalIndex + windowSize,
-                    'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
-                    'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
-
-                };
-
-                propsData.syncZoom(newLayout, propsData.plotList.current);
-            }
-        });
+        if (syncEnabled) {
+            videoRef.current.addEventListener('timeupdate', timeUpdateListener);
+        }
 
         // Cleanup event listener on component unmount
         return () => {
             window.removeEventListener('keydown', handleKeydown);
+            if (videoRef.current) {
+                videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
+            }
         };
-    }, []);
+    }, [syncEnabled]);
 
     return (
         <div>
@@ -158,6 +177,17 @@ const VideoControls = ({ propsData }) => {
                     +
                 </button>
             </div>
+            <button 
+                onClick={toggleSync}
+                style={{
+                    ...buttonStyle,
+                    backgroundColor: syncEnabled ? '#4CAF50' : '#f44336',
+                    padding: '8px 16px',
+                    marginLeft: '10px'
+                }}
+            >
+                {syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+            </button>
         </div>
     );
 };
