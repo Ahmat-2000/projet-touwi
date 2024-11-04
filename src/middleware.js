@@ -51,10 +51,15 @@ export async function middleware(request) {
     const routePermissions = permissionsConfig[requestedPath]?.[requestMethod];
 
     // If route permissions are defined, check if the user has one of the required permissions
-    if (routePermissions && !routePermissions.some(role => permissions.includes(role))) {
+    let hasPermission = routePermissions.some(role => {
+      const hasRole = permissions.includes(role);
+      return hasRole;
+    });
+    
+    if (!hasPermission) {
       return NextResponse.json(
         { message: 'Access denied: insufficient permissions.' },
-        { status: 403 } // Return a 403 Forbidden status if permissions are insufficient
+        { status: 403 }
       );
     }
 

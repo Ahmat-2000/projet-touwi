@@ -11,13 +11,13 @@ export default {
   },
   "/api/protected/user_role": {
     "GET": ["admin", "user"],
-    "POST": ["admin", "can_manage_users"],
+    "POST": ["admin"],
     "PUT": ["admin", "can_manage_users"],
     "DELETE": ["admin", "can_manage_users"]
   },
   "/api/protected/workspace": {
     "GET": ["admin", "user"],
-    "POST": ["admin", "can_manage_workspace"],
+    "POST": ["admin", "user"],
     "PUT": ["admin", "can_manage_workspace"],
     "DELETE": ["admin", "can_manage_workspace"]
   },
