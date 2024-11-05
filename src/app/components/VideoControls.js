@@ -19,6 +19,8 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
     const videoRef = propsData.videoRef;
     const [, forceUpdate] = useState({});
     const [syncEnabled, setSyncEnabled] = useState(true);
+    const [windowSize, setWindowSize] = useState(100);
+    const [isHoveringSlider, setIsHoveringSlider] = useState(false);
 
     const adjustSpeed = (increment) => {
         try {
@@ -40,38 +42,20 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
         forceUpdate({});
     };
 
-    const controlStyle = {
-        display: 'inline-flex',
-        alignItems: 'center',
-        backgroundColor: '#4CAF50',
-        borderRadius: '4px',
-        margin: '10px 0',
-        overflow: 'hidden',
+    const formatWindowSize = (size) => {
+        if (size >= 1000) {
+            return `${(size/1000).toFixed(1)}k`;
+        }
+        return size;
     };
 
-    const buttonStyle = {
-        padding: '8px 16px',
-        backgroundColor: 'transparent',
-        color: 'white',
-        border: 'none',
-        cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        transition: 'background-color 0.2s',
-    };
-
-    const speedDisplayStyle = {
-        padding: '8px 16px',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        borderLeft: '1px solid rgba(255,255,255,0.3)',
-        borderRight: '1px solid rgba(255,255,255,0.3)',
-        minWidth: '70px',
-        textAlign: 'center',
-        cursor: 'pointer',
-        transition: 'background-color 0.2s',
-    };
+    const presetSizes = [
+        { label: 'XS', value: 50 },
+        { label: 'S', value: 100 },
+        { label: 'M', value: 500 },
+        { label: 'L', value: 1000 },
+        { label: 'XL', value: 5000 },
+    ];
 
     const cropVideo = (start, end) => {
         const video = videoElementRef.current;
@@ -177,17 +161,17 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
                 <source src={propsData.pathVideo} type="video/webm" />
                 Your browser does not support the video tag.
             </video>
-            <div style={controlStyle}>
+            <div className="video-controls">
                 <button 
                     onClick={() => adjustSpeed(false)}
-                    style={buttonStyle}
+                    className="video-button"
                     onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
                     onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
                     -
                 </button>
                 <span 
-                    style={speedDisplayStyle}
+                    className="speed-display"
                     onClick={resetSpeed}
                     onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
                     onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -196,7 +180,7 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
                 </span>
                 <button 
                     onClick={() => adjustSpeed(true)}
-                    style={buttonStyle}
+                    className="video-button"
                     onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
                     onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
@@ -205,8 +189,8 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
             </div>
             <button 
                 //onClick={toggleSync}
+                className="video-button"
                 style={{
-                    ...buttonStyle,
                     backgroundColor: syncEnabled ? '#4CAF50' : '#f44336',
                     padding: '8px 16px',
                     marginLeft: '10px'
@@ -214,6 +198,45 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
             >
                 {syncEnabled ? 'Disable Sync' : 'Enable Sync'}
             </button>
+            <div className="window-controls">
+                <span className="window-label">Window:</span>
+                
+                <div className="slider-container"
+                    onMouseEnter={() => setIsHoveringSlider(true)}
+                    onMouseLeave={() => setIsHoveringSlider(false)}>
+                    <input
+                        type="range"
+                        min="50"
+                        max="5000"
+                        value={windowSize}
+                        onChange={(e) => setWindowSize(parseInt(e.target.value))}
+                        className="window-slider"
+                    />
+                    <div 
+                        className="slider-tooltip"
+                        style={{
+                            left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
+                        }}>
+                        {formatWindowSize(windowSize)}
+                    </div>
+                </div>
+
+                <div className="preset-container">
+                    {presetSizes.map((preset) => (
+                        <button
+                            key={preset.label}
+                            onClick={() => setWindowSize(preset.value)}
+                            className="preset-button"
+                            style={{
+                                backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
+                                color: windowSize === preset.value ? 'white' : '#333',
+                            }}
+                        >
+                            {preset.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 });
