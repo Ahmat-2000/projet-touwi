@@ -3,7 +3,7 @@ import App from './components/App';
 export default function Home() {
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Plotly.js Demo</h1>
+      <h1 style={styles.title}>Chronos WebApp</h1>
       <App/>
     </div>
   );

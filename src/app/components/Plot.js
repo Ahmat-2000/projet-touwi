@@ -17,6 +17,16 @@ const Signal = ({ propsData }) => {
                 [{
                     x: propsData.timestamp,
                     y: propsData.data,
+                    hovertemplate: '<span style="background-color:red">X: %{x:.0f} <br> Y: %{y:.3f}</span> <extra></extra>',
+                    hoverlabel: {
+                        bgcolor: '#FF6F61', // Background color
+                        bordercolor: 'grey',
+                        font: {
+                            color: 'black',
+                            size: 14 // Font size
+                        },
+                    },
+                    hovermode: 'closest'
                 },], 
                 
                 {

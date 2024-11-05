@@ -1,16 +1,17 @@
 // App.js
-"use client"; // Ensure this component is a Client Component
+"use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Papa from 'papaparse';
+import Plotly from 'plotly.js-basic-dist-min';
+
 import Graph from './Graph';
 import ControlPanel from './ControlPanel';
 import CSVUpload from './CSVUpload';
-
 import VideoControls from './VideoControls';
-import Plotly from 'plotly.js-dist';
 
 const App = ({ hasVideo = true }) => {
+
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
 
@@ -21,11 +22,9 @@ const App = ({ hasVideo = true }) => {
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
     const prevMidPointRef = useRef(null);
-    const [prevMidPoint, setPrevMidPoint] = useState(null);
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
-    const graphRef = useRef(null);
 
     // Function to parse CSV and extract data
     const parseCSV = (file) => {
@@ -80,29 +79,55 @@ const App = ({ hasVideo = true }) => {
     // Function to reset the zoom on all three plots
     function resetZoom() {
 
-        plotList.current.forEach((plotRef) => {
-            Plotly.relayout(plotRef.current, { 'xaxis.autorange': true, 'yaxis.autorange': true });
+        // Stop video if playing
+        if (hasVideo && videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = videoRef.current.duration / 2;
+        }
+
+        // Use requestAnimationFrame instead of setTimeout for better performance
+        requestAnimationFrame(() => {
+            // Remove last indicator
+            if (prevMidPointRef.current !== null) {
+                deleteRegion(plotList, prevMidPointRef.current, true);
+            }
+
+            // Batch layout updates
+            const updates = plotList.current.map(plotRef => {
+                return Plotly.relayout(plotRef.current, {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+            });
+
+            // Wait for all layout updates to complete
+            Promise.all(updates).then(() => {
+                const midPoint = (plotList.current[0].current.layout.xaxis.range[0] + 
+                                plotList.current[0].current.layout.xaxis.range[1]) / 2;
+                prevMidPointRef.current = midPoint;
+                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
+            });
         });
-    };
+    }
 
     function resetMode() {
         setAppMode('None');
         setPlotlyDragMode(false);
     }
 
-    // Clear all events like periods/flags from the Plotly plots
+
     function resetEvents() {
 
-        // Clear shapes and annotations from all three plot references
+        // Clear shapes and annotations lists
         const updatedShapes = [];
         const updatedAnnotations = [];
 
-        // Update the shapes and annotations on each plot
+        // Update shapes and annotations on all plots
         plotList.current.forEach((plotRef) => {
             Plotly.relayout(plotRef.current, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
-        // Clear any stored selections
+        // Reset clicks
         setSelections([]);
 
         // Reset mode after clearing events
@@ -118,24 +143,30 @@ const App = ({ hasVideo = true }) => {
     // Function to completely clear plots and reset the state
     function voidPlots() {
 
+        // Destroy all plots
         plotList.current.forEach((plotRef) => {
             Plotly.purge(plotRef.current);
         });
 
+        // Reset data
         setData([]);
+
+        // Reset clicks
         setSelections([]);
+
+        // Reset error
         setError('');
     }
 
 
     function setPlotlyDragMode(newDragMode) {
 
-
         console.log(`Plotly drag mode set to: ${newDragMode}`);
 
+        // Update drag mode for all plots
         plotList.current.forEach((plotRef) => {
 
-            //if we don't use scrollzoom just use
+            //if we don't use scrollzoom on navigate, just use :
             //Plotly.relayout(plotRef, { dragmode: newDragMode });
 
             // Get the current layout of the plot
@@ -161,44 +192,44 @@ const App = ({ hasVideo = true }) => {
         });
     }
 
-    function syncVideo(idx) {
-        videoRef.current.syncVideo(idx, temporaryData[0])
-    }
-
     function syncZoom(eventdata, plotRefList) {
 
-        console.log('prevMidPointRef:', prevMidPointRef);
+        if (!('xaxis.range[0]' in eventdata)){
+            //synczoom is also called in functions highlightFlag and deleteRegion because it updates the plot layout (atttibutes shapes & annotations)
+            //I don't think we can stop it so just cancel it here
+            return;
+        }
 
-        // if (prevMidPointRef.current !== null) {
-        //     //delete the previous flag
-        //     deleteRegion(propsData.plotList, prevMidPointRef.current);
-        // }
-
-        //get the x and y range of the plot
+        //Get new axis range
         const layoutUpdate = {
             'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
             'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']]
         };
 
-        //update the x and y range of the other plots
-        if (eventdata['xaxis.range[0]'] !== undefined) {
-
-            const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
-
-            prevMidPointRef.current = midPoint;
-
-            plotRefList.forEach((plotRef) => {
-                Plotly.relayout(plotRef.current, layoutUpdate);
-
-                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
-
-
-            });
+        const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
+        
+        //Remove previous INDICATOR
+        if (prevMidPointRef.current !== null) {
+            deleteRegion(plotList, prevMidPointRef.current, true);
         }
+
+        //Add new INDICATOR
+        highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
+        prevMidPointRef.current = midPoint;
+        
+        //Update axis range for all plots
+        plotRefList.forEach((plotRef) => {
+            Plotly.relayout(plotRef.current, layoutUpdate);
+        });
+
+        
+
+        
     };
 
     function highlightFlag(xValue, style, text) {
 
+        // create new shape
         const shape = {
             type: 'line',
             x0: xValue,
@@ -210,6 +241,7 @@ const App = ({ hasVideo = true }) => {
             line: style,
         };
 
+        // create new annotation
         const annotation = {
             x: xValue, //+ 3000,
             /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
@@ -233,65 +265,75 @@ const App = ({ hasVideo = true }) => {
 
         };
 
+        // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
         });
 
     }
 
-    function deleteRegion(plotList, xValue) {
+    function deleteRegion(plotList, xValue, onlyFlag) {
+
         // Find the region that contains the clicked xValue
-        let regionIndex = plotList.current[0].current.layout.shapes.findIndex(shape => shape.x0 <= xValue && shape.x1 >= xValue);
+        let regionIndex = plotList.current[0].current.layout.shapes.findIndex(
+            shape => shape.x0 === shape.x1 && shape.x0 === xValue
+        );
+
+        // If no flag match and onlyFlag is false, check for periods
+        if (regionIndex === -1 && !onlyFlag) {
+            regionIndex = plotList.current[0].current.layout.shapes.findIndex(shape =>
+                shape.x0 < shape.x1 && shape.x0 <= xValue && shape.x1 >= xValue
+            );
+        }
+
+        // If region found, delete it and any associated annotation
         if (regionIndex !== -1) {
-            // Remove the region from both layout.shapes and selections
-            plotList.current.forEach(plotRef => {
+            const plotRefs = plotList.current;
+            const shape = plotRefs[0].current.layout.shapes[regionIndex];
+            const isFlag = shape.x0 === shape.x1;
+
+            // Remove 1 shape from all plots
+            plotRefs.forEach(plotRef => {
                 plotRef.current.layout.shapes.splice(regionIndex, 1);
-                
-                // Check if there is a corresponding annotation before deleting
-                if (plotRef.current.layout.annotations && 
-                    plotRef.current.layout.annotations.length > regionIndex) {
-                    plotRef.current.layout.annotations.splice(regionIndex, 1);
+
+                // Remove it's annotation if it's a flag
+                if (isFlag) {
+                    const annotationIndex = plotRef.current.layout.annotations.findIndex(
+                        annotation => annotation.x === xValue
+                    );
+                    if (annotationIndex !== -1) {
+                        plotRef.current.layout.annotations.splice(annotationIndex, 1);
+                    }
                 }
             });
 
+            // Reset clicks
             selections.splice(regionIndex, 1);
 
-            // Update the shapes and annotations on the plots
-            plotList.current.forEach(plotRef => {
-                Plotly.relayout(plotRef.current, { 
+            // Update shapes and annotations on the plots
+            plotRefs.forEach(plotRef => {
+                Plotly.relayout(plotRef.current, {
                     shapes: plotRef.current.layout.shapes,
-                    annotations: plotRef.current.layout.annotations || []
+                    annotations: plotRef.current.layout.annotations
                 });
             });
 
-            console.log(`Region and any associated annotation removed at x: ${xValue}`);
+            console.log(`Region${isFlag ? ' and annotation' : ''} removed at x: ${xValue}`);
         }
     }
 
-
     
     return (
-        <div style={styles.container}>
-            <h2>Upload CSV to Create Synced Plots</h2>
-            <p style={{ fontWeight: 'bold', color: 'red' }}>
-                (please use modified file published on discord or remove the last line in csv file if blank)
-            </p>
-
+        <div className="app-container">
             {hasVideo && (
-                <VideoControls 
-                    ref={videoRef}
-                    propsData={{
-                        pathVideo: '/images/placeholder.webm',
-                        plotList: plotList,
-                        syncZoom: syncZoom,
-                        graphRef:graphRef,
-                        timelist:temporaryData[0],
-                        resetMode:resetMode,
-                        highlightFlag: highlightFlag,
-                        deleteRegion: deleteRegion,
-                        appMode:appMode
-                    }} 
-                />
+                <VideoControls propsData={{
+                    pathVideo: '/video/placeholder.webm',
+                    plotList: plotList,
+                    syncZoom: syncZoom,
+                    videoRef: videoRef,
+                    highlightFlag: highlightFlag,
+                    deleteRegion: deleteRegion
+                }} />
             )}
 
             <CSVUpload parseCSV={parseCSV} error={error} />
@@ -307,21 +349,19 @@ const App = ({ hasVideo = true }) => {
                         setAppMode={setAppMode}
                         setPlotlyDragMode={setPlotlyDragMode}
                         appMode={appMode}
+                        hasVideo={hasVideo}
                     />
 
                     <Graph 
-                        ref={graphRef}
                         temporaryData={temporaryData} 
                         plotList={plotList} 
                         appMode={appMode} 
                         setAppMode={setAppMode} 
                         hasVideo={hasVideo} 
                         syncZoom={syncZoom}
-                        syncVideo={syncVideo}
                         videoRef={videoRef}
                         highlightFlag={highlightFlag}
                         deleteRegion={deleteRegion}
-
                     />
                 </>
             )}
@@ -329,13 +369,6 @@ const App = ({ hasVideo = true }) => {
         </div>
     );
     
-};
-
-const styles = {
-    container: {
-        padding: '20px',
-        textAlign: 'center',
-    },
 };
 
 export default App;

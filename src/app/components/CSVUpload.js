@@ -1,7 +1,11 @@
 // CSVUpload.js
+"use client";
+
 import React from 'react';
+import Plotly from 'plotly.js-basic-dist-min';
 
 const CSVUpload = ({ parseCSV, error }) => {
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -15,17 +19,11 @@ const CSVUpload = ({ parseCSV, error }) => {
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                style={styles.fileInput}
+                className="file-input"
             />
             {error && <p style={{ color: 'red' }}>{error}</p>}
         </>
     );
-};
-
-const styles = {
-    fileInput: {
-        margin: '20px 0',
-    },
 };
 
 export default CSVUpload;
