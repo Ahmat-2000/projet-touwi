@@ -22,7 +22,6 @@ const App = ({ hasVideo = true }) => {
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
 
     const prevMidPointRef = useRef(null);
-    const [prevMidPoint, setPrevMidPoint] = useState(null);
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
@@ -325,15 +324,10 @@ const App = ({ hasVideo = true }) => {
 
     
     return (
-        <div style={styles.container}>
-            <h2>Upload CSV to Create Synced Plots</h2>
-            <p style={{ fontWeight: 'bold', color: 'red' }}>
-                (please use modified file published on discord or remove the last line in csv file if blank)
-            </p>
-
+        <div className="app-container">
             {hasVideo && (
                 <VideoControls propsData={{
-                    pathVideo: '/images/placeholder.webm',
+                    pathVideo: '/video/placeholder.webm',
                     plotList: plotList,
                     syncZoom: syncZoom,
                     videoRef: videoRef,
@@ -375,13 +369,6 @@ const App = ({ hasVideo = true }) => {
         </div>
     );
     
-};
-
-const styles = {
-    container: {
-        padding: '20px',
-        textAlign: 'center',
-    },
 };
 
 export default App;
