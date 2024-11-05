@@ -1,3 +1,5 @@
+// a remplacer par la fonction de stan
+
 // file1 and file2 are File objects referencing the 2 csv files from the gyro and the accel.
 // returns a File object referencing the touwi file (concatenation of the csv files and adding the label column)
 export default async function csvToChronos(file1, file2, name) {

@@ -1,13 +1,17 @@
+// Description: This file contains the class filesInterface, which is used to handle the data from the files uploaded by the user
+
+// Usage: Either you open the files for the first time and you have an accelerometer file and a gyroscope file :
+// call "await filesInterface.initializeFrom2Csv(accelFile, gyroFile)" and you will get an object with the data from both files
+
+// Or you have a file in the Chronos format :
+// call "await filesInterface.initializeFromChronos(chronosFile)" and you will get an object with the data from that file. 
 class filesInterface{
     
     // To call with 2 File objects
-    constructor(accTimestamps, accX, accY, accZ, gyroTimestamps, gyroX, gyroY, gyroZ, name, label=undefined){
-        // taking the max timestamps, not sure if i should take max or min, will ask
-        this.timestamps = accTimestamps.length > gyroTimestamps.length ? accTimestamps : gyroTimestamps;
-        
-        // still storing both timestamps because needed for max, if it is decided to take min, then only this.timestamp will be stored
-        this.accData = {"timestamp": accTimestamps, "x": accX, "y": accY, "z": accZ};
-        this.gyroData = {"timestamp": gyroTimestamps, "x": gyroX, "y": gyroY, "z": gyroZ};
+    constructor(timestamps, accX, accY, accZ, gyroX, gyroY, gyroZ, name, label=undefined){
+        this.timestamps = timestamps
+        this.accData = {"x": accX, "y": accY, "z": accZ};
+        this.gyroData = {"x": gyroX, "y": gyroY, "z": gyroZ};
         this.name = name;
         this.label = label || Array(this.timestamps.length).fill("NULL");
     }
@@ -21,7 +25,7 @@ class filesInterface{
         if (headers.length != 8){
             throw new Error("Invalid file format, incorrect number of columns");
         }
-        if (headers[0] != "timestamp" || headers[1] != "accel_x" || headers[2] != "accel_y" || headers[3] != "accel_z" || headers[4] != "gyro_x" || headers[5] != "gyro_y" || headers[6] != "gyro_z" || headers[7] != "label"){
+        if (headers[0] != "timestamp" || headers[1] != "gyro_x" || headers[2] != "gyro_y" || headers[3] != "gyro_z" || headers[4] != "accel_x" || headers[5] != "accel_y" || headers[6] != "accel_z" || headers[7] != "label"){
             throw new Error("Invalid file format, a column has the wrong name");
         }
 
@@ -42,7 +46,7 @@ class filesInterface{
 
     }
 
-    // Call this with File objects containing csv files of the timestamp,x,y,z format
+    // Call this with File objects containing csv files of the "timestamp,x,y,z" format and the same number of lines in both files
     static async initializeFrom2Csv(accelFile, gyroFile, name=""){
         const [accContent, gyroContent] = await Promise.all([this.readFile(accelFile), this.readFile(gyroFile)]);
         const { headers: accHeaders, data: accData } = await this.processFileContent(accContent);
@@ -64,10 +68,15 @@ class filesInterface{
 
         // Create the variables necessary for the class
         const accTimestamps = gyroData.map(row => row[0]);
+        const gyroTimestamps = gyroData.map(row => row[0]);
+
+        if (accTimestamps.length != gyroTimestamps.length){
+            throw new Error("Files have different number of rows");
+        }
+
         const accX = accData.map(row => row[1]);
         const accY = accData.map(row => row[2]);
         const accZ = accData.map(row => row[3]);
-        const gyroTimestamps = gyroData.map(row => row[0]);
         const gyroX = gyroData.map(row => row[1]);
         const gyroY = gyroData.map(row => row[2]);
         const gyroZ = gyroData.map(row => row[3]);
@@ -75,7 +84,7 @@ class filesInterface{
             name = accelFile.name + "_" + gyroFile.name;
         }
 
-        return new filesInterface(accTimestamps, accX, accY, accZ, gyroTimestamps, gyroX, gyroY, gyroZ, name);
+        return new filesInterface(accTimestamps, accX, accY, accZ, gyroX, gyroY, gyroZ, name);
     }
 
     // file is a File object, returns a string with the file content
@@ -96,15 +105,18 @@ class filesInterface{
         return { headers, data };
     }
 
-    // fileName is "accel", "gyro" or "label"
-    // columnName is "timestamp", "x", "y" or "z"
+    // fileName is "accel", "gyro", "label" or "timestamps"
+    // columnName is "x", "y" or "z"
     // throws an error if the file or column name is invalid
     // returns the column data
-    getColumn(fileName, columnName){
+    getColumn(fileName, columnName=""){
         fileName = fileName.toLowerCase();
         let whichData;
         if (fileName == "label" || fileName == "labels"){
             return this.label;
+        }
+        if (fileName == "timestamps" || fileName == "timestamp" || fileName == "time"){
+            return this.timestamps;
         }
         if (fileName == "accel" || fileName == "accelerometer" || fileName == "acc"){
             whichData = this.accData;
@@ -117,9 +129,10 @@ class filesInterface{
                 throw new Error("Invalid file name");
             }
         }
-        if (columnName != "timestamp" && columnName != "x" && columnName != "y" && columnName != "z"){
+        if (columnName != "x" && columnName != "y" && columnName != "z"){
             throw new Error("Invalid column name");
         }
+        this.checkIntegrity(); // asked by Antoine
         return whichData[columnName];
     }
 
@@ -132,41 +145,61 @@ class filesInterface{
         return this.label;
     }
 
-    addLabelWithTimestamp(timestamp, label){
+    // takes a timestamp and a name, checks if timestamp exists, then adds a flag at that timestamp with that name
+    // doesnt return anything
+    addFlag(timestamp, flag){
         const index = this.timestamps.indexOf(timestamp);
         if (index == -1){
             throw new Error("Invalid timestamp");
         }
         console.log(this.label);
-        this.label[index] = "F:"+label;
+        this.label[index] = "F:"+flag;
     }
 
-    addPeriodWithTimestamp(start, end, label){
-        console.log(start, end);
-        const startIndex = this.timestamps.indexOf(start);
-        const endIndex = this.timestamps.indexOf(end);
+    // takes a start and end timestamp and a name, checks if timestamps exist, then adds a period with that name to all timestamps in that range
+    // doesnt return anything
+    addPeriod(startTimestamp, endTimestamp, flag){
+        const startIndex = this.timestamps.indexOf(startTimestamp);
+        const endIndex = this.timestamps.indexOf(endTimestamp);
         if (startIndex == -1 || endIndex == -1){
             throw new Error("Invalid timestamp");
         }
         for (let i = startIndex; i <= endIndex; i++){
-            this.label[i] = "P:"+label;
+            this.label[i] = "P:"+flag;
         }
     }
 
-    addLabelWithIndex(index, label){
+    // same as addFlag but with an index
+    addFlagWithIndex(index, flag){
         if (index < 0 || index >= this.label.length){
             throw new Error("Invalid index");
         }
-        this.label[index] = "F:"+label;
+        this.label[index] = "F:"+flag;
     }
 
-    addPeriodWithIndex(start, end, label){
-        if (start < 0 || start >= this.label.length || end < 0 || end >= this.label.length){
+    // same as addPeriod but with indexes
+    addPeriodWithIndex(startIndex, endIndex, flag){
+        if (startIndex < 0 || startIndex >= this.label.length || endIndex < 0 || endIndex >= this.label.length){
             throw new Error("Invalid index");
         }
-        for (let i = start; i <= end; i++){
-            this.label[i] = "P:"+label;
+        for (let i = startIndex; i <= endIndex; i++){
+            this.label[i] = "P:"+flag;
         }
+    }
+
+    // checks if the data is consistent and throws an error if it is not
+    // returns true but you can just call it without checking the return value, it will throw an error if something is wrong
+    checkIntegrity(){
+        if (this.timestamps.length != this.accData["x"].length || this.timestamps.length != this.accData["y"].length || this.timestamps.length != this.accData["z"].length){
+            throw new Error("Inconsistent data in accelerometer");
+        }
+        if (this.timestamps.length != this.gyroData["x"].length || this.timestamps.length != this.gyroData["y"].length || this.timestamps.length != this.gyroData["z"].length){
+            throw new Error("Inconsistent data in gyroscope");
+        }
+        if (this.timestamps.length != this.label.length){
+            throw new Error("Inconsistent data in labels");
+        }
+        return true;
     }
 }
 
