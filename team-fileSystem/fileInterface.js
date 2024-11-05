@@ -2,10 +2,14 @@ class filesInterface{
     
     // To call with 2 File objects
     constructor(accTimestamps, accX, accY, accZ, gyroTimestamps, gyroX, gyroY, gyroZ, name, label=undefined){
+        // taking the max timestamps, not sure if i should take max or min, will ask
+        this.timestamps = accTimestamps.length > gyroTimestamps.length ? accTimestamps : gyroTimestamps;
+        
+        // still storing both timestamps because needed for max, if it is decided to take min, then only this.timestamp will be stored
         this.accData = {"timestamp": accTimestamps, "x": accX, "y": accY, "z": accZ};
         this.gyroData = {"timestamp": gyroTimestamps, "x": gyroX, "y": gyroY, "z": gyroZ};
         this.name = name;
-        this.label = label || Array(Math.max(accTimestamps.length, gyroTimestamps.length)).fill("NULL");
+        this.label = label || Array(this.timestamps.length).fill("NULL");
     }
 
     // To call with a File object organized in the Chronos format
@@ -126,6 +130,43 @@ class filesInterface{
     // is the same as getColumn("label", "whatever")
     getLabels(){
         return this.label;
+    }
+
+    addLabelWithTimestamp(timestamp, label){
+        const index = this.timestamps.indexOf(timestamp);
+        if (index == -1){
+            throw new Error("Invalid timestamp");
+        }
+        console.log(this.label);
+        this.label[index] = "F:"+label;
+    }
+
+    addPeriodWithTimestamp(start, end, label){
+        console.log(start, end);
+        const startIndex = this.timestamps.indexOf(start);
+        const endIndex = this.timestamps.indexOf(end);
+        if (startIndex == -1 || endIndex == -1){
+            throw new Error("Invalid timestamp");
+        }
+        for (let i = startIndex; i <= endIndex; i++){
+            this.label[i] = "P:"+label;
+        }
+    }
+
+    addLabelWithIndex(index, label){
+        if (index < 0 || index >= this.label.length){
+            throw new Error("Invalid index");
+        }
+        this.label[index] = "F:"+label;
+    }
+
+    addPeriodWithIndex(start, end, label){
+        if (start < 0 || start >= this.label.length || end < 0 || end >= this.label.length){
+            throw new Error("Invalid index");
+        }
+        for (let i = start; i <= end; i++){
+            this.label[i] = "P:"+label;
+        }
     }
 }
 
