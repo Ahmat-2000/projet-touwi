@@ -6,14 +6,23 @@
 // Or you have a file in the Chronos format :
 // call "await filesInterface.initializeFromChronos(chronosFile)" and you will get an object with the data from that file. 
 class filesInterface{
+
+    static #isAllowedToCreate = false;
     
     // To call with 2 File objects
     constructor(timestamps, accX, accY, accZ, gyroX, gyroY, gyroZ, name, label=undefined){
+
+        if (!filesInterface.#isAllowedToCreate){
+            throw new Error("Use the static factory methods to create a new instance of this class (initializeFrom2Csv or initializeFromChronos)");
+        }
+
         this.timestamps = timestamps
         this.accData = {"x": accX, "y": accY, "z": accZ};
         this.gyroData = {"x": gyroX, "y": gyroY, "z": gyroZ};
         this.name = name;
         this.label = label || Array(this.timestamps.length).fill("NULL");
+
+        filesInterface.#isAllowedToCreate = false;
     }
 
     // To call with a File object organized in the Chronos format
@@ -42,6 +51,7 @@ class filesInterface{
             name = chronosFile.name;
         }
 
+        filesInterface.#isAllowedToCreate = true;
         return new filesInterface(timestamps, accX, accY, accZ, timestamps, gyroX, gyroY, gyroZ, name, label);
 
     }
@@ -84,6 +94,7 @@ class filesInterface{
             name = accelFile.name + "_" + gyroFile.name;
         }
 
+        filesInterface.#isAllowedToCreate = true;
         return new filesInterface(accTimestamps, accX, accY, accZ, gyroX, gyroY, gyroZ, name);
     }
 
