@@ -6,6 +6,9 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 const CSVUpload = ({ parseCSV, error }) => {
 
+    
+
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -19,11 +22,17 @@ const CSVUpload = ({ parseCSV, error }) => {
                 type="file"
                 accept=".csv"
                 onChange={handleFileChange}
-                className="file-input"
+                style={styles.fileInput}
             />
             {error && <p style={{ color: 'red' }}>{error}</p>}
         </>
     );
+};
+
+const styles = {
+    fileInput: {
+        margin: '20px 0',
+    },
 };
 
 export default CSVUpload;
