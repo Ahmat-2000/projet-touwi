@@ -273,7 +273,7 @@ const App = ({ hasVideo = true }) => {
     }
 
     function deleteRegion(plotList, xValue, onlyFlag) {
-
+        
         // Find the region that contains the clicked xValue
         let regionIndex = plotList.current[0].current.layout.shapes.findIndex(
             shape => shape.x0 === shape.x1 && shape.x0 === xValue

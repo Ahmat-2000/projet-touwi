@@ -1,22 +1,25 @@
 // Graph.js
+"use client";
 
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import Plotly from 'plotly.js-basic-dist-min';
+
 import Plot from './Plot';
-import Plotly from 'plotly.js-dist';
 
 
-const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, syncVideo, highlightFlag, deleteRegion }, ref) => {
+const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
     const appModeRef = useRef(appMode);
 
     useEffect(() => {
-        appModeRef.current = appMode;   
+        appModeRef.current = appMode;
     }, [appMode]);
 
 
     useEffect(() => {
+        console.log('Graph useEffect');
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
 
@@ -57,23 +60,30 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
     function handlePlotClick (eventData) {
         const xValue = eventData.points[0].x;
-        const currentAppMode = appModeRef.current;
- 
-        syncVideo(xValue)
 
+        const currentAppMode = appModeRef.current;
 
         console.log(`Clicked at x: ${xValue} App mode: ${currentAppMode}`);
 
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
             if (hasVideo) {
-                videoRef.current.handlePlotClick(xValue)
+                const video = videoRef.current;
+                const videoDuration = video.duration; // Get video duration in seconds
+                const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
+                
+                // Convert signal index to video time using linear mapping
+                const videoTime = (xValue / signalLength) * videoDuration;
+                
+                // Set video current time
+                video.currentTime = videoTime;
+                console.log(`Jumping to video time: ${videoTime}s`);
             }
         }
 
         // Handle the different modes
         if ( currentAppMode === 'delete') {
-            deleteRegion(plotList, xValue);
+            deleteRegion(plotList, xValue, false);
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
@@ -93,10 +103,11 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
                 highlightFlag( xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
             }
 
+
         }
     };
 
-    function highlightRegion(start, end, color='rgba(255, 0, 0, 0.35)') {
+    function highlightRegion(start, end) {
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -109,25 +120,21 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
             y1: 1,
             xref: 'x',
             yref: 'paper',
-            fillcolor: color,
+            fillcolor: 'rgba(255, 0, 0, 0.35)',
             line: {
                 width: 0
             }
         };
-
+        
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
-
-        return shape
+        
         
     }
 
-    function deleteHighlight(shape) {
-        plotList.current.forEach(plotRef => {
-            const currentShapes = plotRef.current.layout.shapes.filter(highlights => highlights !== shape);
-            Plotly.relayout(plotRef.current, { shapes: currentShapes });
-        });
+    function deletePlot(plotRef) {
+        Plotly.delete(plotRef);
     }
 
 
@@ -149,6 +156,7 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
         }
         
+        // Create timestamp array from 0 to data length
         const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
         
@@ -163,26 +171,21 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
             shapes: [],
             annotations: [],
             appMode: appMode,
+            deletePlot: deletePlot
             
         };
 
+        // Create new plot
         const newPlot = <Plot key={props.title} propsData={props} />;
 
-
+        // Add new plot to plots list
         setPlots([...plots, newPlot]);
         
     }
 
-    useImperativeHandle(ref, () => ({
-        highlightRegion, 
-        deleteHighlight
-    }));
-
 
     return (
-
         <div>
-
             <div>
                 <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
             </div>
@@ -194,11 +197,9 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
                     </div>
                 ))}
             </div>
-        
-
         </div>
-    );
-});
+);
+};
 
 const styles = {
     plotContainer: {
