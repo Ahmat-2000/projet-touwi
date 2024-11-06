@@ -1,11 +1,8 @@
-// Plot.js
-"use client";
-
+// Signal.js
 import React, { useEffect, useRef } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
+import Plotly from 'plotly.js-dist';
 
-
-const Plot = ({ propsData }) => {
+const Signal = ({ propsData }) => {
 
     const plotRef = useRef(null);
 
@@ -62,21 +59,15 @@ const Plot = ({ propsData }) => {
             const currentShapes =      propsData.plotRefList[0].current.layout.shapes;
             const currentAnnotations = propsData.plotRefList[0].current.layout.annotations;
 
-            
-            Plotly.relayout(plotRef.current, {
-                ...currentLayout,
-                shapes: currentShapes,
-                annotations: currentAnnotations,
-                dragmode: currentDragMode
-            });
-            
-            
+            Plotly.relayout(plotRef.current, currentLayout);
+            Plotly.relayout(plotRef.current, { shapes: currentShapes, annotations: currentAnnotations });
+            Plotly.relayout(plotRef.current, { dragmode: currentDragMode });
 
         }
 
         // Add event listeners for plot interactions
         plotRef.current.on('plotly_click', (eventData) => {
-            if (propsData.hasVideo && propsData.videoRef.current) {
+            if (propsData.videoRef && propsData.videoRef.current) {
                 const clickedTime = eventData.points[0].x;
                 // Convert timestamp to video time (assuming timestamp is in milliseconds)
                 const videoTime = clickedTime / 1000;
@@ -101,4 +92,4 @@ const Plot = ({ propsData }) => {
 
 };
 
-export default Plot;
+export default Signal;

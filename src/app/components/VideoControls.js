@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
 
 const VideoControls = forwardRef(({ propsData }, ref) => {
 
@@ -15,10 +14,7 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
         appModeRef.current = propsData.appMode;   
     }, [propsData.appMode]);
 
-
-    const videoRef = propsData.videoRef;
     const [, forceUpdate] = useState({});
-    const [syncEnabled, setSyncEnabled] = useState(true);
 
     const adjustSpeed = (increment) => {
         try {
@@ -75,6 +71,7 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
 
     const cropVideo = (start, end) => {
         const video = videoElementRef.current;
+
         if (video) {
 
             if (timeUpdateHandlerRef.current) {
@@ -203,17 +200,6 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
                     +
                 </button>
             </div>
-            <button 
-                //onClick={toggleSync}
-                style={{
-                    ...buttonStyle,
-                    backgroundColor: syncEnabled ? '#4CAF50' : '#f44336',
-                    padding: '8px 16px',
-                    marginLeft: '10px'
-                }}
-            >
-                {syncEnabled ? 'Disable Sync' : 'Enable Sync'}
-            </button>
         </div>
     );
 });

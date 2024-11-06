@@ -1,9 +1,8 @@
 // Graph.js
-"use client";
 
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle  } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Plot from './Plot';
+import Plotly from 'plotly.js-dist';
 
 
 const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, syncVideo, highlightFlag, deleteRegion }, ref) => {
@@ -18,7 +17,6 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
 
     useEffect(() => {
-        console.log('Graph useEffect');
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
 
@@ -75,7 +73,7 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
         // Handle the different modes
         if ( currentAppMode === 'delete') {
-            deleteRegion(plotList, xValue, false);
+            deleteRegion(plotList, xValue);
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
@@ -116,13 +114,12 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
                 width: 0
             }
         };
-        
+
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
 
         return shape
-        
         
     }
 
@@ -152,7 +149,6 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
         }
         
-        // Create timestamp array from 0 to data length
         const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
         
@@ -170,10 +166,9 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
             
         };
 
-        // Create new plot
         const newPlot = <Plot key={props.title} propsData={props} />;
 
-        // Add new plot to plots list
+
         setPlots([...plots, newPlot]);
         
     }
@@ -185,7 +180,9 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
 
 
     return (
+
         <div>
+
             <div>
                 <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
             </div>
@@ -197,6 +194,8 @@ const Graph = forwardRef(({ temporaryData, plotList, appMode, setAppMode, hasVid
                     </div>
                 ))}
             </div>
+        
+
         </div>
     );
 });
