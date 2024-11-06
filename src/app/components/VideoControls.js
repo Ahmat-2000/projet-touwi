@@ -24,13 +24,13 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
 
     const adjustSpeed = (increment) => {
         try {
-            const currentSpeed = videoElementRef.current.playbackRate;
+            const currentSpeed = videoElementRef.playbackRate;
             let newSpeed = increment ? currentSpeed * 2 : currentSpeed / 2;
              
             // Limit the speed between 0.1 and 16
             newSpeed = Math.min(16, Math.max(0.1, newSpeed));
             
-            videoElementRef.current.playbackRate = newSpeed;
+            videoElementRef.playbackRate = newSpeed;
             forceUpdate({});
         } catch (error) {
             console.warn('Playback speed not supported:', error);
@@ -38,7 +38,7 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
     };
 
     const resetSpeed = () => {
-        videoElementRef.current.playbackRate = 1;
+        videoElementRef.playbackRate = 1;
         forceUpdate({});
     };
 
@@ -176,7 +176,7 @@ const VideoControls = forwardRef(({ propsData }, ref) => {
                     onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
                     onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                 >
-                    {(videoElementRef.current && videoElementRef.current.playbackRate) ? videoElementRef.current.playbackRate.toFixed(2) : '1.00'}x
+                    {(videoElementRef && videoElementRef.playbackRate) ? videoElementRef.playbackRate.toFixed(2) : '1.00'}x
                 </span>
                 <button 
                     onClick={() => adjustSpeed(true)}
