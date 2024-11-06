@@ -41,7 +41,7 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
                 <button onClick={() => console.log(plotList.current)} className="control-button">Log PlotList</button>
 
                 {/* Video control*/}
-                <button onClick={() => { setPlotlyDragMode(false); setAppMode('videoSync'); }} >Video Sync</button>
+                <button onClick={() => { setPlotlyDragMode(false); setAppMode('videoSync'); }} style={styles.button}>Video Sync</button>
 
                 {/* Display current mode */}
                 <span className="mode-indicator">Mode: {appMode}</span>
