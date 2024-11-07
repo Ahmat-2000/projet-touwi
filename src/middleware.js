@@ -15,12 +15,12 @@ export async function middleware(request) {
   if (!token) return NextResponse.redirect(new URL('/login', request.url));
 
   const secretKey = process.env.JWT_SECRET;
-  if (!secretKey) return NextResponse.redirect(new URL('/login', request.url));
+  if (!secretKey) throw new Error('No JWT secret key found in environment variables.');
 
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secretKey));
     const user = payload.sub;
-    if (!user) return NextResponse.redirect(new URL('/login', request.url));
+    if (!user) throw new Error('No user found in token payload.');
 
     const workspace = await getWorkspaceFromRequest(request);
     const permissions = await getPermissions(user, workspace);
@@ -29,8 +29,6 @@ export async function middleware(request) {
     const requestMethod = request.method.toUpperCase();
 
     requestedPath = requestedPath.replace(/\/\d+$/, "/id");
-
-    console.log('Requested path:', requestedPath);
 
     // Récupère les permissions de la route
     const routePermissions = Object.keys(permissionsConfig).find((route) => route === requestedPath);

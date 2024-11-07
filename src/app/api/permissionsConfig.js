@@ -14,6 +14,7 @@ export default {
   },
 
 
+
   "/api/protected/user_role": {
     "GET": ["admin", "user"],
     "POST": ["admin", "can_manage_users"]
@@ -23,6 +24,7 @@ export default {
     "PUT": ["admin", "can_manage_users"],
     "DELETE": ["admin", "can_manage_users"]
   },
+
 
 
   "/api/protected/workspace": {
@@ -53,6 +55,7 @@ export default {
     "POST": ["admin", "user"]
   },
 
+  
 
   "/api/protected/role": {
     "GET": ["admin", "user"],
