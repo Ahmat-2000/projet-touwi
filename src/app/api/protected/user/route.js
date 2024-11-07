@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 const userController = new GenericController(prisma.user, UserDTO, userFieldValidations);
 
 export async function GET(request) {
-  return userController.getAll();
+  return (await userController.getAll()).generateResponse();
 }
 
 export async function POST(request) {
@@ -15,5 +15,5 @@ export async function POST(request) {
   
   body.password = await bcrypt.hash(body.password, 10);
 
-  return userController.create({ json: () => Promise.resolve(body) });
+  return (await userController.create({ json: () => Promise.resolve(body) })).generateResponse();
 }

@@ -6,13 +6,13 @@ import prisma from '@/lib/prisma';
 const userRoleController = new GenericController(prisma.userRole, UserRoleDTO, userRoleFieldValidations);
 
 export async function GET(request, { params }) {
-    return userRoleController.getById(params);
+    return (await userRoleController.getById(params)).generateResponse();
 }
 
 export async function PUT(request, { params }) {
-    return userRoleController.update(request, params);
+    return (await userRoleController.update(request, params)).generateResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return userRoleController.delete(params);
+    return (await userRoleController.delete(params)).generateResponse();
 }

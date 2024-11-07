@@ -6,9 +6,9 @@ import prisma from '@/lib/prisma';
 const roleController = new GenericController(prisma.role, RoleDTO, roleFieldValidations);
 
 export async function GET(request) {
-  return roleController.getAll();
+  return (await roleController.getAll()).generateResponse();
 }
 
 export async function POST(request) {
-  return roleController.create(request);
+  return (await roleController.create(request)).generateResponse();
 }

@@ -10,65 +10,51 @@ import permissionsConfig from '@/app/api/permissionsConfig';
  * @returns {Promise<Response|void>} - Redirects to login or grants access.
  */
 export async function middleware(request) {
-  // Retrieve the JWT from cookies
+  // Récupère le JWT et le vérifie (étapes similaires à votre code existant)
   const token = request.cookies.get('token')?.value;
-  
-  // Check if the token is missing
-  if (!token) {
-    console.error("Missing token");
-    return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login page
-  }
+  if (!token) return NextResponse.redirect(new URL('/login', request.url));
 
-  // Retrieve the secret key for JWT verification from environment variables
   const secretKey = process.env.JWT_SECRET;
-  if (!secretKey) {
-    console.error("Missing JWT_SECRET in environment variables");
-    return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login page if secret key is missing
-  }
+  if (!secretKey) return NextResponse.redirect(new URL('/login', request.url));
 
   try {
-    // Verify the JWT and extract the payload
     const { payload } = await jwtVerify(token, new TextEncoder().encode(secretKey));
-    const user = payload.sub; // Extract user ID from the token payload
+    const user = payload.sub;
+    if (!user) return NextResponse.redirect(new URL('/login', request.url));
 
-    // Check if the user ID exists in the payload
-    if (!user) {
-      console.error("User not found");
-      return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login if user is not found
-    }
-
-    // Retrieve the workspace associated with the request, if applicable
     const workspace = await getWorkspaceFromRequest(request);
-    
-    // Get the permissions for the user in the specified workspace
     const permissions = await getPermissions(user, workspace);
 
-    // Determine the requested path and request method (e.g., GET, POST)
-    const requestedPath = request.nextUrl.pathname;
+    let requestedPath = request.nextUrl.pathname;
     const requestMethod = request.method.toUpperCase();
 
-    // Check the permissions required for the requested route
-    const routePermissions = permissionsConfig[requestedPath]?.[requestMethod];
+    requestedPath = requestedPath.replace(/\/\d+$/, "/id");
 
-    // If route permissions are defined, check if the user has one of the required permissions
-    let hasPermission = routePermissions.some(role => {
-      const hasRole = permissions.includes(role);
-      return hasRole;
-    });
-    
-    if (!hasPermission) {
-      return NextResponse.json(
-        { message: 'Access denied: insufficient permissions.' },
-        { status: 403 }
-      );
+    console.log('Requested path:', requestedPath);
+
+    // Récupère les permissions de la route
+    const routePermissions = Object.keys(permissionsConfig).find((route) => route === requestedPath);
+
+    // Vérifie si l'utilisateur a les permissions pour cette route
+    if (!routePermissions || !permissionsConfig[routePermissions][requestMethod]) {
+      throw new Error("Route or method not found in permissions configuration. (Check permissionsConfig.js)");
     }
 
-    return NextResponse.next(); // Allow access to the requested route if all checks pass
+    const hasPermission = permissionsConfig[routePermissions][requestMethod].some(role =>
+      permissions.includes(role)
+    );
+
+    if (!hasPermission) {
+      return NextResponse.json({ message: 'Access denied: insufficient permissions.' },{ status: 403 });
+    }
+
+    return NextResponse.next();
   } catch (err) {
-    console.error(err); // Log any errors that occur during JWT verification or processing
-    return NextResponse.redirect(new URL('/login', request.url)); // Redirect to login if an error occurs
+    console.error(err);
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 }
+
 
 // Middleware configuration to protect routes starting with /api/protected
 export const config = {
