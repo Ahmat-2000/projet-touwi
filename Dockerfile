@@ -1,22 +1,30 @@
 # For all stages, we will use the same base image
 FROM node:18-alpine AS base
+
 WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
 COPY . .
-EXPOSE 3000
+
 
 # development stage (ENV=development)
 FROM base AS development
-RUN npm install
 
-# We need the build stage for the production stage
-FROM base AS build
-RUN npm run build
+ENV PORT=3000
+
+EXPOSE ${PORT}
+
 
 # production stage (ENV=production)
-FROM node:18-alpine AS production
-WORKDIR /app
+FROM base AS production
 
-COPY --from=build /app/dist ./dist
-COPY --from=base /app/package.json ./
+RUN npx prisma generate
 
-RUN npm install --only=production
+RUN npm run build
+
+ENV PORT=3000
+
+EXPOSE ${PORT}
