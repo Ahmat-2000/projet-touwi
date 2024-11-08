@@ -21,8 +21,6 @@ EXPOSE ${PORT}
 # production stage (ENV=production)
 FROM base AS production
 
-RUN npx prisma generate
-
 RUN npm run build
 
 ENV PORT=3000
