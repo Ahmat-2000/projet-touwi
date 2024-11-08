@@ -6,13 +6,16 @@ import { GenericController } from '@/utils/api/GeneriqueController';
 const invitationController = new GenericController(prisma.invitation, InvitationDTO, invitationFieldValidations);
 
 export async function GET(request, { params }) {
-    return (await invitationController.getById(params)).generateResponse();
+    const chronosResponse = await invitationController.getById(params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    return (await invitationController.update(request, params)).generateResponse();
+    const chronosResponse = await invitationController.update(request, params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return (await invitationController.delete(params)).generateResponse();
+    const chronosResponse = await invitationController.delete(params);
+    return chronosResponse.generateNextResponse();
 }

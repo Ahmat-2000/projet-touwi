@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 
 export class ChronosResponse {
-    constructor(status, message=null, data = null, error = null) {
+    constructor(status, { message=null, data = null, error = null, DTO=null }) {
         this.status = status;
         this.data = data;
         this.message = message;
         this.error = error;
+        this.DTO = DTO;
     }
     
-    generateResponse() {
+    generateNextResponse() {
+        // Format the data with the DTO before sending the response to the user
+        if (Array.isArray(this.data)) { this.data = this.data.map(item => this.DTO ? new this.DTO(item) : item); }
+        else { this.data = this.DTO ? new this.DTO(this.data) : this.data; }
+
         const responseObject = {
             ...(this.message && { message: this.message }),
             ...(this.data && { data: this.data }),

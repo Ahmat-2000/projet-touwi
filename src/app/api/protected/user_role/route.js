@@ -6,9 +6,11 @@ import prisma from '@/lib/prisma';
 const userRoleController = new GenericController(prisma.userRole, UserRoleDTO, userRoleFieldValidations);
 
 export async function GET(request) {
-  return (await userRoleController.getAll()).generateResponse();
+  const chronosResponse = await userRoleController.getAll();
+  return chronosResponse.generateNextResponse();
 }
 
 export async function POST(request) {
-  return (await userRoleController.create(request)).generateResponse();
+  const chronosResponse = await userRoleController.create(request);
+  return chronosResponse.generateNextResponse();
 }

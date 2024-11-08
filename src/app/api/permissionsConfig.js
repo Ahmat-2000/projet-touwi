@@ -2,6 +2,10 @@
 // Each route can have different permissions for different methods (GET, POST, PUT, DELETE)
 // All the available permissions are handled in the permissionService.js file and are checked in the middleware.js file
 
+// admin for user with is_admin = true
+// user for user with is_admin = false
+// can_manage permissions for the workspace, user_role and invitation entities that are taken from the user_role table
+
 export default {
   "/api/protected/user": {
     "GET": ["admin", "user"],
@@ -29,12 +33,12 @@ export default {
 
   "/api/protected/workspace": {
     "GET": ["admin", "user"],
-    "POST": ["admin", "can_manage_workspace"]
+    "POST": ["admin", "user"]
   },
   "/api/protected/workspace/id": {
     "GET": ["admin", "user"],
     "PUT": ["admin", "can_manage_workspace"],
-    "DELETE": ["admin", "can_manage_workspace", "user"]
+    "DELETE": ["admin", "can_manage_workspace"]
   },
 
 

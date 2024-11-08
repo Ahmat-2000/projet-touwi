@@ -6,9 +6,11 @@ import prisma from '@/lib/prisma';
 const invitationController = new GenericController(prisma.invitation, InvitationDTO, invitationFieldValidations);
 
 export async function GET(request) {
-  return (await invitationController.getAll()).generateResponse();
+  const chronosResponse = await invitationController.getAll();
+  return chronosResponse.generateNextResponse();
 }
 
 export async function POST(request) {
-  return (await invitationController.create(request)).generateResponse();
+  const chronosResponse = await invitationController.create(request);
+  return chronosResponse.generateNextResponse();
 }

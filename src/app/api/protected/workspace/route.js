@@ -8,12 +8,16 @@ const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO
 
 
 export async function GET(request) {
-  return (await workspaceController.getAll()).generateResponse();
+  const chronosResponse = await workspaceController.getAll();
+  return chronosResponse.generateNextResponse();
 }
 
 export async function POST(request) {
   const body = await request.json();
-  const path = createWorkspace();
+
+  const path = await createWorkspace();
   body.path = path;
-  return (await workspaceController.create({ json: () => Promise.resolve(body) })).generateResponse();
+
+  const chronosResponse = await workspaceController.create({ json: () => Promise.resolve(body) });
+  return chronosResponse.generateNextResponse();
 }

@@ -6,13 +6,16 @@ import prisma from '@/lib/prisma';
 const userController = new GenericController(prisma.user, UserDTO, userFieldValidations);
 
 export async function GET(request, { params }) {
-    return (await userController.getById(params)).generateResponse();
+    const chronosResponse = await userController.getById(params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    return (await userController.update(request, params)).generateResponse();
+    const chronosResponse = await userController.update(request, params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return (await userController.delete(params)).generateResponse();
+    const chronosResponse = await userController.delete(params);
+    return chronosResponse.generateNextResponse();
 }
