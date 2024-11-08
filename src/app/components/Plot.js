@@ -1,13 +1,14 @@
 // Plot.js
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 
 
 const Plot = ({ propsData }) => {
 
     const plotRef = useRef(null);
+    const [deletePlot, setDeletePlot] = useState(false);
 
     useEffect(() => {
 
@@ -103,11 +104,24 @@ const Plot = ({ propsData }) => {
         if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
     }, [propsData]);
-    
 
-    return <div>
-        <div ref={plotRef} style={{ width: '100%', height: '400px' }} />;
-    </div>
+    if (deletePlot) {
+        return null;
+    }
+
+    return (
+        <div style={{marginTop: '50px'}}>
+            <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
+                <button
+                    onClick={() => setTestCheck(true)}
+                    className="delete-plot-button"
+                >
+                    ✖
+                </button>
+                <button onClick={() => console.log(propsData.plotRefList)}>Log Plot List</button>
+            </div>
+        </div>
+    )
 
 };
 

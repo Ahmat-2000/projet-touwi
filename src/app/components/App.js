@@ -124,6 +124,11 @@ const App = ({ hasVideo = true }) => {
 
         // Update shapes and annotations on all plots
         plotList.current.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
             Plotly.relayout(plotRef.current, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
@@ -145,6 +150,11 @@ const App = ({ hasVideo = true }) => {
 
         // Destroy all plots
         plotList.current.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
             Plotly.purge(plotRef.current);
         });
 
@@ -165,6 +175,12 @@ const App = ({ hasVideo = true }) => {
 
         // Update drag mode for all plots
         plotList.current.forEach((plotRef) => {
+
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
 
             //if we don't use scrollzoom on navigate, just use :
             //Plotly.relayout(plotRef, { dragmode: newDragMode });
@@ -219,6 +235,11 @@ const App = ({ hasVideo = true }) => {
         
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
             Plotly.relayout(plotRef.current, layoutUpdate);
         });
 
@@ -267,6 +288,11 @@ const App = ({ hasVideo = true }) => {
 
         // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
         });
 
@@ -294,6 +320,11 @@ const App = ({ hasVideo = true }) => {
 
             // Remove 1 shape from all plots
             plotRefs.forEach(plotRef => {
+                if (plotRef.current === null) {
+                    //remove plot from plotRefList
+                    plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                    return;
+                }
                 plotRef.current.layout.shapes.splice(regionIndex, 1);
 
                 // Remove it's annotation if it's a flag
@@ -312,6 +343,11 @@ const App = ({ hasVideo = true }) => {
 
             // Update shapes and annotations on the plots
             plotRefs.forEach(plotRef => {
+                if (plotRef.current === null) {
+                    //remove plot from plotRefList
+                    plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                    return;
+                }
                 Plotly.relayout(plotRef.current, {
                     shapes: plotRef.current.layout.shapes,
                     annotations: plotRef.current.layout.annotations
