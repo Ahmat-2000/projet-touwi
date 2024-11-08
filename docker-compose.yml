@@ -18,9 +18,8 @@ services:
     command: >
       sh -c "
         if [ '$ENV' = 'production' ]; then
-          npm install &&
-          npx prisma generate && 
-          npm run build &&
+          npm install --only=production &&
+          npx prisma generate &&
           npm run start; 
         elif [ '$ENV' = 'development' ]; then
           npm install &&

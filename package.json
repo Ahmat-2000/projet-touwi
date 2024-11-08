@@ -10,6 +10,7 @@
     "seed": "node prisma/seed.js"
   },
   "prisma": {
+    "schema": "prisma/schema.prisma",
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
