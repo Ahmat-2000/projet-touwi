@@ -3,44 +3,37 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    ports:
-      - "3000:3000"
+      args:
+        ENV: ${ENV}
+      target: ${ENV}
     env_file:
       - .env
+    ports:
+      - "3000:3000"
+      - "3001:3001"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${ENV}
     depends_on:
       mariadb:
         condition: service_healthy
-    command: > 
-      sh -c "
-        npm install &&
-        npx prisma db pull &&
-        npx prisma generate &&
-        npx prisma migrate reset --force &&
-        npx prisma migrate dev --name 'init' &&
-        npm run dev
-      "
+    command: sh ./entrypoint.sh
+  
 
   mariadb:
     image: mariadb:11.5.2
     container_name: mariadb
     restart: always
     env_file:
-      - .env  # Fichier contenant les variables d'environnement
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # Mot de passe root
-      MYSQL_DATABASE: ${MYSQL_DATABASE}            # Base de données à créer
-      MYSQL_USER: ${MYSQL_USER}                    # Nom de l'utilisateur
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}            # Mot de passe utilisateur
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  # Root password
+      MYSQL_DATABASE: ${MYSQL_DATABASE}            # Database name
+      MYSQL_USER: ${MYSQL_USER}                    # Name of the user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}            # Password of the user
     ports:
-      - "3306:3306"  # Port MySQL par défaut
+      - "3306:3306"  # Deflaut listening port for mariadb
     volumes:
-      - mariadb_data:/var/lib/mariadb  # Persistance des données dans un volume
-      - ./db.sql:/docker-entrypoint-initdb.d/db.sql # Fichier SQL d'initialisation
+      - mariadb_data:/var/lib/mariadb  # Data volume for mariadb that contains database files
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       start_period: 5s
