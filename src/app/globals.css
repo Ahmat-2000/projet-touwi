@@ -177,3 +177,22 @@ body {
     text-wrap: balance;
   }
 }
+
+.delete-plot-button {
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.delete-plot-button:hover {
+  background-color: #cc0000;
+}

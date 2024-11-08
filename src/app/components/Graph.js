@@ -144,10 +144,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
     };
-    
 
     function createPlot(sensor, axis, filename, data) {
-        
+
         // bricolage en attendant de pouvoir fetch les données du .touwi
         if (data === undefined) {
             const tmp = fetchData(sensor, axis);
@@ -155,11 +154,10 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
 
         }
-        
+
         // Create timestamp array from 0 to data length
         const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
-        
         const props = {
             data: data,
             title: filename + ' ' + sensor + ' ' + axis,
@@ -171,16 +169,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             shapes: [],
             annotations: [],
             appMode: appMode,
-            deletePlot: deletePlot
-            
         };
 
-        // Create new plot
-        const newPlot = <Plot key={props.title} propsData={props} />;
-
-        // Add new plot to plots list
-        setPlots([...plots, newPlot]);
-        
+        setPlots(prevPlots => [...prevPlots, 
+            <Plot key={props.title} propsData={props} />
+        ]);
     }
 
 
