@@ -1,15 +1,16 @@
 // app/api/protected/userRole/route.js
-import { PrismaClient } from '@prisma/client';
 import { userRoleFieldValidations, UserRoleDTO } from '@/model/userRoleModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const userRoleController = new GenericController(prisma.userRole, UserRoleDTO, userRoleFieldValidations);
 
 export async function GET(request) {
-  return userRoleController.getAll();
+  const chronosResponse = await userRoleController.getAll();
+  return chronosResponse.generateNextResponse();
 }
 
 export async function POST(request) {
-  return userRoleController.create(request);
+  const chronosResponse = await userRoleController.create(request);
+  return chronosResponse.generateNextResponse();
 }

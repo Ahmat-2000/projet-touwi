@@ -1,19 +1,21 @@
 // app/api/protected/user/[id]/route.js
-import { PrismaClient } from '@prisma/client';
 import { userFieldValidations, UserDTO } from '@/model/userModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const userController = new GenericController(prisma.user, UserDTO, userFieldValidations);
 
 export async function GET(request, { params }) {
-    return userController.getById(params);
+    const chronosResponse = await userController.getById(params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    return userController.update(request, params);
+    const chronosResponse = await userController.update(request, params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return userController.delete(params);
+    const chronosResponse = await userController.delete(params);
+    return chronosResponse.generateNextResponse();
 }

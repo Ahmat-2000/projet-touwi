@@ -1,19 +1,21 @@
 // app/api/protected/invitation/[id]/route.js
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { invitationFieldValidations, InvitationDTO } from '@/model/invitationModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
 
-const prisma = new PrismaClient();
 const invitationController = new GenericController(prisma.invitation, InvitationDTO, invitationFieldValidations);
 
 export async function GET(request, { params }) {
-    return invitationController.getById(params);
+    const chronosResponse = await invitationController.getById(params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    return invitationController.update(request, params);
+    const chronosResponse = await invitationController.update(request, params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return invitationController.delete(params);
+    const chronosResponse = await invitationController.delete(params);
+    return chronosResponse.generateNextResponse();
 }

@@ -1,19 +1,34 @@
 //api/protected/workspace/[id]/route.js
-import { PrismaClient } from '@prisma/client';
 import { workspaceFieldValidations, WorkspaceDTO } from '@/model/workspaceModel';
 import { GenericController } from '@/utils/api/GeneriqueController';
+import { deleteWorkspace } from '@/services/api/WorkspaceDiskService';
+import prisma from '@/lib/prisma';
 
-const prisma = new PrismaClient();
 const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO, workspaceFieldValidations);
 
 export async function GET(request, { params }) {
-    return workspaceController.getById(params);
+    const chronosResponse = await workspaceController.getById(params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    return workspaceController.update(request, params);
+    const chronosResponse = await workspaceController.update(request, params);
+    return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    return workspaceController.delete(params);
+    const chronosResponse = await workspaceController.delete(params);
+
+    if (!chronosResponse.isSuccessful()) {
+        return chronosResponse.generateNextResponse();
+    }
+
+    // Delete the workspace folder and all the users roles and invitations related to it
+    const body =chronosResponse.data;
+
+    deleteWorkspace(body.path);
+    prisma.userRole.deleteMany({ where: { workspace_id: params.id } });
+    prisma.invitation.deleteMany({ where: { workspace_id: params.id } });
+
+    return chronosResponse.generateNextResponse();
 }

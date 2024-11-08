@@ -1,8 +1,6 @@
 // services/api/InvitationHandler.js
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
-
-const prisma = new PrismaClient();
+import { ChronosResponse } from '@/utils/api/ChronosResponse';
+import prisma from '@/lib/prisma';
 
 export class InvitationHandler {
     async accept(params) {
@@ -21,12 +19,12 @@ export class InvitationHandler {
         // Retrive the invitation and check if it exists
         const invitation = await prisma.invitation.findUnique({ where: { id: parseInt(id) } });
         if (!invitation) { 
-            return NextResponse.json({ message: 'Invitation not found' }, { status: 404 });
+            return new ChronosResponse(404, 'Invitation not found.');
         }
 
         // Verify that the invitation is for the user
         if (invitation.shared_with_id !== user.id) {
-            return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+            return new ChronosResponse(403, 'You are not authorized to perform this action.');
         }
 
         // Accept the invitation if the action is 'accept'
@@ -47,6 +45,6 @@ export class InvitationHandler {
 
         // Return the appropriate message
         const message = actionType === 'accept' ? 'Invitation accepted' : 'Invitation rejected';
-        return NextResponse.json({ message }, { status: 200 });
+        return new ChronosResponse(200, message);
     }
 }
