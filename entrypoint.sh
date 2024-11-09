@@ -16,7 +16,8 @@ npx prisma generate
 
 
 # Path for the flag file to prevent reseeding
-SEED_FLAG_FILE="/app/.seeded"
+TEMP_DIR="/temp"
+SEED_FLAG_FILE="$TEMP_DIR/.seeded"
 
 # If the seed flag file doesn't exist, run the seed command
 if [ ! -f "$SEED_FLAG_FILE" ]; then
@@ -24,6 +25,7 @@ if [ ! -f "$SEED_FLAG_FILE" ]; then
   npm run seed
 
   # Create the flag file to indicate seeding has been completed
+  mkdir -p "$TEMP_DIR"
   touch "$SEED_FLAG_FILE"
 else
   echo "Database already seeded, skipping seeding."
