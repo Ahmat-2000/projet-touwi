@@ -1,36 +1,70 @@
 import prisma from "@/lib/prisma";
 
-/**
- * Récupère le workspace associé à la requête.
- * @param {Request} request - La requête HTTP.
- * @returns {Promise<Object|null>} - Le workspace ou null si non trouvé ou non spécifié.
+/** 
+ * Retrieve the workspace ID from the request URL by parsing the route or query parameters.
+ * @param {Object} request - The request object.
+ * @returns {Number} - The workspace ID.
  */
-export async function getWorkspaceFromRequest(request) {
+export async function getWorkspaceIdFromRequest(request) {
   const url = new URL(request.url);
   let workspaceId = null;
 
-  // Identifier si la route est spécifique à un workspace
+  // Identify the route
   const isWorkspaceRoute = url.pathname.startsWith('/api/protected/workspaces');
 
+    // Extract the workspace ID from the URL either with the route or data send by the client
   if (isWorkspaceRoute) {
-    // Extraire l'ID depuis l'URL (ex : /api/protected/workspaces/:id)
     const pathParts = url.pathname.split('/');
     workspaceId = pathParts[pathParts.length - 1];
   } else {
-    // Sinon, extraire depuis les paramètres de requête
-    workspaceId = url.searchParams.get('workspaceId');
+    const clonedRequest = request.clone();
+    const jsonData = await clonedRequest.json();
+    workspaceId = jsonData && jsonData.workspace_id;
+    console.log(workspaceId);
   }
 
-  // Convertir l'ID en entier et vérifier sa validité
   const parsedWorkspaceId = parseInt(workspaceId, 10);
-  if (isNaN(parsedWorkspaceId)) {
-    return null; // Retourner null si l'ID est invalide
-  }
 
-  // Récupérer le workspace correspondant à l'ID dans la base de données
+  // Return the parsed workspace ID or null if it's not a number
+  return isNaN(parsedWorkspaceId) ? null : parsedWorkspaceId;
+}
+
+/**
+ * Retrieve the workspace from the database using the workspace ID.
+ * @param {Number} workspaceId - The workspace ID.
+ * @returns {Object} - The workspace object.
+ */
+export async function getWorkspace(workspaceId) {
+  
+  if (!workspaceId) return null;
+
+  console.log("Test getWorkspace");
+  // Retrieve the workspace from the database
   const workspace = await prisma.workspace.findUnique({
-    where: { id: parsedWorkspaceId },
+    where: { id: workspaceId },
   });
 
-  return workspace || null; // Retourne le workspace ou null s'il n'existe pas
+  console.log(workspace);
+
+  return workspace || null;
+}
+
+/**
+ * This function use the table userRole to retrieve the workspace IDs accessible by the user.
+ * @param {Number} user - The user ID.
+ * @returns {Set} - Set of workspace IDs.
+ */
+export async function getRelatedWorkspaces(user) {
+  console.log("Test getRelatedWorkspaces");
+
+  // Retrieve the workspace IDs accessible by the user using a select for performance
+  const userWorkspaceIds = await prisma.userRole.findMany({
+    where: { user_id: user },
+    select: { workspace_id: true },
+  });
+
+  // Create a set of accessible workspace IDs for quick lookups
+  const accessibleWorkspaceIds = new Set(userWorkspaceIds.map(userRole => userRole.workspaceId));
+
+  return accessibleWorkspaceIds;
 }

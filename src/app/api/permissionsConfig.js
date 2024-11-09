@@ -54,10 +54,10 @@ export default {
     "PUT": ["admin", "can_manage_invitations"],
     "DELETE": ["admin", "can_manage_invitations"]
   },
-  "/api/protected/invitation/accept": {
+  "/api/protected/invitation/accept/id": {
     "POST": ["admin", "user"]
   },
-  "/api/protected/invitation/reject": {
+  "/api/protected/invitation/reject/id": {
     "POST": ["admin", "user"]
   },
 
