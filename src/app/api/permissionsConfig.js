@@ -6,6 +6,8 @@
 // user for user with is_admin = false
 // can_manage permissions for the workspace, user_role and invitation entities that are taken from the user_role table
 
+// related_user for the user that is related to the workspace, user_role or invitation entity
+
 export default {
   "/api/protected/user": {
     "GET": ["admin", "user"],
@@ -24,7 +26,7 @@ export default {
     "POST": ["admin", "can_manage_users"]
   },
   "/api/protected/user_role/id": {
-    "GET": ["admin", "user"],
+    "GET": ["admin", "related_user"],
     "PUT": ["admin", "can_manage_users"],
     "DELETE": ["admin", "can_manage_users"]
   },
@@ -36,7 +38,7 @@ export default {
     "POST": ["admin", "user"]
   },
   "/api/protected/workspace/id": {
-    "GET": ["admin", "user"],
+    "GET": ["admin", "related_user"],
     "PUT": ["admin", "can_manage_workspace"],
     "DELETE": ["admin", "can_manage_workspace"]
   },
@@ -48,7 +50,7 @@ export default {
     "POST": ["admin", "can_manage_invitations"]
   },
   "/api/protected/invitation/id": {
-    "GET": ["admin", "user"],
+    "GET": ["admin", "related_user"],
     "PUT": ["admin", "can_manage_invitations"],
     "DELETE": ["admin", "can_manage_invitations"]
   },
