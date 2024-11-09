@@ -1,8 +1,8 @@
 import fs from 'fs';
-import path from 'path';
+import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-const workspacesPath = path.join(process.cwd(), 'workspaces');
+const workspacesPath = join(process.cwd(), 'workspaces');
 
 if(!fs.existsSync(workspacesPath)) fs.mkdirSync(workspacesPath, { recursive: true });
 
@@ -13,11 +13,11 @@ if(!fs.existsSync(workspacesPath)) fs.mkdirSync(workspacesPath, { recursive: tru
  */
 export async function getWorkspace(path) {
     try {
-        if (!fs.existsSync(path)) {
+        if (!fs.existsSync(join(workspacesPath, path))) {
             return { message: 'Workspace not found.' };
         }
 
-        const files = fs.readdirSync(path);
+        const files = fs.readdirSync(join(workspacesPath, path));
         return files;
 
     } catch (error) {
@@ -33,12 +33,12 @@ export async function getWorkspace(path) {
 export async function createWorkspace() {
     
     try {
-        const workspacePath = path.join(workspacesPath, `workspace_${uuidv4()}`);
+        const workspacePath = `workspace_${uuidv4()}`;
 
-        if (fs.existsSync(workspacePath)) {
+        if (fs.existsSync(join(workspacesPath, workspacePath))) {
             return { message: 'Workspace already exists.' };
         } else {
-            fs.mkdirSync(workspacePath);
+            fs.mkdirSync(join(workspacesPath, workspacePath));
         }
         return workspacePath;
 
@@ -55,10 +55,10 @@ export async function createWorkspace() {
  */
 export async function deleteWorkspace(path) {
     try {
-        if (!fs.existsSync(path)) {
+        if (!fs.existsSync(join(workspacesPath, path))) {
             return { message: 'Workspace not found.' };
         }
-        fs.rmdirSync(path, { recursive: true, force: true });
+        fs.rmSync(join(workspacesPath, path), { recursive: true, force: true });
         return { message: `Workspace deleted successfully.` };
 
     } catch (error) {
@@ -75,14 +75,33 @@ export async function deleteWorkspace(path) {
  */
 export async function addVideoToWorkspace(path, video) {
     try {
-        if (!fs.existsSync(path)) {
+        if (!fs.existsSync(join(workspacesPath, path))) {
             return { message: 'Workspace not found.' };
         }
-        fs.writeFileSync(`${path}/${video.name}`, video.data);
+        fs.writeFileSync(join(workspacesPath, workspacePath, video.name), video.data);
         return { message: `Video added successfully.` };
     } catch (error) {
         console.error(error);
         return { message: 'Error adding video.' };
+    }
+}
+
+/**
+ * Get a video from a workspace
+ * @param {string} path The path of the workspace
+ * @param {string} videoName The name of the video
+ * @returns {string} The video data
+ */
+export async function getVideoFromWorkspace(path, videoName) {
+    try {
+        if (!fs.existsSync(join(workspacesPath, path))) {
+            return { message: 'Workspace not found.' };
+        }
+        const video = fs.readFileSync(join(workspacesPath, path, videoName));
+        return video;
+    } catch (error) {
+        console.error(error);
+        return { message: 'Error retrieving video.' };
     }
 }
 
@@ -92,15 +111,33 @@ export async function addVideoToWorkspace(path, video) {
  * @param {File} file The file to add
  * @returns {string} The result of the operation
  */
-export async function addTouwiFileToWorkspace(path, file) {
+export async function addTouwiFileToWorkspace(path, data) {
     try {
-        if (!fs.existsSync(path)) {
+        if (!fs.existsSync(join(workspacesPath, path))) {
             return { message: 'Workspace not found.' };
         }
-        fs.writeFileSync(`${path}/data.csv`, file.data);
+        fs.writeFileSync(join(workspacesPath, workspacePath, 'data.touwi'), data);
         return { message: `Data added successfully.` };
     } catch (error) {
         console.error(error);
         return { message: 'Error adding data.' };
+    }
+}
+
+/**
+ * Get a CSV file from a workspace
+ * @param {string} path The path of the workspace
+ * @returns {string} The CSV data
+ */
+export async function getTouwiFileFromWorkspace(path) {
+    try {
+        if (!fs.existsSync(join(workspacesPath, path))) {
+            return { message: 'Workspace not found.' };
+        }
+        const data = fs.readFileSync(join(workspacesPath, path, 'data.touwi'));
+        return data;
+    } catch (error) {
+        console.error(error);
+        return { message: 'Error retrieving data.' };
     }
 }
