@@ -1,10 +1,10 @@
-import App from './components/App';
+import Edit from '@/components/Edit';
 
-export default function Home() {
+export default function EditPage() {
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Chronos WebApp</h1>
-      <App/>
+      <h1 style={styles.title}>Plotly.js Demo</h1>
+      <Edit />
     </div>
   );
 }

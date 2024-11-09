@@ -1,38 +1,31 @@
 import localFont from "next/font/local";
-import "./globals.css";
+import "./../styles/globals.css"
+
+import { VariablesProvider } from "@/utils/VariablesContext";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../styles/fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   weight: "100 900",
 });
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../styles/fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   weight: "100 900",
 });
 
 export const metadata = {
-  title: "Chronos WebApp",
-  icons: {
-    icon: [
-      {
-        rel: 'icon',
-        url: 'favicon.ico',
-        type: 'image/x-icon',
-        sizes: '256x256'
-      }
-    ]
-  }
+  title: "Chronos",
+  description: "Application de labelisation",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <VariablesProvider>
+          {children}
+        </VariablesProvider>
       </body>
     </html>
   );
