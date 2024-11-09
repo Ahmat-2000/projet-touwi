@@ -20,6 +20,7 @@ const App = ({ hasVideo = true }) => {
     const [selections, setSelections] = useState([]); // Array to store selected regions
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
+    const [syncEnabled, setSyncEnabled] = useState(true);
 
     const prevMidPointRef = useRef(null);
 
@@ -81,7 +82,9 @@ const App = ({ hasVideo = true }) => {
 
         // Stop video if playing
         if (hasVideo && videoRef.current) {
-            videoRef.current.pause();
+            if (syncEnabled) {
+                setSyncEnabled(false);
+            }
             videoRef.current.currentTime = videoRef.current.duration / 2;
         }
 
@@ -102,10 +105,16 @@ const App = ({ hasVideo = true }) => {
 
             // Wait for all layout updates to complete
             Promise.all(updates).then(() => {
+                
+                if (plotList.current[0].current === null) {
+                    console.log('Removing deleted plot from list | code °1 ');
+                    plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
+                }
+                
                 const midPoint = (plotList.current[0].current.layout.xaxis.range[0] + 
                                 plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
-                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
+                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Midpoint Indicator');
             });
         });
     }
@@ -230,7 +239,7 @@ const App = ({ hasVideo = true }) => {
         }
 
         //Add new INDICATOR
-        highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Indicator');
+        highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Midpoint Indicator');
         prevMidPointRef.current = midPoint;
         
         //Update axis range for all plots
@@ -264,11 +273,7 @@ const App = ({ hasVideo = true }) => {
 
         // create new annotation
         const annotation = {
-            x: xValue, //+ 3000,
-            /* this is shitty because xValue is a timestamp so values are fucked and doesn't go 
-            from 1 to 30_000 but 1.464T to 1.513T so text need 3000 to move a bit to the right of the flag bar
-            @Antoine
-            */
+            x: xValue,
             y: 1, // Adjust this value to position the text on the y-axis
             xref: 'x',
             yref: 'paper',
@@ -299,6 +304,11 @@ const App = ({ hasVideo = true }) => {
     }
 
     function deleteRegion(plotList, xValue, onlyFlag) {
+
+        if (plotList.current[0].current === null) {
+            console.log('Removing deleted plot from list | code °2 ');
+            plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
+        }
         
         // Find the region that contains the clicked xValue
         let regionIndex = plotList.current[0].current.layout.shapes.findIndex(
@@ -354,7 +364,9 @@ const App = ({ hasVideo = true }) => {
                 });
             });
 
-            console.log(`Region${isFlag ? ' and annotation' : ''} removed at x: ${xValue}`);
+            if (!onlyFlag) {
+                console.log(`Region${isFlag ? ' and annotation' : ''} removed at x: ${xValue}`);
+            }
         }
     }
 
@@ -368,7 +380,9 @@ const App = ({ hasVideo = true }) => {
                     syncZoom: syncZoom,
                     videoRef: videoRef,
                     highlightFlag: highlightFlag,
-                    deleteRegion: deleteRegion
+                    deleteRegion: deleteRegion,
+                    syncEnabled: syncEnabled,
+                    setSyncEnabled: setSyncEnabled
                 }} />
             )}
 

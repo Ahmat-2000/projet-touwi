@@ -196,3 +196,7 @@ body {
 .delete-plot-button:hover {
   background-color: #cc0000;
 }
+
+#syncVideo::-webkit-media-controls-play-button {
+  display: none;
+}

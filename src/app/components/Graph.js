@@ -19,7 +19,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
 
     useEffect(() => {
-        console.log('Graph useEffect');
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
 
@@ -63,13 +62,17 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
         const currentAppMode = appModeRef.current;
 
-        console.log(`Clicked at x: ${xValue} App mode: ${currentAppMode}`);
-
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
             if (hasVideo) {
                 const video = videoRef.current;
                 const videoDuration = video.duration; // Get video duration in seconds
+
+                if (plotList.current[0].current === null) {
+                    console.log('Removing deleted plot from list | code °3 ');
+                    plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
+                }
+
                 const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
                 
                 // Convert signal index to video time using linear mapping
@@ -77,7 +80,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 
                 // Set video current time
                 video.currentTime = videoTime;
-                console.log(`Jumping to video time: ${videoTime}s`);
             }
         }
 

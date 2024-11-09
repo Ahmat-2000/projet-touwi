@@ -9,7 +9,6 @@ const VideoControls = ({ propsData }) => {
 
     const videoRef = propsData.videoRef;
     const [, forceUpdate] = useState({});
-    const [syncEnabled, setSyncEnabled] = useState(true);
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
 
@@ -53,6 +52,12 @@ const VideoControls = ({ propsData }) => {
             const video = videoRef.current;
             const currentVideoTime = video.currentTime;
             const videoDuration = video.duration;
+
+            if (propsData.plotList.current[0].current === null) {
+                console.log('Removing deleted plot from list | code °6 ');
+                propsData.plotList.current = propsData.plotList.current.filter(ref => ref !== propsData.plotList.current[0]);
+            }
+
             const signalLength = propsData.plotList.current[0].current.data[0].x.length;
             
             const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
@@ -63,18 +68,18 @@ const VideoControls = ({ propsData }) => {
                 'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
                 'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
             };
-            console.log(newLayout, currentSignalIndex, windowSize);
+
             propsData.syncZoom(newLayout, propsData.plotList.current);
         }
     };
 
     const toggleSync = () => {
-        if (syncEnabled) {
+        if (propsData.syncEnabled) {
             videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
         } else {
             videoRef.current.addEventListener('timeupdate', timeUpdateListener);
         }
-        setSyncEnabled(!syncEnabled);
+        propsData.setSyncEnabled(!propsData.syncEnabled);
     };
 
     useEffect(() => {
@@ -89,10 +94,11 @@ const VideoControls = ({ propsData }) => {
 
             switch (event.code) {
                 case 'Space':
-                    if (!syncEnabled) {
-                        setSyncEnabled(true);
+                    if (!propsData.syncEnabled) {
+                        propsData.setSyncEnabled(true);
                     }
                     event.preventDefault();
+                    console.log('Video is ' + (videoRef.current.paused ? 'paused' : 'playing'));
                     videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
                     break;
                 case 'ArrowLeft':
@@ -106,9 +112,9 @@ const VideoControls = ({ propsData }) => {
                     videoRef.current.pause();
                     break;
                 case 'Escape':
-                    if (syncEnabled) {
+                    if (propsData.syncEnabled) {
                         videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
-                        setSyncEnabled(false);
+                        propsData.setSyncEnabled(false);
                     }
                     break;
                 default:
@@ -122,7 +128,7 @@ const VideoControls = ({ propsData }) => {
         
 
 
-        if (syncEnabled) {
+        if (propsData.syncEnabled) {
             videoRef.current.addEventListener('timeupdate', timeUpdateListener);
         }
 
@@ -133,11 +139,11 @@ const VideoControls = ({ propsData }) => {
                 videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
             }
         };
-    }, [syncEnabled, windowSize]);
+    }, [propsData.syncEnabled, windowSize]);
 
     return (
         <div>
-            <video ref={videoRef} id="syncVideo" width="600" height="400" controls>
+            <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
                 <source src={propsData.pathVideo} type="video/webm" />
                 Your browser does not support the video tag.
             </video>
@@ -171,12 +177,12 @@ const VideoControls = ({ propsData }) => {
                 onClick={toggleSync}
                 className="video-button"
                 style={{
-                    backgroundColor: syncEnabled ? '#4CAF50' : '#f44336',
+                    backgroundColor: propsData.syncEnabled ? '#4CAF50' : '#f44336',
                     padding: '8px 16px',
                     marginLeft: '10px'
                 }}
             >
-                {syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+                {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
             </button>
             <div className="window-controls">
                 <span className="window-label">Window:</span>

@@ -63,6 +63,11 @@ const Plot = ({ propsData }) => {
             //Might be bad practice to only get the first plot in the list 
             //and not use the global list of shapes & etc (not in use because they ain't updated correctly)
 
+            if (propsData.plotRefList[0].current === null) {
+                console.log('Removing deleted plot from list | code °4 ');
+                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== propsData.plotRefList[0]);
+            }
+
             //Zoom
             const currentLayout = {
                 'xaxis.range': propsData.plotRefList[0].current.layout.xaxis.range,
@@ -101,27 +106,88 @@ const Plot = ({ propsData }) => {
 
         plotRef.current.on('plotly_relayout', (eventData) => propsData.handleRelayout(eventData, propsData.plotRefList));
 
+        // Possible hover event can be added here
         if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
     }, [propsData]);
+    
 
-    if (deletePlot) {
-        return null;
+    if (!deletePlot) {
+
+        return (
+            <div style={{ marginTop: '50px' }}>
+                <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
+                    <button
+                        onClick={() => setDeletePlot(true)}
+                        className="delete-plot-button"
+                    >
+                        ✖
+                    </button>
+                </div>
+            </div>
+        )
+    }
+    else {
+
+
+        propsData.plotRefList.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °5 ');
+                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== plotRef);
+            }
+        });
+
+        if (propsData.plotRefList.length <= 1) {
+            alert("Cannot delete the last plot. At least one plot must remain.");
+            setDeletePlot(false);
+        }
     }
 
-    return (
-        <div style={{marginTop: '50px'}}>
-            <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
-                <button
-                    onClick={() => setTestCheck(true)}
-                    className="delete-plot-button"
-                >
-                    ✖
-                </button>
-                <button onClick={() => console.log(propsData.plotRefList)}>Log Plot List</button>
+
+    /*
+    //expected working behaviour :
+
+    if (!deletePlot) {
+
+        return (
+            <div style={{ marginTop: '50px' }}>
+                <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
+                    <button
+                        onClick={() => setDeletePlot(true)}
+                        className="delete-plot-button"
+                    >
+                        ✖
+                    </button>
+                </div>
             </div>
-        </div>
-    )
+        )
+    }
+    else {
+
+        if (propsData.plotRefList.length <= 1) {
+            alert("Cannot delete the last plot. At least one plot must remain.");
+            setDeletePlot(false);
+            console.log('PlotRefList length is ' + propsData.plotRefList.length, propsData.plotRefList.current);
+        }
+
+        else {
+            propsData.plotRefList.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °5 ');
+                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== plotRef);
+            }
+            });
+    console.log('PlotRefList length is ' + propsData.plotRefList.length, propsData.plotRefList.current);
+    return;
+    }
+            
+        }
+    */
+
+    
+    
 
 };
 
