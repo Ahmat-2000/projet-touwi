@@ -1,23 +1,25 @@
 //api/protected/workspace/[id]/route.js
 import { workspaceFieldValidations, WorkspaceDTO } from '@/model/workspaceModel';
-import { GenericController } from '@/utils/api/GeneriqueController';
+import { GenericController } from '@/utils/api/GenericController';
 import { deleteWorkspace } from '@/services/api/WorkspaceDiskService';
+import { handleRequest } from '@/utils/api/RequestUtils';
 import prisma from '@/lib/prisma';
 
 const workspaceController = new GenericController(prisma.workspace, WorkspaceDTO, workspaceFieldValidations);
 
 export async function GET(request, { params }) {
-    const chronosResponse = await workspaceController.getById(params);
+    const chronosResponse = await workspaceController.getById(request, params);
     return chronosResponse.generateNextResponse();
 }
 
 export async function PUT(request, { params }) {
-    const chronosResponse = await workspaceController.update(request, params);
+    const body = await handleRequest(request);
+    const chronosResponse = await workspaceController.update(request, params, body);
     return chronosResponse.generateNextResponse();
 }
 
 export async function DELETE(request, { params }) {
-    const chronosResponse = await workspaceController.delete(params);
+    const chronosResponse = await workspaceController.delete(request, params);
 
     if (!chronosResponse.isSuccessful()) {
         return chronosResponse.generateNextResponse();

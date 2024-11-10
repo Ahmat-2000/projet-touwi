@@ -12,8 +12,8 @@ export class InvitationDTO {
 }
 
 export const invitationFieldValidations = [
-    { field: 'workspace_id', required: true, type: 'number', applyTo: ['POST'] },
-    { field: 'owner_id', required: true, type: 'number', applyTo: [ ] },
-    { field: 'role_id', required: true, type: 'number', applyTo: ['POST'] },
-    { field: 'shared_with_id', required: true, type: 'number', applyTo: ['POST'] }
+    { field: 'workspace_id', required: true, type: 'number', applyTo: ['POST'], prismaConnect: "Workspace" },
+    { field: 'owner_id', required: true, type: 'number', applyTo: [ ], prismaConnect: "User_Invitation_owner_idToUser"},
+    { field: 'role_id', required: true, type: 'number', applyTo: ['POST'], prismaConnect: "Role" },
+    { field: 'shared_with_id', required: true, type: 'number', applyTo: ['POST'], prismaConnect: "User_Invitation_shared_with_idToUser" }
 ];

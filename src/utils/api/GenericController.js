@@ -1,6 +1,12 @@
 // services/api/GenericController.js
 import { ChronosResponse } from '@/utils/api/ChronosResponse';
-import { validateFields } from '@/services/api/ValidationService';
+import { validateFields, formatBody } from '@/services/api/FieldsService';
+import { checkPermissions } from '@/services/api/PermissionService';
+
+
+// On the create and update methods, we need the body and if we take it with
+// request.json() we will not be able to get the cookies and urls from it anymore
+// that's why we use the handleRequest method to clone the request and extract the body from it.
 
 export class GenericController {
     constructor(prismaModel, DTO, fieldValidations) {
@@ -9,8 +15,11 @@ export class GenericController {
         this.fieldValidations = fieldValidations;
     }
 
-    async getAll() {
+    async getAll(request) {
         try {
+            const permission = checkPermissions(request);
+            if (!permission) return permission;
+
             const items = await this.prismaModel.findMany();
             return new ChronosResponse(200, { data:items, DTO:this.DTO });
         } catch (error) {
@@ -19,13 +28,19 @@ export class GenericController {
         }
     }
 
-    async getById(params) {
+    async getById(request, params) {
         try {
+            const permission = checkPermissions(request);
+            if (!permission) return permission;
+
             const { id } = params;
 
             if (!id) return new ChronosResponse(400, { message:'Id is required.' });
 
-            const item = await this.prismaModel.findUnique({ where: { id: parseInt(id) } });
+            const parsedId = parseInt(id);
+            if (isNaN(parsedId)) return new ChronosResponse(400, { message:'Id must be an integer.' });
+
+            const item = await this.prismaModel.findUnique({ where: { id: parsedId } });
 
             if (!item) return new ChronosResponse(404, { message:'Element not found.' });
 
@@ -36,18 +51,22 @@ export class GenericController {
         }
     }
 
-    async create(request) {
+    async create(request, body) {
         try {
-            const body = await request.json();
+            const permission = checkPermissions(request);
+            if (!permission) return permission;
 
             if (!body) return new ChronosResponse(400, { message:'Body is required.' });
 
             // Validation of required fields
             const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, "POST") : [];
-            if (errors.length > 0) return new ChronosResponse(400, { errors:errors });
+            if (errors.length > 0) return new ChronosResponse(400, { errors:errors, message:'One or more fields are invalid.' });
+
+            // Format the body for prisma to understand it
+            const prismaBody = formatBody(body, this.fieldValidations);
 
             // Create the element
-            const item = await this.prismaModel.create({ data: body });
+            const item = await this.prismaModel.create({ data: prismaBody });
 
             return new ChronosResponse(201, { data:item, DTO:this.DTO });
         } catch (error) {
@@ -56,23 +75,31 @@ export class GenericController {
         }
     }
 
-    async update(request, params) {
+    async update(request, params, body) {
         try {
+            const permission = checkPermissions(request);
+            if (!permission) return permission;
+
             const { id } = params;
-            const body = await request.json();
 
             if (!id) return new ChronosResponse(400, { message:'Id is required.' });
+
+            const parsedId = parseInt(id);
+            if (isNaN(parsedId)) return new ChronosResponse(400, { message:'Id must be an integer.' });
 
             if (!body) return new ChronosResponse(400, { message:'Body is required.' });
 
             // Validation of required fields
             const errors = this.fieldValidations ? validateFields(body, this.fieldValidations, "PUT") : [];
-            if (errors.length > 0) return new ChronosResponse(400, { errors:errors });
+            if (errors.length > 0) return new ChronosResponse(400, { errors:errors, message:'One or more fields are invalid.' });
+
+            // Format the body for prisma to understand it
+            const prismaBody = formatBody(body, this.fieldValidations);
 
             // Update the element
             const item = await this.prismaModel.update({
-                where: { id: parseInt(id) },
-                data: body,
+                where: { id: parsedId },
+                data: prismaBody,
             });
 
             return new ChronosResponse(200, { data:item, DTO:this.DTO });
@@ -82,14 +109,15 @@ export class GenericController {
         }
     }
 
-    async delete(params) {
+    async delete(request, params) {
         try {
+            const permission = checkPermissions(request);
+            if (!permission) return permission;
             
             const { id } = params;
 
             if (!id) return new ChronosResponse(400, { message:'Id is required.' });
 
-            // Ensure id is a valid integer
             const parsedId = parseInt(id);
             if (isNaN(parsedId)) return new ChronosResponse(400, { message:'Id must be an integer.' });
 
