@@ -10,6 +10,8 @@ async function seedDatabase() {
   const isDevelopment = process.env.ENV === 'development';
   const featuresDir = path.join(__dirname, 'seeds');
 
+  console.log(`-----------------------------------------`);
+  console.log(`Seeding the database with ${isDevelopment ? 'development' : 'production'} data...\n`);
   try {
     const files = fs.readdirSync(featuresDir);
 
@@ -47,6 +49,8 @@ async function seedDatabase() {
         console.log(`Data successfully seeded for the ${tableName} table.`);
       }
     }
+    console.log('\nDatabase seeding completed.');
+    console.log(`-----------------------------------------\n`);
   } catch (error) {
     console.error("Error while seeding the database: ", error);
   } finally {
