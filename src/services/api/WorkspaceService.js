@@ -12,17 +12,14 @@ export async function getWorkspaceIdFromRequest(request) {
 
   // Identify the route
   const isWorkspaceRoute = url.pathname.startsWith('/api/protected/workspace');
-
-    // Extract the workspace ID from the URL either with the route or data send by the client
+   // Extract the workspace ID from the URL either with the route or data send by the client
   if (isWorkspaceRoute) {
     const pathParts = url.pathname.split('/');
     workspaceId = pathParts[pathParts.length - 1];
   } else {
-    const clonedRequest = request.clone();
-    const jsonData = await handleRequest(clonedRequest);
+    const jsonData = await handleRequest(request);
     workspaceId = jsonData && jsonData.workspace_id;
   }
-
   const parsedWorkspaceId = parseInt(workspaceId, 10);
 
   // Return the parsed workspace ID or null if it's not a number
