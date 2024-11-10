@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getWorkspaceIdFromRequest, getWorkspace } from '@/services/api/workspaceService';
-import { getPermissions } from '@/services/api/permissionService';
+import { getWorkspaceIdFromRequest, getWorkspace } from '@/services/api/WorkspaceService';
+import { getPermissions } from '@/services/api/PermissionService';
 import { getUserFromRequest } from '@/services/api/UserService';
 import permissionsConfig from '@/app/api/permissionsConfig';
 

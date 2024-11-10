@@ -55,12 +55,12 @@ export async function getRelatedWorkspaces(user) {
 
   // Retrieve the workspace IDs accessible by the user using a select for performance
   const userWorkspaceIds = await prisma.userRole.findMany({
-    where: { user_id: user },
+    where: { user_id: user.id },
     select: { workspace_id: true },
   });
 
   // Create a set of accessible workspace IDs for quick lookups
-  const accessibleWorkspaceIds = new Set(userWorkspaceIds.map(userRole => userRole.workspaceId));
+  const accessibleWorkspaceIds = new Set(userWorkspaceIds.map(userRole => userRole.workspace_id));
 
   return accessibleWorkspaceIds;
 }

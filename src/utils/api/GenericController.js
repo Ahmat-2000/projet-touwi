@@ -1,7 +1,7 @@
 // services/api/GenericController.js
 import { ChronosResponse } from '@/utils/api/ChronosResponse';
 import { validateFields, formatBody } from '@/services/api/FieldsService';
-import { checkPermissions } from '@/services/api/permissionService';
+import { checkPermissions } from '@/services/api/PermissionService';
 
 
 // On the create and update methods, we need the body and if we take it with

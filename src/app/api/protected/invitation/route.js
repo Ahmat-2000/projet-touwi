@@ -2,7 +2,7 @@
 import { invitationFieldValidations, InvitationDTO } from '@/model/invitationModel';
 import { GenericController } from '@/utils/api/GenericController';
 import { getUserFromRequest } from '@/services/api/UserService';
-import { getRelatedWorkspaces } from '@/services/api/workspaceService';
+import { getRelatedWorkspaces } from '@/services/api/WorkspaceService';
 import { handleRequest } from '@/utils/api/RequestUtils';
 import prisma from '@/lib/prisma';
 

@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import permissionsConfig from "@/app/api/permissionsConfig";
-import { getWorkspaceIdFromRequest, getWorkspace } from "@/services/api/workspaceService";
+import { getWorkspaceIdFromRequest, getWorkspace } from "@/services/api/WorkspaceService";
 import { ChronosResponse } from "@/utils/api/ChronosResponse";
 import { getUserFromRequest } from "@/services/api/UserService";
 
