@@ -7,9 +7,6 @@ npm install
 echo "Applying Prisma schema to the database..."
 npx prisma db push  # This syncs the database with schema.prisma without creating migrations
 
-# Generate Prisma Migration
-npx prisma migrate dev --name init
-
 # Generate Prisma client
 npx prisma generate
 
