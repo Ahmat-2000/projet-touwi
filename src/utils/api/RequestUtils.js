@@ -1,7 +1,12 @@
 
-
 export async function handleRequest(request) {
-    const clonedRequest = await request.clone();
-    const body = await clonedRequest.json();
-    return body;
+    const clonedRequest = request.clone();
+
+    if (!clonedRequest.body) return null;
+    try {
+        const body = await clonedRequest.json();
+        return body;
+    } catch (error) {
+        return null; 
+    }
 }
