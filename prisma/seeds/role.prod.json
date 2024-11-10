@@ -1,0 +1,17 @@
+[
+    {
+        "name": "user",
+        "description": "User can read and write on workspaces",
+        "can_read": true,
+        "can_write": true
+    },
+    {
+        "name": "admin",
+        "description": "Admin can read, write, share and manage workspaces",
+        "can_read": true,
+        "can_write": true,
+        "can_manage_invitations": true,
+        "can_manage_workspace": true,
+        "can_manage_users": true
+    }
+]
