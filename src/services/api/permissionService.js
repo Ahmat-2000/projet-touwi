@@ -1,4 +1,8 @@
 import prisma from "@/lib/prisma";
+import permissionsConfig from "@/app/api/permissionsConfig";
+import { getWorkspaceIdFromRequest, getWorkspace } from "@/services/api/workspaceService";
+import { ChronosResponse } from "@/utils/api/ChronosResponse";
+import { getUserFromRequest } from "@/services/api/UserService";
 
 /**
  * Retrieve the permissions for all request in the api routes based on the user and workspace if it exists.
@@ -26,7 +30,7 @@ export async function getPermissions(user, workspace) {
 
     // If no role is found, return default permissions; otherwise, add 'related_user' permission
     if (!userRole || !userRole.Role) return permissions; 
-    else permissions.push('related_user'); 
+    permissions.push('related_user');
 
     const role = userRole.Role;
 
@@ -38,4 +42,31 @@ export async function getPermissions(user, workspace) {
     if (role.can_manage_users) permissions.push('can_manage_users');
 
     return permissions; // Return only the permissions that the user has been granted
+}
+
+export async function checkPermissions(request) {
+    // Retrieve user from the request
+    const user = await getUserFromRequest(request);
+    if (!user) return new ChronosResponse(401, { message: 'Unauthorized' });
+
+    // Retrieve workspace context from the request, if applicable
+    const workspaceId = await getWorkspaceIdFromRequest(request);
+    const workspace = await getWorkspace(workspaceId);
+    const permissions = await getPermissions(user, workspace);
+
+    // Retrieve the route from the request and standardize the path format
+    let requestedPath = request.nextUrl.pathname;
+    const requestMethod = request.method.toUpperCase();
+    requestedPath = requestedPath.replace(/\/\d+$/, "/id");
+    const routePermissions = Object.keys(permissionsConfig).find((route) => route === requestedPath);
+    if (!routePermissions || !permissionsConfig[routePermissions][requestMethod]) {
+        throw new Error("Route or method not found in permissions configuration. (Check permissionsConfig.js)");
+    }
+
+    // Check if the user's permissions meet the requirements for the route and method
+    const hasPermission = permissionsConfig[routePermissions][requestMethod].some(role =>
+        permissions.includes(role)
+    );
+
+    return hasPermission? null : new ChronosResponse(403, { message:'Access denied' });
 }

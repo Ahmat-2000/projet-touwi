@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcrypt';
 import prisma from '@/lib/prisma';
+import { handleRequest } from '@/utils/api/RequestUtils';
 
 export async function POST(request) {
-  const { username, password } = await request.json();
+  const { username, password } = await handleRequest(request);
 
   if (!username || !password) {
     return NextResponse.json({ message: 'Veuillez fournir un nom d\'utilisateur et un mot de passe' }, { status: 400 });

@@ -1,3 +1,4 @@
+import { handleRequest } from "@/utils/api/RequestUtils";
 import prisma from "@/lib/prisma";
 
 /** 
@@ -18,9 +19,8 @@ export async function getWorkspaceIdFromRequest(request) {
     workspaceId = pathParts[pathParts.length - 1];
   } else {
     const clonedRequest = request.clone();
-    const jsonData = await clonedRequest.json();
+    const jsonData = await handleRequest(clonedRequest);
     workspaceId = jsonData && jsonData.workspace_id;
-    console.log(workspaceId);
   }
 
   const parsedWorkspaceId = parseInt(workspaceId, 10);
@@ -38,13 +38,10 @@ export async function getWorkspace(workspaceId) {
   
   if (!workspaceId) return null;
 
-  console.log("Test getWorkspace");
   // Retrieve the workspace from the database
   const workspace = await prisma.workspace.findUnique({
     where: { id: workspaceId },
   });
-
-  console.log(workspace);
 
   return workspace || null;
 }
@@ -55,7 +52,6 @@ export async function getWorkspace(workspaceId) {
  * @returns {Set} - Set of workspace IDs.
  */
 export async function getRelatedWorkspaces(user) {
-  console.log("Test getRelatedWorkspaces");
 
   // Retrieve the workspace IDs accessible by the user using a select for performance
   const userWorkspaceIds = await prisma.userRole.findMany({
