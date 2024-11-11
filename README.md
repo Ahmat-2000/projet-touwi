@@ -61,7 +61,7 @@ Vous devez créer un fichier `.env` à la racine du projet et y définir les var
 
 ```bash
 ENV=( ENVIRONNEMENT ) # development / production
-BACKEND_API_URL=( URL_DE_VOTRE_API ) # Ex : http://localhost:3000/api
+NEXT_PUBLIC_API_URL=( URL_DE_VOTRE_API ) # Ex : http://localhost:3000/api
 JWT_SECRET=( SEED_POUR_GERER_LES_JETONS ) # Ex : secret
 
 MYSQL_ROOT_PASSWORD=( MOT_DE_PASSE_COMPLIQUÉ_POUR_ROOT ) # Ex : root (Utilisez root:root dans ce cas pour phpMyAdmin)
