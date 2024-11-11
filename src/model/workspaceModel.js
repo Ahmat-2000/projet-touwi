@@ -10,5 +10,6 @@ export class WorkspaceDTO {
 }
 
 export const workspaceFieldValidations = [
-    { field: 'name', required: true, type: 'string', applyTo: ['POST', 'PUT'] }
+    { field: 'name', required: true, type: 'string', applyTo: ['POST', 'PUT'] },
+    { field: 'path', required: false, type: 'string', applyTo: [] }
 ];

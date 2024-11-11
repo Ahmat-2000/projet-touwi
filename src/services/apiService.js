@@ -26,8 +26,8 @@ apiClient.interceptors.request.use(
 // Interceptor pour gérer les erreurs de réponse
 apiClient.interceptors.response.use(
     (response) => {
-        console.log(response);
-        return response;
+        console.log(response.data);
+        return response.data;
     },
     (error) => {
         const data = error.response.data;
