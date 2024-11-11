@@ -23,7 +23,7 @@ const Login = () => {
       // Rediriger vers le tableau de bord
       router.push('/import');
     } else {
-      alert('Identifiants incorrects');
+      alert('Incorrect username or password.');
     }
   };
 

@@ -26,7 +26,7 @@ const Register = () => {
     });
 
     if (response.ok) {
-      // Rediriger vers le tableau de bord
+      // Redirect to the import page
       router.push('/import');
     } else {
       alert('An error occurred');

@@ -11,22 +11,30 @@ export async function POST(request) {
     return NextResponse.json({ message: 'Veuillez fournir un nom d\'utilisateur et un mot de passe' }, { status: 400 });
   }
 
-  // Récupérer l'utilisateur de la base de données
+  // Search for the user by their username
   const user = await prisma.user.findUnique({
     where: { username }, // Rechercher l'utilisateur par son nom d'utilisateur
   });
 
-  // Vérification des informations d'identification
+  // If the user exists and the password is correct
   if (user && await bcrypt.compare(password, user.password)) {
-    // Créer un token JWT avec l'ID de l'utilisateur (payload.sub)
-    const token = await new SignJWT({ sub: user }) // Utiliser l'ID de l'utilisateur pour le champ `sub`
+    // Create a JWT token
+    const token = await new SignJWT({ sub: user })
       .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('1h')
+      .setExpirationTime(process.env.TOKEN_EXPIRATION)
       .sign(new TextEncoder().encode(process.env.JWT_SECRET));
 
     // Créer une réponse et définir le cookie
     const response = NextResponse.json({ token });
-    response.cookies.set('token', token, { httpOnly: true, maxAge: 60 * 60 }); // Cookie HTTP-only d'une durée d'une heure
+    
+    response.cookies.set(
+      'token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      path: '/', 
+      maxAge: 30 * 24 * 60,
+    });
 
     return response;
   } else {
