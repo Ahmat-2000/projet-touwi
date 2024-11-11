@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getWorkspaceIdFromRequest, getWorkspace } from '@/services/api/WorkspaceService';
-import { getPermissions } from '@/services/api/PermissionService';
 import { getUserFromRequest } from '@/services/api/UserService';
-import permissionsConfig from '@/app/api/permissionsConfig';
+import { redirect } from 'next/dist/server/api-utils';
 
 /**
  * Middleware to protect API routes with user permission verification.
@@ -13,7 +11,7 @@ export async function middleware(request) {
   const user = await getUserFromRequest(request);
 
   if (!user) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.json({ redirect: '/login' }, { status: 401 }); // Redirect to login if user is not authenticated
   }
 
   return NextResponse.next(); // Proceed to the next middleware or route handler if authorized
