@@ -17,7 +17,7 @@ const WorkspaceList = () => {
 
     const fetchInvitations = (workspaceId) => {
         apiService.get(apiRoutes.invitations())
-            .then(response => setInvitations(prev => ({ ...prev, [workspaceId]: response.data })))
+            .then(response => { console.log(response); setInvitations(prev => ({ ...prev, [workspaceId]: response.data })) })
             .catch(error => console.error(error));
     };
 

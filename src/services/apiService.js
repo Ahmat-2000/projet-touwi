@@ -1,54 +1,62 @@
 // src/services/apiService.js
 
-import axios from 'axios';
+const baseURL = process.env.NEXT_PUBLIC_API_URL; // URL de l'API
 
-// Configurer l'instance Axios de base
-const apiClient = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL, // URL de l'API
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
-
-// Ajouter un interceptors pour ajouter le token d'authentification
-apiClient.interceptors.request.use(
-    (config) => {
-        // Récupère le token (supposé être stocké dans le localStorage par exemple)
-        const token = localStorage.getItem('token');
-        if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Interceptor pour gérer les erreurs de réponse
-apiClient.interceptors.response.use(
-    (response) => {
-        console.log(response.data);
-        return response.data;
-    },
-    (error) => {
-        const data = error.response.data;
+const handleResponse = async (response) => {
+    const data = await response.json();
+    if (!response.ok) {
         if (data && data.redirect) {
             window.location.href = data.redirect;
             return;
         }
-        console.log(error.response);
-        return Promise.reject(error);
+        return Promise.reject(data);
     }
-);
+    return data;
+};
 
-// Service pour les différentes requêtes API
 export const apiService = {
-    get: (url, params) => apiClient.get(url, { params }),
+    get: async (url, params) => {
+        const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+        const response = await fetch(`${baseURL}${url}${queryString}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return handleResponse(response);
+    },
 
-    post: (url, data) => apiClient.post(url, data),
+    post: async (url, data) => {
+        const response = await fetch(`${baseURL}${url}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return handleResponse(response);
+    },
 
-    put: (url, data) => apiClient.put(url, data),
+    put: async (url, data) => {
+        const response = await fetch(`${baseURL}${url}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+        return handleResponse(response);
+    },
 
-    delete: (url) => apiClient.delete(url),
+    delete: async (url) => {
+        const response = await fetch(`${baseURL}${url}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return handleResponse(response);
+    },
 };
 
 // list of all the routes

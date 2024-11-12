@@ -19,13 +19,17 @@ const Login = () => {
     try {
       const response = await apiService.post(apiRoutes.login(), { username, password });
       
+      console.log(response.);
       if (response.status === 200) {
+        console.log("fdfd");
         localStorage.setItem('token', response.data.token); // Stocke le token reçu
-        router.push('/import'); // Rediriger vers le tableau de bord
+        router.push('/workspaces'); // Rediriger vers le tableau de bord
       } else {
+        console.log("yo");
         throw new Error('Identifiants incorrects');
       }
     } catch (error) {
+      console.log("salut");
       console.error(error);
       setError('Identifiants incorrects ou problème serveur');
     } finally {
