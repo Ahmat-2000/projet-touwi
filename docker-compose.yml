@@ -1,16 +1,11 @@
 services:
   nextjs:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        ENV: ${ENV}
-      target: ${ENV}
+    image: node:18-alpine
+    working_dir: /app
     env_file:
       - .env
     ports:
       - "3000:3000"
-      - "3001:3001"
     environment:
       - NODE_ENV=${ENV}
     depends_on:
@@ -21,7 +16,7 @@ services:
       - .:/app
       - /app/node_modules
       - temp_data:/app_temp
-
+      - /app/.next
 
   mariadb:
     image: mariadb:11.5.2

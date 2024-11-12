@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Install dependencies
-npm install
+npm install --include=dev
 
 # Push the Prisma schema directly to the database
 echo "Applying Prisma schema to the database..."
@@ -9,8 +9,6 @@ npx prisma db push  # This syncs the database with schema.prisma without creatin
 
 # Generate Prisma client
 npx prisma generate
-
-
 
 # Path for the flag file to prevent reseeding
 TEMP_DIR="/temp"
@@ -32,6 +30,7 @@ fi
 # Run environment-specific commands
 if [ "$ENV" = "production" ]; then
   echo "Starting in production mode..."
+  npm run build
   npm run start
 elif [ "$ENV" = "development" ]; then
   echo "Starting in development mode..."
