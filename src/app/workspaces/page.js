@@ -11,20 +11,24 @@ const WorkspaceList = () => {
 
     useEffect(() => {
         apiService.get(apiRoutes.workspaces())
-            .then(response => setWorkspaces(response.data))
+            .then(({response, body}) => setWorkspaces(body.data))
             .catch(error => console.error(error));
     }, []);
 
     const fetchInvitations = (workspaceId) => {
-        apiService.get(apiRoutes.invitations())
-            .then(response => { console.log(response); setInvitations(prev => ({ ...prev, [workspaceId]: response.data })) })
-            .catch(error => console.error(error));
+        if (!invitations[workspaceId]) {
+            apiService.get(apiRoutes.invitations())
+                .then(({response, body}) => setInvitations(prev => ({ ...prev, [workspaceId]: body.data })))
+                .catch(error => console.error(error));
+        }
     };
 
     const fetchUserRoles = (workspaceId) => {
-        apiService.get(apiRoutes.userRoles())
-            .then(response => setUserRoles(prev => ({ ...prev, [workspaceId]: response.data })))
-            .catch(error => console.error(error));
+        if (!userRoles[workspaceId]) {
+            apiService.get(apiRoutes.userRoles())
+                .then(({response, body}) => setUserRoles(prev => ({ ...prev, [workspaceId]: body.data })))
+                .catch(error => console.error(error));
+        }
     };
 
     const deleteWorkspace = (workspaceId, workspaceName) => {
@@ -37,15 +41,15 @@ const WorkspaceList = () => {
 
     const handleShowInvitations = (workspaceId) => {
         setShowInvitations(prev => ({ ...prev, [workspaceId]: !prev[workspaceId] }));
-        if (!showInvitations[workspaceId]) fetchInvitations(workspaceId);
+        if (!invitations[workspaceId]) fetchInvitations(workspaceId);
     };
 
     const handleShowUserRoles = (workspaceId) => {
         setShowUserRoles(prev => ({ ...prev, [workspaceId]: !prev[workspaceId] }));
-        if (!showUserRoles[workspaceId]) fetchUserRoles(workspaceId);
+        if (!userRoles[workspaceId]) fetchUserRoles(workspaceId);
     };
 
-    if (!workspaces.length) return <p>Aucun workspace</p>;
+    if (workspaces.length === 0) return <div>No workspaces</div>;
 
     return (
         <div>
