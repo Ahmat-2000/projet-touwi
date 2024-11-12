@@ -11,12 +11,14 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    const response = await apiService.post(apiRoutes.login(), { username, password });
+    const { response, body } = await apiService.post(apiRoutes.login(), { username, password });
+
+    console.log(response);
 
     if (response.ok) {
       // Rediriger vers le tableau de bord
       document.cookie = `token=${response.token}`;
-      router.push('/import');
+      router.push('/workspaces');
     } else {
       alert('Incorrect username or password.');
     }

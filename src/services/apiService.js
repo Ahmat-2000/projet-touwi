@@ -6,14 +6,12 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL; // URL de l'API
 
 const handleResponse = async (response) => {
     const body = await handleRequest(response);
-    const data = body.data;
 
     console.log(body);
-    console.log(data);
 
     if (!response.ok) {
-        if (data && data.redirect) {
-            window.location.href = data.redirect;
+        if (body && body.redirect) {
+            window.location.href = body.redirect;
             return;
         }
         return Promise.reject(response, body);

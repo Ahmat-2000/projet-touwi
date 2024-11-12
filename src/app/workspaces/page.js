@@ -6,19 +6,30 @@ const WorkspaceList = () => {
     const [workspaces, setWorkspaces] = useState([]);
     const [invitations, setInvitations] = useState({});
     const [userRoles, setUserRoles] = useState({});
-    const [showInvitations, setShowInvitations] = useState({});
-    const [showUserRoles, setShowUserRoles] = useState({});
 
     useEffect(() => {
         apiService.get(apiRoutes.workspaces())
-            .then(({response, body}) => setWorkspaces(body.data))
+            .then(({ response, body }) => setWorkspaces(body.data))
             .catch(error => console.error(error));
     }, []);
 
     const fetchInvitations = (workspaceId) => {
         if (!invitations[workspaceId]) {
             apiService.get(apiRoutes.invitations())
-                .then(({response, body}) => setInvitations(prev => ({ ...prev, [workspaceId]: body.data })))
+                .then(({ response, body }) => {
+                    const invitationsByWorkspace = {};
+        
+                    for (const invitation of body.data) {
+                        const { workspace_id } = invitation;
+        
+                        if (!invitationsByWorkspace[workspace_id]) {
+                            invitationsByWorkspace[workspace_id] = [];
+                        }
+                        invitationsByWorkspace[workspace_id].push(invitation);
+                    }
+        
+                    setInvitations(prev => ({ ...prev, ...invitationsByWorkspace }));
+                })
                 .catch(error => console.error(error));
         }
     };
@@ -26,7 +37,20 @@ const WorkspaceList = () => {
     const fetchUserRoles = (workspaceId) => {
         if (!userRoles[workspaceId]) {
             apiService.get(apiRoutes.userRoles())
-                .then(({response, body}) => setUserRoles(prev => ({ ...prev, [workspaceId]: body.data })))
+                .then(({ response, body }) => {
+                    const userRolesByWorkspace = {};
+        
+                    for (const userRole of body.data) {
+                        const { workspace_id } = userRole;
+        
+                        if (!userRolesByWorkspace[workspace_id]) {
+                            userRolesByWorkspace[workspace_id] = [];
+                        }
+                        userRolesByWorkspace[workspace_id].push(userRole);
+                    }
+        
+                    setUserRoles(prev => ({ ...prev, ...userRolesByWorkspace }));
+                })
                 .catch(error => console.error(error));
         }
     };
@@ -39,17 +63,7 @@ const WorkspaceList = () => {
         }
     };
 
-    const handleShowInvitations = (workspaceId) => {
-        setShowInvitations(prev => ({ ...prev, [workspaceId]: !prev[workspaceId] }));
-        if (!invitations[workspaceId]) fetchInvitations(workspaceId);
-    };
-
-    const handleShowUserRoles = (workspaceId) => {
-        setShowUserRoles(prev => ({ ...prev, [workspaceId]: !prev[workspaceId] }));
-        if (!userRoles[workspaceId]) fetchUserRoles(workspaceId);
-    };
-
-    if (workspaces.length === 0) return <div>No workspaces</div>;
+    if (!workspaces || workspaces.length === 0) return <div>No workspaces</div>;
 
     return (
         <div>
@@ -57,27 +71,37 @@ const WorkspaceList = () => {
             <ul>
                 {workspaces.map(workspace => (
                     <li key={workspace.id}>
-                        {workspace.name}
-                        <button onClick={() => handleShowInvitations(workspace.id)}>
-                            Invitations
+                        <strong>{workspace.name}</strong>
+                        
+                        {/* Afficher les invitations, chargées si nécessaire */}
+                        <button onClick={() => fetchInvitations(workspace.id)}>
+                            Voir Invitations
                         </button>
-                        {showInvitations[workspace.id] && (
-                            <ul>
-                                {invitations[workspace.id]?.map(invitation => (
+                        <ul>
+                            {invitations[workspace.id]?.length > 0 ? (
+                                invitations[workspace.id].map(invitation => (
                                     <li key={invitation.id}>{invitation.email}</li>
-                                ))}
-                            </ul>
-                        )}
-                        <button onClick={() => handleShowUserRoles(workspace.id)}>
-                            Users
+                                ))
+                            ) : (
+                                <li>Aucune invitation</li>
+                            )}
+                        </ul>
+                        
+                        {/* Afficher les utilisateurs, chargés si nécessaire */}
+                        <button onClick={() => fetchUserRoles(workspace.id)}>
+                            Voir Utilisateurs
                         </button>
-                        {showUserRoles[workspace.id] && (
-                            <ul>
-                                {userRoles[workspace.id]?.map(userRole => (
+                        <ul>
+                            {userRoles[workspace.id]?.length > 0 ? (
+                                userRoles[workspace.id].map(userRole => (
                                     <li key={userRole.id}>{userRole.role}</li>
-                                ))}
-                            </ul>
-                        )}
+                                ))
+                            ) : (
+                                <li>Aucun utilisateur</li>
+                            )}
+                        </ul>
+                        
+                        {/* Bouton pour supprimer le workspace */}
                         <button onClick={() => deleteWorkspace(workspace.id, workspace.name)}>
                             Supprimer
                         </button>
