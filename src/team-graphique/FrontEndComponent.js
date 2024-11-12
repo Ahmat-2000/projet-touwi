@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 const FrontEndComponent = () => {
@@ -7,7 +8,7 @@ const FrontEndComponent = () => {
       <div className="flex justify-between items-center sm:flex-row flex-col sm:space-y-0 space-y-4 px-6 pt-2 overflow-hidden">
         {/* Logo agrandi */}
         <div className="flex items-center space-x-2 m-0 p-0">
-          <img src="/images/image11.svg" alt="Logo" className="w-40 h-auto m-0 p-0" />
+          <Image src="/images/image11.svg" alt="Logo" className="w-40 h-auto m-0 p-0" />
         </div>
 
         {/* Label input, Add Label button et Bouton Sign out dans le même conteneur */}
@@ -35,13 +36,13 @@ const FrontEndComponent = () => {
 
       {/* Images des signaux - prend toute la largeur */}
       <div className="flex flex-col items-center mt-4 w-full border border-blue-300 p-4 rounded">
-        <img src="/images/Signal1.png" alt="Signal X" className="w-full h-auto object-cover mb-2" />
-        <img src="/images/Signal2.png" alt="Signal Y" className="w-full h-auto object-cover" />
+        <Image src="/images/Signal1.png" alt="Signal X" className="w-full h-auto object-cover mb-2" />
+        <Image src="/images/Signal2.png" alt="Signal Y" className="w-full h-auto object-cover" />
       </div>
 
       {/* Placeholder vidéo, positionné à gauche et plus petit */}
       <div className="flex justify-start mt-4">
-        <img src="/images/video.png" alt="Video Placeholder" className="w-1/3 h-auto object-cover rounded" />
+        <Image src="/images/video.png" alt="Video Placeholder" className="w-1/3 h-auto object-cover rounded" />
       </div>
     </div>
   );
