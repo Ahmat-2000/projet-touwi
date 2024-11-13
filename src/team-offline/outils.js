@@ -11,7 +11,13 @@ export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 
   // Détermine l'index de la colonne en fonction du capteur et de l'axe
   const headers = touwiContent.split("\n")[0].split(",");
-  const axisColumn = `${sensor}_${axis}`;
+  let axisColumn;
+  if (axis === ''){
+    axisColumn = sensor;
+  }
+  else{
+    axisColumn = `${sensor}_${axis}`;
+  }
   const timestampIndex = headers.indexOf("timestamp");
   const axisIndex = headers.indexOf(axisColumn);
  

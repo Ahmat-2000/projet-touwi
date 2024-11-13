@@ -151,6 +151,14 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         console.log(`Hovering over x: ${xValue}`);
     };
 
+    function test() {
+        const res = getRowWithTimestamp('LABEL', '', name);
+        res.then(result => {
+            const labelColumn = result[1];
+
+        });
+    }
+
     function createPlot(sensor, axis, filename) {
 
         const bundle = getRowWithTimestamp(sensor, axis, name);
@@ -190,6 +198,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 <button onClick={handleOpenModal}>
                     Create Plot
                 </button>
+                <button onClick={test}>Test</button>
             </div>
 
             <Modal
