@@ -9,8 +9,26 @@ import Graph from './Graph';
 import ControlPanel from './ControlPanel';
 import CSVUpload from './CSVUpload';
 import VideoControls from './VideoControls';
+import { useVariablesContext } from '@/utils/VariablesContext';
 
-const App = ({ hasVideo = true }) => {
+const App = () => {
+
+    const { variablesContext } = useVariablesContext();
+
+    const hasVideo = variablesContext.video === null ? false : true;
+    const [videoSrc, setVideoSrc] = useState(null);
+    
+    useEffect(() => {
+        console.log("Fields from context:", variablesContext);
+        console.log("Video:", variablesContext.video, typeof variablesContext.video);
+        const url = URL.createObjectURL(variablesContext.video.file);
+        console.log("URL 1 :", url);
+        setVideoSrc(url);
+        return () => URL.revokeObjectURL(url);
+    }, [variablesContext]);
+
+    
+    
 
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
@@ -375,7 +393,7 @@ const App = ({ hasVideo = true }) => {
         <div className="app-container">
             {hasVideo && (
                 <VideoControls propsData={{
-                    pathVideo: '/video/placeholder.webm',
+                    video: variablesContext.video,
                     plotList: plotList,
                     syncZoom: syncZoom,
                     videoRef: videoRef,

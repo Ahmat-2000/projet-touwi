@@ -11,6 +11,17 @@ const VideoControls = ({ propsData }) => {
     const [, forceUpdate] = useState({});
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
+    const [videoUrl, setVideoUrl] = useState(null);
+
+    useEffect(() => {
+        if (propsData.video && propsData.video.file) {
+            const url = URL.createObjectURL(propsData.video.file);
+            setVideoUrl(url);
+            return () => {
+                URL.revokeObjectURL(url); // Clean up the URL when the component unmounts
+            };
+        }
+    }, [propsData.video]);
 
     const adjustSpeed = (increment) => {
         try {
@@ -144,7 +155,7 @@ const VideoControls = ({ propsData }) => {
     return (
         <div>
             <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
-                <source src={propsData.pathVideo} type="video/webm" />
+                {videoUrl && <source src={videoUrl} type="video/*" />}
                 Your browser does not support the video tag.
             </video>
             <div className="video-controls">
