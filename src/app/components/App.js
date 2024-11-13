@@ -16,20 +16,7 @@ const App = () => {
     const { variablesContext } = useVariablesContext();
 
     const hasVideo = variablesContext.video === null ? false : true;
-    const [videoSrc, setVideoSrc] = useState(null);
     
-    useEffect(() => {
-        console.log("Fields from context:", variablesContext);
-        console.log("Video:", variablesContext.video, typeof variablesContext.video);
-        const url = URL.createObjectURL(variablesContext.video.file);
-        console.log("URL 1 :", url);
-        setVideoSrc(url);
-        return () => URL.revokeObjectURL(url);
-    }, [variablesContext]);
-
-    
-    
-
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
 

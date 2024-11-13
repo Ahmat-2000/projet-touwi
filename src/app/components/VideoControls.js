@@ -155,7 +155,7 @@ const VideoControls = ({ propsData }) => {
     return (
         <div>
             <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
-                {videoUrl && <source src={videoUrl} type="video/*" />}
+                {videoUrl && <source src={videoUrl} type="video/webm" />}
                 Your browser does not support the video tag.
             </video>
             <div className="video-controls">
