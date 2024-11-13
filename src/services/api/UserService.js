@@ -1,8 +1,7 @@
 import { jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
 
 export async function getUserFromRequest(request) {
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('token')?.value;
     if (!token) return null;
 
     const secretKey = process.env.JWT_SECRET;
