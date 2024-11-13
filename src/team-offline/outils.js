@@ -1,12 +1,9 @@
 import { receiveFile,saveModificationFile, saveNewFile} from "@/team-offline/requests";
-import { useVariablesContext } from '@/utils/VariablesContext';
 
-export const getRowWithTimestamp = async(sensor, axis, name) => {
-  console.log("debug :", sensor, axis, name)
+export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 
-  
   // Retourne le fichier .touwi 
-  const touwiContent = await receiveFile(name);
+  const touwiContent = await receiveFile(fileName);
 
   if (!touwiContent) {
       throw new Error("Contenu du fichier introuvable ou vide.");
@@ -39,11 +36,7 @@ export const getRowWithTimestamp = async(sensor, axis, name) => {
 }
 
 // Fonction pour mettre à jour un label par timestamp
-export const updateLabelByTimestamp = async (timestamp, newLabel) => {
-
-  // Retourne le nom du fichier 
-  const { variablesContext } = useVariablesContext();
-  const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
+export const updateLabelByTimestamp = async (timestamp, newLabel,fileName) => {
 
   // Charger le contenu du fichier
   const touwiContent = await receiveFile(fileName);
@@ -80,9 +73,8 @@ export const updateLabelByTimestamp = async (timestamp, newLabel) => {
   await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
 }
 
-/*
 // Fonction pour mettre à jour les labels d'un timestamp jusqu'à un autre
-export const periodUpdate = async (fileName, timestamp_debut, timestamp_fin) => {
+export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,fileName) => {
 
   // Charger le contenu du fichier
   const touwiContent = await receiveFile(fileName);
@@ -99,19 +91,26 @@ export const periodUpdate = async (fileName, timestamp_debut, timestamp_fin) => 
   const dataRows = rows.slice(1);
 
   // Convertir le timestamp recherché en chaîne pour assurer la comparaison correcte
-  const targetTimestamp = String(timestamp);
+  const targetStartTimestamp = String(timestamp_debut);
+  const targetEndTimestamp = String(timestamp_fin);
 
-  // Rechercher le timestamp et modifier le label si trouvé
+  // Rechercher les timestamps et modifier le label si trouvé
   const updatedDataRows = dataRows.map(row => {
     const columns = row.split(",");
-    if (columns[0] === targetTimestamp) {  // Comparaison avec le timestamp en chaîne
-      columns[columns.length - 1] = newLabel;  // Mettre à jour le dernier élément (LABEL)
+    const currentTimestamp = columns[0];
+
+    // Vérifier si le timestamp est dans l'intervalle défini
+    if (currentTimestamp >= targetStartTimestamp && currentTimestamp <= targetEndTimestamp) {
+      columns[columns.length - 1] = new_label;  // Mettre à jour le dernier élément (LABEL)
     }
     return columns.join(",");
   });
 
+  const updatedContent = [header, ...updatedDataRows].join("\n");
 
+  const blob = new Blob([updatedContent], { type: 'text/csv' });
+  const file = new File([blob], fileName, { type: 'text/csv', lastModified: new Date() });
 
+  await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
 
 }
-*/
