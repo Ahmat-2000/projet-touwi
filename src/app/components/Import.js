@@ -59,19 +59,27 @@ const ImportComponent = () => {
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
   
     setErrors(newErrors);
+
+    // Générez le nom de fichier à partir du nom de fileAccel
   
     if (Object.keys(newErrors).length === 0) {
       try {
-        // Passez directement les fichiers accel et gyro à csvToTouwi
-        const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, 'resultat.Touwi');
+        console.log("Contenu de fields :", fields);
+    
+        // Générez le nom de fichier à partir du nom de fileAccel
+        const fileName = fields.accel.name.split("_")[0] + '.touwi';
+        console.log("Nom du fichier généré :", fileName);
+    
+        // Passez fileName comme argument à csvToTouwi
+        const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, fileName);
         await saveNewFile(resultFile);
-        console.log("Fichiers envoyés:", fields);
+        console.log("Fichiers envoyés :", fields);
         setVariablesContext(fields);
         redirect();
       } catch (error) {
         console.error("Erreur lors de la fusion des fichiers :", error);
       }
-    }
+    } 
   };
   
   const handleRemoveFile = (name) => {

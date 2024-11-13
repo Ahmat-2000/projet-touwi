@@ -1,4 +1,4 @@
-export default async function csvToTouwi(fileAccel, fileGyro, outputFileName = 'resultat.Touwi') {
+export default async function csvToTouwi(fileAccel, fileGyro, outputFileName) {
     console.log("Processing files:", fileAccel, fileGyro);
 
     // Utilitaire pour lire un fichier en texte
