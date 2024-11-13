@@ -33,7 +33,7 @@ const App = () => {
 
 
 
-    const hasVideo = variablesContext.video === null ? false : true;
+    const hasVideo = variablesContext.video ? true : false;
     
     const [temporaryData, setData] = useState([]); // Array to store data for the plots
     const [error, setError] = useState(''); // Error message for CSV parsing
@@ -398,7 +398,7 @@ const App = () => {
         <div className="app-container">
             {hasVideo && (
                 <VideoControls propsData={{
-                    video: variablesContext.video,
+                    video: hasVideo? variablesContext.video : null,
                     plotList: plotList,
                     syncZoom: syncZoom,
                     videoRef: videoRef,
