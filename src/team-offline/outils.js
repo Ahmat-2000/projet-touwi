@@ -1,14 +1,12 @@
 import { receiveFile,saveModificationFile, saveNewFile} from "@/team-offline/requests";
 import { useVariablesContext } from '@/utils/VariablesContext';
 
-export const getRowWithTimestamp = async(sensor, axis) => {
-  
-  // Retourne le nom du fichier 
-  const { variablesContext } = useVariablesContext();
-  const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
+export const getRowWithTimestamp = async(sensor, axis, name) => {
+  console.log("debug :", sensor, axis, name)
+
   
   // Retourne le fichier .touwi 
-  const touwiContent = await receiveFile(fileName);
+  const touwiContent = await receiveFile(name);
 
   if (!touwiContent) {
       throw new Error("Contenu du fichier introuvable ou vide.");

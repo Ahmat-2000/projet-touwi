@@ -23,15 +23,6 @@ const App = () => {
     const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
     console.log(fileName);
 
-    
-    const test_timestamp_row = getRowWithTimestamp('gyro', 'x').then(result => console.log(result));
-    console.log(test_timestamp_row);
-
-
-    updateLabelByTimestamp(1719238382627, "TEST");
-    
-
-
 
     const hasVideo = variablesContext.video ? true : false;
 
@@ -382,6 +373,7 @@ const App = () => {
                         videoRef={videoRef}
                         highlightFlag={highlightFlag}
                         deleteRegion={deleteRegion}
+                        name={fileName}
                     />
                 </div>
         </div>

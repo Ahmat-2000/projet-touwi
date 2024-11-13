@@ -6,9 +6,11 @@ import Plotly from 'plotly.js-basic-dist-min';
 import Modal from 'react-modal';
 import Plot from './Plot';
 
+import { useVariablesContext } from '@/utils/VariablesContext';
 import { getRowWithTimestamp } from '@/team-offline/outils';
 
-const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
+
+const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion, name }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
@@ -30,6 +32,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         createPlot('accel', 'x', 'osef');
     }, []);
     */
+
+    
 
     function savePeriod(start, end) {
         console.log(`In File new period: Start - ${start}, End - ${end}`);
@@ -143,43 +147,43 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         Plotly.delete(plotRef);
     }
 
-
-
-
     function handlePlotHover(eventData) {
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
     };
 
     function createPlot(sensor, axis, filename) {
-        console.log('args :', sensor, axis);
-        const bundle = getRowWithTimestamp(sensor, axis);
-        console.log("STAN bundle", bundle);
-        const data = bundle[0];
-        const timestamp = bundle[1];
 
-        console.log("STAN 0", data);
-        console.log("STAN 1", timestamp);
+        const bundle = getRowWithTimestamp(sensor, axis, name);
 
-        // Create timestamp array from 0 to data length
-        //const timestamp = Array.from({ length: data.length }, (_, i) => i);
+        bundle.then(result => {
+            const data = result[1];
+            const timestamp = result[0];
 
-        const props = {
-            data: data,
-            title: filename + ' ' + sensor + ' ' + axis,
-            timestamp: timestamp,
-            handlePlotClick: (eventData) => handlePlotClick(eventData),
-            hover: handlePlotHover,
-            handleRelayout: syncZoom,
-            plotRefList: plotList.current,
-            shapes: [],
-            annotations: [],
-            appMode: appMode,
-        };
+            console.log("STAN 0", data);
+            console.log("STAN 1", timestamp);
+            console.log("------------------");
 
-        setPlots(prevPlots => [...prevPlots,
-        <Plot key={props.title} propsData={props} />
-        ]);
+
+            const props = {
+                data: data,
+                title: filename + ' ' + sensor + ' ' + axis,
+                timestamp: timestamp,
+                handlePlotClick: (eventData) => handlePlotClick(eventData),
+                hover: handlePlotHover,
+                handleRelayout: syncZoom,
+                plotRefList: plotList.current,
+                shapes: [],
+                annotations: [],
+                appMode: appMode,
+            };
+
+
+            setPlots(prevPlots => [...prevPlots,
+            <Plot key={props.title} propsData={props} />
+            ]);
+
+        });
     }
 
 
