@@ -3,13 +3,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
-
+import Modal from 'react-modal';
 import Plot from './Plot';
-
 
 const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState('Accelerometer');
+    const [selectedAxis, setSelectedAxis] = useState('X');
 
     const appModeRef = useRef(appMode);
 
@@ -21,6 +24,25 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     useEffect(() => {
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
+
+
+    //--------------------------------
+
+    const handleOpenModal = () => {
+        setIsModalOpen(true); // Ouvre la boîte modale
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false); // Ferme la boîte modale
+    };
+
+    const handleAddPlot = () => {
+        const filename = 'P_example';
+        createPlot(selectedCategory, selectedAxis, filename);
+        setIsModalOpen(false); // Ferme la boîte modale après le choix
+    };
+
+    //--------------------------------
 
 
     
@@ -36,14 +58,14 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         
         const simulatedData = {
             Accelerometer: {
-                x: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
+                X: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                Y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                Z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
             },
             Gyroscope: {
-                x: Array.from({ length: 30157}, () => Math.random() * 200 - 50),    
-                y: Array.from({ length: 30157}, () => Math.random() * 200 - 50),
-                z: Array.from({ length: 30157}, () => Math.random() * 200 - 50)
+                X: Array.from({ length: 30157}, () => Math.random() * 200 - 50),    
+                Y: Array.from({ length: 30157}, () => Math.random() * 200 - 50),
+                Z: Array.from({ length: 30157}, () => Math.random() * 200 - 50)
             },
             timestamp: Array.from({ length: 30157 }, (_, i) => i)
         };
@@ -182,10 +204,66 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     return (
         <div>
             <div>
-                <button onClick={() => createPlot('Accelerometer', 'x', 'P11')}>Create Plot</button>
+                <button onClick={handleOpenModal} style={{ backgroundColor: 'blue', color: 'white', padding: '10px' }}>
+                    Create Plot
+                </button>
             </div>
 
-            <div>
+            <Modal
+                isOpen={isModalOpen}
+                onRequestClose={handleCloseModal}
+                ariaHideApp={false}
+                contentLabel="Choose Plot Type"
+                style={{
+                    content: {
+                        top: '50%',
+                        left: '50%',
+                        right: 'auto',
+                        bottom: 'auto',
+                        marginRight: '-50%',
+                        transform: 'translate(-50%, -50%)',
+                        padding: '20px',
+                        borderRadius: '8px',
+                        width: '300px',
+                        textAlign: 'center'
+                    }
+                }}
+            >
+                <h2>Choose Signal Type</h2>
+                <label>
+                    Category:
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        style={{ marginBottom: '10px', padding: '5px', width: '100%' }}
+                    >
+                        <option value="Accelerometer">Accelerometer</option>
+                        <option value="Gyroscope">Gyroscope</option>
+                    </select>
+                </label>
+                <br />
+                <label>
+                    Axis:
+                    <select
+                        value={selectedAxis}
+                        onChange={(e) => setSelectedAxis(e.target.value)}
+                        style={{ marginBottom: '20px', padding: '5px', width: '100%' }}
+                    >
+                        <option value="X">X</option>
+                        <option value="Y">Y</option>
+                        <option value="Z">Z</option>
+                    </select>
+                </label>
+                <br />
+                <button onClick={handleAddPlot} style={{ padding: '10px', backgroundColor: 'green', color: 'white', borderRadius: '5px' }}>
+                    Add Plot
+                </button>
+                <button onClick={handleCloseModal} style={{ marginLeft: '10px', padding: '10px', backgroundColor: 'red', color: 'white', borderRadius: '5px' }}>
+                    Cancel
+                </button>
+            </Modal>
+
+            <div style={{ marginTop: '20px' }}>
                 {plots.map((plot, index) => (
                     <div key={index} style={{ marginTop: '20px' }}>
                         {plot}
