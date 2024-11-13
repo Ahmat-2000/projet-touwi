@@ -6,43 +6,74 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 
 const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, setAppMode, setPlotlyDragMode, appMode, hasVideo }) => {
-    
-
     return (
-        <div>
-            <div className="controls">
-
-                {/* Signal Navigation */}
-                <button onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }} className="control-button">Zoom</button>
-                <button onClick={() => { setPlotlyDragMode('pan'); setAppMode('None'); }} className="control-button">Navigate</button>
-
-                <br />
-
-                { /* Actions */}
-
-                <button onClick={() => { setAppMode('period'); setPlotlyDragMode(false); }} className="control-button">Add Period</button>
-                <button onClick={() => { setPlotlyDragMode(false); setAppMode('flag'); }} className="control-button" >Add Flag </button>
-
-                {/* Delete Flag Button */}
-                <button onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }} className="control-button">Delete</button>
-
-                <button onClick={() => { resetZoom(); }} className="control-button">Home</button>
-                {hasVideo && <button onClick={() => { resetMode(); }} className="control-button">Reset Mode</button>}
-
-                <br />
-
-                {/* Event clearing */}
-                <button onClick={() => { resetEvents(); }} className="control-button">Delete All Periods/Flags</button>
-
-                {/* Complete clear */}
-                <button onClick={() => { voidPlots(); }} className="control-button">Clear All</button>
-
-                {/* Dev mode, ensures plotlist is synced in ControlPanel */}
-                <button onClick={() => console.log(plotList.current)} className="control-button">Log PlotList</button>
-
-                {/* Display current mode */}
-                <span className="mode-indicator">Mode: {appMode}</span>
-
+        <div className="control-panel">
+            <div className="control-panel-header">
+                <h3 className="group-title">Current Mode:</h3>
+                <span className="mode-value">{appMode}</span>
+            </div>
+            
+            <div className="control-group">
+                <div className="button-grid-expanded">
+                    <button
+                        onClick={() => { setPlotlyDragMode('zoom'); setAppMode('zoom'); }}
+                        className={`control-button ${appMode === 'zoom' ? 'active' : ''}`}
+                        data-active={appMode === 'zoom'}
+                    >
+                        <i className="fas fa-search-plus"></i>
+                        <span>Zoom</span>
+                    </button>
+                    <button
+                        onClick={() => { setPlotlyDragMode('pan'); setAppMode('pan'); }}
+                        className={`control-button ${appMode === 'pan' ? 'active' : ''}`}
+                        data-active={appMode === 'pan'}
+                    >
+                        <i className="fas fa-hand-paper"></i>
+                        <span>Pan</span>
+                    </button>
+                    <button
+                        onClick={resetZoom}
+                        className="control-button"
+                    >
+                        <i className="fas fa-home"></i>
+                        <span>Reset View</span>
+                    </button>
+                    <button
+                        onClick={() => { setAppMode('period'); setPlotlyDragMode(false); }}
+                        className={`control-button ${appMode === 'period' ? 'active' : ''}`}
+                        data-active={appMode === 'period'}
+                    >
+                        <i className="fas fa-arrows-alt-h"></i>
+                        <span>Add Period</span>
+                    </button>
+                    <button
+                        onClick={() => { setPlotlyDragMode(false); setAppMode('flag'); }}
+                        className={`control-button ${appMode === 'flag' ? 'active' : ''}`}
+                        data-active={appMode === 'flag'}
+                    >
+                        <i className="fas fa-flag"></i>
+                        <span>Add Flag</span>
+                    </button>
+                    <button
+                        onClick={() => { setPlotlyDragMode(false); setAppMode('delete'); }}
+                        className={`control-button ${appMode === 'delete' ? 'active' : ''}`}
+                        data-active={appMode === 'delete'}
+                    >
+                        <i className="fas fa-trash"></i>
+                        <span>Delete</span>
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (window.confirm('Are you sure you want to delete all periods and flags?')) {
+                                resetEvents();
+                            }
+                        }}
+                        className="control-button danger"
+                    >
+                        <i className="fas fa-trash-alt"></i>
+                        <span>Clear All</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

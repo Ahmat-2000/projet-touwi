@@ -14,6 +14,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     const [selectedCategory, setSelectedCategory] = useState('Accelerometer');
     const [selectedAxis, setSelectedAxis] = useState('X');
 
+    const timestamps = [];
+
     const appModeRef = useRef(appMode);
 
     useEffect(() => {
@@ -24,6 +26,14 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     useEffect(() => {
         createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
     }, []);
+
+    function savePeriod(start, end) {
+        console.log(`In File new period: Start - ${start}, End - ${end}`);
+    }
+
+    function saveFlag(timestamp) {
+        console.log(`In File new flag: ${timestamp}`);
+    }
 
 
     //--------------------------------
@@ -45,9 +55,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     //--------------------------------
 
 
-    
+
     function fetchData(sensor, axis) {
-        
+
         const data = readAndGetColumFromCSV(sensor, axis);
         const timestamp = readAndGetColumFromCSV('timestamp');
 
@@ -55,7 +65,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     }
 
     function readAndGetColumFromCSV(sensor, axis) {
-        
+
         const simulatedData = {
             Accelerometer: {
                 X: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
@@ -63,9 +73,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 Z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
             },
             Gyroscope: {
-                X: Array.from({ length: 30157}, () => Math.random() * 200 - 50),    
-                Y: Array.from({ length: 30157}, () => Math.random() * 200 - 50),
-                Z: Array.from({ length: 30157}, () => Math.random() * 200 - 50)
+                X: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                Y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
+                Z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
             },
             timestamp: Array.from({ length: 30157 }, (_, i) => i)
         };
@@ -79,7 +89,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         return simulatedData[sensor][axis];
     }
 
-    function handlePlotClick (eventData) {
+    function handlePlotClick(eventData) {
         const xValue = eventData.points[0].x;
 
         const currentAppMode = appModeRef.current;
@@ -96,17 +106,17 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 }
 
                 const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
-                
+
                 // Convert signal index to video time using linear mapping
                 const videoTime = (xValue / signalLength) * videoDuration;
-                
+
                 // Set video current time
                 video.currentTime = videoTime;
             }
         }
 
         // Handle the different modes
-        if ( currentAppMode === 'delete') {
+        if (currentAppMode === 'delete') {
             deleteRegion(plotList, xValue, false);
         } else {
             if (currentAppMode === 'period') {
@@ -118,13 +128,15 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     selections[selections.length - 1].end = xValue;
                     // Highlight the region across all plots
-                    highlightRegion( selections[selections.length - 1].start, xValue);
+                    highlightRegion(selections[selections.length - 1].start, xValue);
+                    savePeriod(timestamps[selections[selections.length - 1].start], timestamps[xValue]);
                 }
             }
 
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
-                highlightFlag( xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
+                highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
+                saveFlag(timestamps[xValue]);
             }
 
 
@@ -149,12 +161,12 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 width: 0
             }
         };
-        
+
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
-        
-        
+
+
     }
 
     function deletePlot(plotRef) {
@@ -162,9 +174,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     }
 
 
-    
 
-    function handlePlotHover (eventData) {
+
+    function handlePlotHover(eventData) {
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
     };
@@ -195,16 +207,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             appMode: appMode,
         };
 
-        setPlots(prevPlots => [...prevPlots, 
-            <Plot key={props.title} propsData={props} />
+        setPlots(prevPlots => [...prevPlots,
+        <Plot key={props.title} propsData={props} />
         ]);
     }
 
 
     return (
         <div>
-            <div>
-                <button onClick={handleOpenModal} style={{ backgroundColor: 'blue', color: 'white', padding: '10px' }}>
+            <div className="addPlot-container">
+                <button onClick={handleOpenModal}>
                     Create Plot
                 </button>
             </div>
@@ -263,7 +275,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 </button>
             </Modal>
 
-            <div style={{ marginTop: '20px' }}>
+            <div className="plot-container">
                 {plots.map((plot, index) => (
                     <div key={index} style={{ marginTop: '20px' }}>
                         {plot}
@@ -271,7 +283,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 ))}
             </div>
         </div>
-);
+    );
 };
 
 const styles = {

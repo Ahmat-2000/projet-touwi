@@ -177,7 +177,7 @@ const App = () => {
         console.log('All periods and flags have been reset.');
     }
 
-    // Function to completely clear plots and reset the state
+    // Function to completely purge plots and reset the state
     function voidPlots() {
 
         // Destroy all plots
@@ -397,22 +397,23 @@ const App = () => {
     return (
         <div className="app-container">
             {hasVideo && (
-                <VideoControls propsData={{
-                    video: hasVideo? variablesContext.video : null,
-                    plotList: plotList,
-                    syncZoom: syncZoom,
-                    videoRef: videoRef,
-                    highlightFlag: highlightFlag,
-                    deleteRegion: deleteRegion,
-                    syncEnabled: syncEnabled,
-                    setSyncEnabled: setSyncEnabled
-                }} />
+                <div className="video-container">
+                    <VideoControls propsData={{
+                        video: hasVideo ? variablesContext.video : null,
+                        plotList: plotList,
+                        syncZoom: syncZoom,
+                        videoRef: videoRef,
+                        highlightFlag: highlightFlag,
+                        deleteRegion: deleteRegion,
+                        syncEnabled: syncEnabled,
+                        setSyncEnabled: setSyncEnabled
+                    }} />
+                </div>
             )}
 
-        
-
-            {temporaryData.length > 0 && (
-                <>
+            <div className={`panel-container ${!hasVideo ? 'full-width' : ''}`}>
+                <CSVUpload parseCSV={parseCSV} error={error} />
+                {temporaryData.length > 0 && (
                     <ControlPanel
                         resetZoom={resetZoom}
                         resetMode={() => setAppMode('None')}
@@ -424,7 +425,11 @@ const App = () => {
                         appMode={appMode}
                         hasVideo={hasVideo}
                     />
+                )}
+            </div>
 
+            {temporaryData.length > 0 && (
+                <div className="graph-container">
                     <Graph 
                         temporaryData={temporaryData} 
                         plotList={plotList} 
@@ -436,9 +441,8 @@ const App = () => {
                         highlightFlag={highlightFlag}
                         deleteRegion={deleteRegion}
                     />
-                </>
+                </div>
             )}
-           
         </div>
     );
     

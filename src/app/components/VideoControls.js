@@ -5,8 +5,6 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 const VideoControls = ({ propsData }) => {
 
-    
-
     const videoRef = propsData.videoRef;
     const [, forceUpdate] = useState({});
     const [windowSize, setWindowSize] = useState(100);
@@ -94,37 +92,37 @@ const VideoControls = ({ propsData }) => {
     };
 
     useEffect(() => {
+        const video = videoRef.current;
+        
         const handleKeydown = (event) => {
-            // Ensure video element is defined
             if (!videoRef) return;
 
             // Base jump time in seconds
             const baseJumpTime = 0.5;
-            // Scale jump by playback rate (faster playback = bigger jumps)
-            const scaledJumpTime = baseJumpTime * videoRef.current.playbackRate;
-
+            const scaledJumpTime = baseJumpTime * video.playbackRate;
+            
             switch (event.code) {
                 case 'Space':
                     if (!propsData.syncEnabled) {
                         propsData.setSyncEnabled(true);
                     }
                     event.preventDefault();
-                    console.log('Video is ' + (videoRef.current.paused ? 'paused' : 'playing'));
-                    videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
+                    console.log('Video is ' + (video.paused ? 'paused' : 'playing'));
+                    video.paused ? video.play() : video.pause();
                     break;
                 case 'ArrowLeft':
                     event.preventDefault();
-                    videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - scaledJumpTime);
-                    videoRef.current.pause();
+                    video.currentTime = Math.max(0, video.currentTime - scaledJumpTime);
+                    video.pause();
                     break;
                 case 'ArrowRight':
                     event.preventDefault();
-                    videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + scaledJumpTime);
-                    videoRef.current.pause();
+                    video.currentTime = Math.min(video.duration, video.currentTime + scaledJumpTime);
+                    video.pause();
                     break;
                 case 'Escape':
                     if (propsData.syncEnabled) {
-                        videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
+                        video.removeEventListener('timeupdate', timeUpdateListener);
                         propsData.setSyncEnabled(false);
                     }
                     break;
@@ -133,21 +131,16 @@ const VideoControls = ({ propsData }) => {
             }
         };
 
-        // Add event listener for keydown
         window.addEventListener('keydown', handleKeydown);
 
-        
-
-
         if (propsData.syncEnabled) {
-            videoRef.current.addEventListener('timeupdate', timeUpdateListener);
+            video.addEventListener('timeupdate', timeUpdateListener);
         }
 
-        // Cleanup event listener on component unmount
         return () => {
             window.removeEventListener('keydown', handleKeydown);
-            if (videoRef.current) {
-                videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
+            if (video) {
+                video.removeEventListener('timeupdate', timeUpdateListener);
             }
         };
     }, [propsData.syncEnabled, windowSize]);
@@ -186,12 +179,7 @@ const VideoControls = ({ propsData }) => {
             </div>
             <button 
                 onClick={toggleSync}
-                className="video-button"
-                style={{
-                    backgroundColor: propsData.syncEnabled ? '#4CAF50' : '#f44336',
-                    padding: '8px 16px',
-                    marginLeft: '10px'
-                }}
+                className={`sync-button ${propsData.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
             >
                 {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
             </button>
