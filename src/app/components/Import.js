@@ -4,8 +4,10 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
 import { removeUnevenLinesFromCSV } from "@/services/FileService";
+import csvToTouwi from '@/team-offline/csvToTouwi';
+import {saveNewFile} from "@/team-offline/requests"
 import Image from "next/image";
-import Image11 from "../Images/image11.svg"; // Chemin vers le logo
+
 
 const ImportComponent = () => {
   const router = useRouter();
@@ -37,6 +39,8 @@ const ImportComponent = () => {
     const file = selectedFiles[0];
     const processedFile = await removeUnevenLinesFromCSV(file);
     setVariablesContext(processedFile);
+    await saveNewFile(file);
+    console.log("Fichiers .touwi recupérer:", fields);
     redirect();
   };
 
@@ -44,25 +48,32 @@ const ImportComponent = () => {
     setFields((prevFields) => ({ ...prevFields, frequency: e.target.value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
-
+  
     if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
     if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
     if (!fields.frequency) newErrors.frequency = "La fréquence en Hz est requise.";
     if (isNaN(fields.frequency) || fields.frequency <= 0)
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
-
+  
     setErrors(newErrors);
-
+  
     if (Object.keys(newErrors).length === 0) {
-      console.log("Fichiers envoyés:", fields);
-      setVariablesContext(fields);
-      redirect();
+      try {
+        // Passez directement les fichiers accel et gyro à csvToTouwi
+        const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, 'resultat.Touwi');
+        await saveNewFile(resultFile);
+        console.log("Fichiers envoyés:", fields);
+        setVariablesContext(fields);
+        redirect();
+      } catch (error) {
+        console.error("Erreur lors de la fusion des fichiers :", error);
+      }
     }
   };
-
+  
   const handleRemoveFile = (name) => {
     setFields({ ...fields, [name]: null });
     // Reset the input field so it can trigger the onChange event with the same file
@@ -81,7 +92,7 @@ const ImportComponent = () => {
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
         {/* Logo repositionné pour être en haut à gauche de la boîte */}
         <div className="absolute top-[-55px] left-[-120px]">
-         <Image src={Image11} alt="Logo" width={150} height={50} />
+         <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} />
         </div>
 
 
