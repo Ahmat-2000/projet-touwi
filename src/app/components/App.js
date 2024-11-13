@@ -19,10 +19,7 @@ const App = () => {
 
     const { variablesContext } = useVariablesContext();
 
-
     const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
-    console.log(fileName);
-
 
     const hasVideo = variablesContext.video ? true : false;
 
@@ -301,7 +298,6 @@ const App = () => {
             const plotRefs = plotList.current;
             const shape = plotRefs[0].current.layout.shapes[regionIndex];
             const isFlag = shape.x0 === shape.x1;
-            console.log(timestampRef.current[shape.x0],timestampRef.current[shape.x1]);
             periodUpdate(timestampRef.current[shape.x0],timestampRef.current[shape.x1],'NONE',fileName);
 
             // Remove 1 shape from all plots
@@ -343,9 +339,6 @@ const App = () => {
 
             if (!onlyFlag) {
                 console.log(`Region${isFlag ? ' and annotation' : ''} removed at x: ${xValue}`);
-                //console.log("effacer flag" , xValue , timestampRef.current[xValue] );
-                    //effacer le FLAG du fichier touwi
-                    //updateLabelByTimestamp(timestampRef.current[xValue],"NONE",fileName);
             }
         }
     }

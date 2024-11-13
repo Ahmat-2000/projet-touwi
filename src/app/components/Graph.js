@@ -25,20 +25,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     }, [appMode]);
 
     useEffect(() => {
-        createPlot('accel', 'x', 'osef');
+        createPlot('accel', 'x', name);
     }, []);
     
-
-    
-
-    function savePeriod(start, end) {
-        console.log(`In File new period: Start - ${start}, End - ${end}`);
-    }
-
-    function saveFlag(timestamp) {
-        console.log(`In File new flag: ${timestamp}`);
-    }
-
 
     //--------------------------------
 
@@ -51,7 +40,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     };
 
     const handleAddPlot = () => {
-        const filename = 'P_example';
+        const filename = name;
         createPlot(selectedCategory, selectedAxis, filename);
         setIsModalOpen(false); // Ferme la boîte modale après le choix
     };
@@ -97,10 +86,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 else {
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     selections[selections.length - 1].end = xValue;
-                    // Highlight the region across all plots
                     highlightRegion(selections[selections.length - 1].start, xValue);
-                    //savePeriod(timestamps[selections[selections.length - 1].start], timestamps[xValue]);
-                    console.log(timestampRef.current[selections[selections.length - 1].start],timestampRef.current[xValue]);
                     periodUpdate(timestampRef.current[selections[selections.length - 1].start] ,timestampRef.current[xValue],"PERIOD",name);
                 }
             }
@@ -108,7 +94,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
                 highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
-                console.log('-----------',timestampRef.current[xValue],"FLAG",name);
                 updateLabelByTimestamp(timestampRef.current[xValue],"FLAG",name);
             }
 
@@ -138,8 +123,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
-
-
     }
 
     function deletePlot(plotRef) {
@@ -172,7 +155,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
             const props = {
                 data: data,
-                title: filename + ' ' + sensor + ' ' + axis,
+                title: filename + ' ' + sensor.charAt(0).toUpperCase() + sensor.slice(1) + ' ' + axis.toUpperCase(),
                 timestamp: Array.from({ length: data.length }, (_, i) => i),
                 handlePlotClick: (eventData) => handlePlotClick(eventData),
                 hover: handlePlotHover,
@@ -181,6 +164,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 shapes: [],
                 annotations: [],
                 appMode: appMode,
+                timestampRef: timestampRef.current,
+                timestamps: timestamps,
+                setTimestamps: setTimestamps
             };
 
 

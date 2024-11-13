@@ -10,6 +10,19 @@ const Plot = ({ propsData }) => {
     const plotRef = useRef(null);
     const [deletePlot, setDeletePlot] = useState(false);
 
+    // Define the colors array with a more harmonious palette
+    const colors = [
+        '#2E86C1',  // Strong Blue
+        '#E74C3C',  // Soft Red
+        '#27AE60',  // Forest Green
+        '#8E44AD'   // Royal Purple
+    ];
+    
+    // Get the current plot index from the plotRefList length
+    const plotIndex = propsData.plotRefList.length;
+    // Use modulo to cycle through colors if we have more than 4 plots
+    const plotColor = colors[plotIndex % colors.length];
+
     useEffect(() => {
 
         if (propsData && plotRef.current) {
@@ -21,6 +34,10 @@ const Plot = ({ propsData }) => {
                 [{
                     x: propsData.timestamp,
                     y: propsData.data,
+                    line: {
+                        color: plotColor,
+                        width: 2
+                    },
                     hovertemplate: '<span style="background-color:red">X: %{x:.0f} <br> Y: %{y:.3f}</span> <extra></extra>',
                     hoverlabel: {
                         bgcolor: '#FF6F61', // Background color
@@ -34,12 +51,10 @@ const Plot = ({ propsData }) => {
                 },], 
                 
                 {
-                    title: propsData.title,
-                    
                     dragmode: propsData.appMode,
                     shapes: propsData.shapes,
                     annotations: propsData.annotations,
-                    margin: { t: 40, b: 20, l: 60, r: 20 }
+                    margin: { t: 20, b: 20, l: 60, r: 20 }
                 }, 
                 
                 {
@@ -115,20 +130,53 @@ const Plot = ({ propsData }) => {
     if (!deletePlot) {
 
         return (
-            <div style={{ marginTop: '50px' }}>
-                <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
-                    <button
-                        onClick={() => setDeletePlot(true)}
-                        className="delete-plot-button"
-                    >
-                        ✖
-                    </button>
+            <div style={{ marginTop: '50px', position: 'relative' }}>
+                <div style={{
+                    position: 'absolute',
+                    top: '10px',
+                    left: '10px',
+                    zIndex: 1,
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    border: `2px solid ${plotColor}`
+                }}>
+                    {propsData.title}
                 </div>
+                <button
+                    onClick={() => setDeletePlot(true)}
+                    style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        zIndex: 1,
+                        backgroundColor: '#ff4444',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        width: '32px',
+                        height: '32px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '18px',
+                        transition: 'background-color 0.2s',
+                        fontWeight: 'bold'
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#cc0000'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#ff4444'}
+                >
+                    ✖
+                </button>
+                <div ref={plotRef} style={{ width: '100%', height: '500px' }} />
             </div>
         )
     }
     else {
-
 
         propsData.plotRefList.forEach((plotRef) => {
             if (plotRef.current === null) {

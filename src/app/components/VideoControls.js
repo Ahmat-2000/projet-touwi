@@ -107,7 +107,6 @@ const VideoControls = ({ propsData }) => {
                         propsData.setSyncEnabled(true);
                     }
                     event.preventDefault();
-                    console.log('Video is ' + (video.paused ? 'paused' : 'playing'));
                     video.paused ? video.play() : video.pause();
                     break;
                 case 'ArrowLeft':
