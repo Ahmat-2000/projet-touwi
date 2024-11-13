@@ -24,11 +24,11 @@ const App = () => {
     console.log(fileName);
 
     
-    const test_timestamp_row = getRowWithTimestamp(fileName, 'gyro', 'x').then(result => console.log(result));
+    const test_timestamp_row = getRowWithTimestamp('gyro', 'x').then(result => console.log(result));
     console.log(test_timestamp_row);
 
 
-    updateLabelByTimestamp(fileName, 1719238382627, "TEST");
+    updateLabelByTimestamp(1719238382627, "TEST");
     
 
 
@@ -412,7 +412,6 @@ const App = () => {
             )}
 
             <div className={`panel-container ${!hasVideo ? 'full-width' : ''}`}>
-                <CSVUpload parseCSV={parseCSV} error={error} />
                 {temporaryData.length > 0 && (
                     <ControlPanel
                         resetZoom={resetZoom}
