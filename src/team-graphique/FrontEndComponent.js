@@ -8,7 +8,14 @@ const FrontEndComponent = () => {
       <div className="flex justify-between items-center sm:flex-row flex-col sm:space-y-0 space-y-4 px-6 pt-2 overflow-hidden">
         {/* Logo agrandi */}
         <div className="flex items-center space-x-2 m-0 p-0">
-          <Image src="/images/image11.svg" alt="Logo" className="w-40 h-auto m-0 p-0" />
+          <Image 
+            src="/images/image11.svg" 
+            alt="Logo" 
+            className="w-40 h-auto m-0 p-0"
+            priority
+            width={160}
+            height={40}
+          />
         </div>
 
         {/* Label input, Add Label button et Bouton Sign out dans le même conteneur */}
