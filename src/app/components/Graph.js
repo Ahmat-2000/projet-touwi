@@ -10,7 +10,7 @@ import { useVariablesContext } from '@/utils/VariablesContext';
 import { getRowWithTimestamp,periodUpdate,updateLabelByTimestamp } from '@/team-offline/outils';
 
 
-const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion, name }) => {
+const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion, name ,timestamps,setTimestamps,timestampRef}) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
@@ -18,20 +18,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     const [selectedCategory, setSelectedCategory] = useState('accel');
     const [selectedAxis, setSelectedAxis] = useState('x');
 
-    const [timestamps,setTimestamps] = useState([]);
-    const timestampRef = useRef([]);
-
     const appModeRef = useRef(appMode);
 
     useEffect(() => {
         appModeRef.current = appMode;
     }, [appMode]);
-
-    useEffect(() => {
-        if (timestamps.length > 0 ){
-            timestampRef.current = timestamps;
-        }
-    }, [timestamps]);
 
     useEffect(() => {
         createPlot('accel', 'x', 'osef');

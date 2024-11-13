@@ -11,7 +11,7 @@ import ControlPanel from './ControlPanel';
 import VideoControls from './VideoControls';
 import { useVariablesContext } from '@/utils/VariablesContext';
 import {saveNewFile, receiveFile,saveModificationFile} from '@/team-offline/requests';
-import {getRowWithTimestamp, updateLabelByTimestamp} from '@/team-offline/outils';
+import {getRowWithTimestamp, updateLabelByTimestamp, periodUpdate} from '@/team-offline/outils';
 
 
 const App = () => {
@@ -35,10 +35,21 @@ const App = () => {
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
     const [syncEnabled, setSyncEnabled] = useState(true);
 
+    const [timestamps,setTimestamps] = useState([]);
+    const timestampRef = useRef([]);
+
+
     const prevMidPointRef = useRef(null);
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
+
+    useEffect(() => {
+        if (timestamps.length > 0 ){
+            timestampRef.current = timestamps;
+        }
+    }, [timestamps]);
+
 
 
     // Function to reset the zoom on all three plots
@@ -114,6 +125,8 @@ const App = () => {
         // Clear global state for shapes and annotations if they are used
         setShapes(updatedShapes);
         setAnnotations(updatedAnnotations);
+
+        periodUpdate(timestampRef.current[0],timestampRef.current[timestampRef.current.length],'NONE',fileName);
 
         console.log('All periods and flags have been reset.');
     }
@@ -288,6 +301,8 @@ const App = () => {
             const plotRefs = plotList.current;
             const shape = plotRefs[0].current.layout.shapes[regionIndex];
             const isFlag = shape.x0 === shape.x1;
+            console.log(timestampRef.current[shape.x0],timestampRef.current[shape.x1]);
+            periodUpdate(timestampRef.current[shape.x0],timestampRef.current[shape.x1],'NONE',fileName);
 
             // Remove 1 shape from all plots
             plotRefs.forEach(plotRef => {
@@ -297,12 +312,13 @@ const App = () => {
                     return;
                 }
                 plotRef.current.layout.shapes.splice(regionIndex, 1);
-
+                
                 // Remove it's annotation if it's a flag
                 if (isFlag) {
                     const annotationIndex = plotRef.current.layout.annotations.findIndex(
                         annotation => annotation.x === xValue
                     );
+                    
                     if (annotationIndex !== -1) {
                         plotRef.current.layout.annotations.splice(annotationIndex, 1);
                     }
@@ -327,6 +343,9 @@ const App = () => {
 
             if (!onlyFlag) {
                 console.log(`Region${isFlag ? ' and annotation' : ''} removed at x: ${xValue}`);
+                //console.log("effacer flag" , xValue , timestampRef.current[xValue] );
+                    //effacer le FLAG du fichier touwi
+                    //updateLabelByTimestamp(timestampRef.current[xValue],"NONE",fileName);
             }
         }
     }
@@ -374,6 +393,10 @@ const App = () => {
                         highlightFlag={highlightFlag}
                         deleteRegion={deleteRegion}
                         name={fileName}
+                        timestamps={timestamps}
+                        setTimestamps={setTimestamps}
+                        timestampRef={timestampRef}
+
                     />
                 </div>
         </div>
