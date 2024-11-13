@@ -7,7 +7,7 @@ import Modal from 'react-modal';
 import Plot from './Plot';
 
 import { useVariablesContext } from '@/utils/VariablesContext';
-import { getRowWithTimestamp } from '@/team-offline/outils';
+import { getRowWithTimestamp,periodUpdate,updateLabelByTimestamp } from '@/team-offline/outils';
 
 
 const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion, name }) => {
@@ -18,7 +18,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     const [selectedCategory, setSelectedCategory] = useState('accel');
     const [selectedAxis, setSelectedAxis] = useState('x');
 
-    const timestamps = [];
+    const [timestamps,setTimestamps] = useState([]);
+    const timestampRef = useRef([]);
 
     const appModeRef = useRef(appMode);
 
@@ -26,12 +27,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         appModeRef.current = appMode;
     }, [appMode]);
 
+    useEffect(() => {
+        if (timestamps.length > 0 ){
+            timestampRef.current = timestamps;
+        }
+    }, [timestamps]);
 
-    /*
     useEffect(() => {
         createPlot('accel', 'x', 'osef');
     }, []);
-    */
+    
 
     
 
@@ -103,14 +108,17 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                     selections[selections.length - 1].end = xValue;
                     // Highlight the region across all plots
                     highlightRegion(selections[selections.length - 1].start, xValue);
-                    savePeriod(timestamps[selections[selections.length - 1].start], timestamps[xValue]);
+                    //savePeriod(timestamps[selections[selections.length - 1].start], timestamps[xValue]);
+                    console.log(timestampRef.current[selections[selections.length - 1].start],timestampRef.current[xValue]);
+                    periodUpdate(timestampRef.current[selections[selections.length - 1].start] ,timestampRef.current[xValue],"PERIOD",name);
                 }
             }
 
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
                 highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
-                saveFlag(timestamps[xValue]);
+                console.log('-----------',timestampRef.current[xValue],"FLAG",name);
+                updateLabelByTimestamp(timestampRef.current[xValue],"FLAG",name);
             }
 
 
@@ -157,18 +165,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         const bundle = getRowWithTimestamp(sensor, axis, name);
 
         bundle.then(result => {
-            const data = result[1];
+    
             const timestamp = result[0];
+            const data = result[1];
 
-            console.log("STAN 0", data);
-            console.log("STAN 1", timestamp);
-            console.log("------------------");
-
+            setTimestamps(timestamp);
 
             const props = {
                 data: data,
                 title: filename + ' ' + sensor + ' ' + axis,
-                timestamp: timestamp,
+                timestamp: Array.from({ length: data.length }, (_, i) => i),
                 handlePlotClick: (eventData) => handlePlotClick(eventData),
                 hover: handlePlotHover,
                 handleRelayout: syncZoom,

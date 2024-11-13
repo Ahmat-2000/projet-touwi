@@ -36,8 +36,7 @@ export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 }
 
 // Fonction pour mettre à jour un label par timestamp
-export const updateLabelByTimestamp = async (timestamp, newLabel,fileName) => {
-
+export const updateLabelByTimestamp = async (timestamp, newLabel, fileName) => {
   // Charger le contenu du fichier
   const touwiContent = await receiveFile(fileName);
 
@@ -55,10 +54,13 @@ export const updateLabelByTimestamp = async (timestamp, newLabel,fileName) => {
   // Convertir le timestamp recherché en chaîne pour assurer la comparaison correcte
   const targetTimestamp = String(timestamp);
 
+  console.log("Début de la mise à jour du label...");
+
   // Rechercher le timestamp et modifier le label si trouvé
   const updatedDataRows = dataRows.map(row => {
     const columns = row.split(",");
     if (columns[0] === targetTimestamp) {  // Comparaison avec le timestamp en chaîne
+      console.log(`Modification du label pour le timestamp ${targetTimestamp}`);
       columns[columns.length - 1] = newLabel;  // Mettre à jour le dernier élément (LABEL)
     }
     return columns.join(",");
@@ -67,10 +69,12 @@ export const updateLabelByTimestamp = async (timestamp, newLabel,fileName) => {
   // Reconstituer le contenu du fichier avec les modifications
   const updatedContent = [header, ...updatedDataRows].join("\n");
 
+  // Créer un Blob et un fichier pour sauvegarder les modifications
   const blob = new Blob([updatedContent], { type: 'text/csv' });
   const file = new File([blob], fileName, { type: 'text/csv', lastModified: new Date() });
 
-  await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
+  // Vérification de sauvegarde
+  const saveResult = await saveNewFile(file);
 }
 
 // Fonction pour mettre à jour les labels d'un timestamp jusqu'à un autre
