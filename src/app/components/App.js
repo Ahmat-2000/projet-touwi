@@ -7,13 +7,31 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 import Graph from './Graph';
 import ControlPanel from './ControlPanel';
-import CSVUpload from './CSVUpload';
+
 import VideoControls from './VideoControls';
 import { useVariablesContext } from '@/utils/VariablesContext';
+import {saveNewFile, receiveFile,saveModificationFile} from '@/team-offline/requests';
+import {getRowWithTimestamp, updateLabelByTimestamp} from '@/team-offline/outils';
+
 
 const App = () => {
 
+
     const { variablesContext } = useVariablesContext();
+
+
+    const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
+    console.log(fileName);
+
+    
+    const test_timestamp_row = getRowWithTimestamp(fileName, 'gyro', 'x').then(result => console.log(result));
+    console.log(test_timestamp_row);
+
+
+    updateLabelByTimestamp(fileName, 1719238382627, "TEST");
+    
+
+
 
     const hasVideo = variablesContext.video === null ? false : true;
     
@@ -391,7 +409,7 @@ const App = () => {
                 }} />
             )}
 
-            <CSVUpload parseCSV={parseCSV} error={error} />
+        
 
             {temporaryData.length > 0 && (
                 <>

@@ -1,62 +1,74 @@
-import { saveModificationFile } from "@/team-offline/requests";
+import { receiveFile,saveModificationFile, saveNewFile} from "@/team-offline/requests";
 
-export async function getRowByTimestamp(file, timestamp) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+export const getRowWithTimestamp = async(fileName, sensor, axis) => {
+  // Retourne le fichier .touwi 
+  const touwiContent = await receiveFile(fileName);
 
-    reader.onload = (event) => {
-      const content = event.target.result;
-      const rows = content.split("\n").map(row => row.split(","));
-      
-      // Cherche la ligne contenant le timestamp
-      const foundRow = rows.find(row => row[0] === timestamp.toString());
-      
-      if (foundRow) {
-        resolve(foundRow);
-      } else {
-        reject(new Error("Timestamp non trouvé dans le fichier."));
-      }
-    };
+  if (!touwiContent) {
+      throw new Error("Contenu du fichier introuvable ou vide.");
+  }
 
-    reader.onerror = (error) => reject(error);
-    reader.readAsText(file);
+  // Détermine l'index de la colonne en fonction du capteur et de l'axe
+  const headers = touwiContent.split("\n")[0].split(",");
+  const axisColumn = `${sensor}_${axis}`;
+  const timestampIndex = headers.indexOf("timestamp");
+  const axisIndex = headers.indexOf(axisColumn);
+ 
+
+  const res = [[],[]]
+  
+
+  //récupérer les colonnes 
+  const rows = touwiContent.trim().split("\n").slice(1);
+
+  // parcours des timestamp et colonnes
+  rows.forEach(row => {
+      const columns = row.split(",");
+      const timestamp = columns[timestampIndex];
+      const axisValue = columns[axisIndex];
+
+      res[0].push(timestamp)
+      res[1].push(axisValue)
   });
+  
+  return res
 }
 
-export async function updateLabelByTimestamp(file, timestamp, newLabel) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+// Fonction pour mettre à jour un label par timestamp
+export const updateLabelByTimestamp = async (fileName, timestamp, newLabel) => {
+  // Charger le contenu du fichier
+  const touwiContent = await receiveFile(fileName);
 
-    reader.onload = async (event) => {
-      const content = event.target.result;
-      const rows = content.split("\n").map(row => row.split(","));
-      
-      // Met à jour le label dans la ligne correspondant au timestamp
-      const rowIndex = rows.findIndex(row => row[0] === timestamp.toString());
-      
-      if (rowIndex !== -1) {
-        rows[rowIndex][1] = newLabel; // Suppose que le label est dans la 2e colonne
+  if (!touwiContent) {
+    throw new Error("Contenu du fichier introuvable ou vide.");
+  }
 
-        // Reconvertit le tableau en CSV
-        const updatedContent = rows.map(row => row.join(",")).join("\n");
+  // Diviser le contenu en lignes
+  const rows = touwiContent.trim().split("\n");
 
-        // Crée un nouvel objet Blob avec le contenu mis à jour
-        const updatedFile = new Blob([updatedContent], { type: "text/csv" });
+  // Extraire l'en-tête et les lignes de données
+  const header = rows[0];
+  const dataRows = rows.slice(1);
 
-        try {
-          // Utilise saveModificationFile pour sauvegarder les modifications
-          const result = await saveModificationFile(updatedFile);
-          resolve(result);
-        } catch (error) {
-          console.error("Erreur lors de la sauvegarde des modifications :", error);
-          reject(error);
-        }
-      } else {
-        reject(new Error("Timestamp non trouvé dans le fichier."));
-      }
-    };
+  // Convertir le timestamp recherché en chaîne pour assurer la comparaison correcte
+  const targetTimestamp = String(timestamp);
 
-    reader.onerror = (error) => reject(error);
-    reader.readAsText(file);
+  // Rechercher le timestamp et modifier le label si trouvé
+  const updatedDataRows = dataRows.map(row => {
+    const columns = row.split(",");
+    if (columns[0] === targetTimestamp) {  // Comparaison avec le timestamp en chaîne
+      columns[columns.length - 1] = newLabel;  // Mettre à jour le dernier élément (LABEL)
+    }
+    return columns.join(",");
   });
+
+  // Reconstituer le contenu du fichier avec les modifications
+  const updatedContent = [header, ...updatedDataRows].join("\n");
+
+  const blob = new Blob([updatedContent], { type: 'text/csv' });
+  const file = new File([blob], fileName, { type: 'text/csv', lastModified: new Date() });
+
+  await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
 }
+
+

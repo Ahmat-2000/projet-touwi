@@ -64,3 +64,28 @@ export const saveVideoSynchronisationData = async (jsonData) => {
         throw error; 
     }
 };
+
+
+export const receiveFile = async (name) => {
+    try {
+        const response = await fetch("http://localhost:3000/api/local/sendFile", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "filename": name,
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+        }
+
+        let txt = await response.text();
+        return txt
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération du fichier:', error);
+    }
+};
