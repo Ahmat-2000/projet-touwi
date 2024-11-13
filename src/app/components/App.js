@@ -34,8 +34,7 @@ const App = () => {
 
 
     const hasVideo = variablesContext.video ? true : false;
-    
-    const [temporaryData, setData] = useState([]); // Array to store data for the plots
+
     const [error, setError] = useState(''); // Error message for CSV parsing
 
     const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
@@ -49,55 +48,6 @@ const App = () => {
 
     const plotList = useRef([]);
     const videoRef = useRef(null);
-
-    // Function to parse CSV and extract data
-    const parseCSV = (file) => {
-        Papa.parse(file, {
-            header: true,
-            dynamicTyping: true,
-            complete: (results) => {
-                if (results.errors.length > 0) {
-                    setError("Error parsing CSV file. Check the console for details.");
-                    console.error("CSV Parsing Errors:", results.errors);
-                    return;
-                }
-
-                const newData = results.data.filter(row =>
-                    row.timestamp !== undefined &&
-                    row.x !== undefined &&
-                    row.y !== undefined &&
-                    row.z !== undefined &&
-                    row.timestamp !== '' &&
-                    row.x !== '' &&
-                    row.y !== '' &&
-                    row.z !== ''
-                );
-
-                if (newData.length === 0) {
-                    setError("No valid data found in CSV.");
-                    console.error("No valid data found.");
-                    return;
-                }
-
-                const newTimestamps = newData.map(row => row.timestamp);
-                const signalX = newData.map(row => row.x);
-                const signalY = newData.map(row => row.y);
-                const signalZ = newData.map(row => row.z);
-
-                setData([
-                    { x: newTimestamps, y: signalX, type: 'scatter', mode: 'lines', line: { color: 'red' } },
-                    { x: newTimestamps, y: signalY, type: 'scatter', mode: 'lines', line: { color: 'green' } },
-                    { x: newTimestamps, y: signalZ, type: 'scatter', mode: 'lines', line: { color: 'blue' } }
-                ]);
-                setError('');
-            },
-            error: (error) => {
-                setError("Error parsing CSV: " + error.message);
-                console.error("Error parsing CSV: ", error);
-            },
-        });
-    };
-
 
 
     // Function to reset the zoom on all three plots
@@ -189,9 +139,6 @@ const App = () => {
             }
             Plotly.purge(plotRef.current);
         });
-
-        // Reset data
-        setData([]);
 
         // Reset clicks
         setSelections([]);
@@ -412,7 +359,6 @@ const App = () => {
             )}
 
             <div className={`panel-container ${!hasVideo ? 'full-width' : ''}`}>
-                {temporaryData.length > 0 && (
                     <ControlPanel
                         resetZoom={resetZoom}
                         resetMode={() => setAppMode('None')}
@@ -424,13 +370,10 @@ const App = () => {
                         appMode={appMode}
                         hasVideo={hasVideo}
                     />
-                )}
             </div>
 
-            {temporaryData.length > 0 && (
                 <div className="graph-container">
                     <Graph 
-                        temporaryData={temporaryData} 
                         plotList={plotList} 
                         appMode={appMode} 
                         setAppMode={setAppMode} 
@@ -441,7 +384,6 @@ const App = () => {
                         deleteRegion={deleteRegion}
                     />
                 </div>
-            )}
         </div>
     );
     

@@ -6,13 +6,15 @@ import Plotly from 'plotly.js-basic-dist-min';
 import Modal from 'react-modal';
 import Plot from './Plot';
 
+import { getRowWithTimestamp } from '@/team-offline/outils';
+
 const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('Accelerometer');
-    const [selectedAxis, setSelectedAxis] = useState('X');
+    const [selectedCategory, setSelectedCategory] = useState('accel');
+    const [selectedAxis, setSelectedAxis] = useState('x');
 
     const timestamps = [];
 
@@ -23,9 +25,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     }, [appMode]);
 
 
+    /*
     useEffect(() => {
-        createPlot('Accelerometer', 'x', 'P11', temporaryData[0]['y']); // Display Accelerometer x-axis data by default
+        createPlot('accel', 'x', 'osef');
     }, []);
+    */
 
     function savePeriod(start, end) {
         console.log(`In File new period: Start - ${start}, End - ${end}`);
@@ -54,40 +58,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
     //--------------------------------
 
-
-
-    function fetchData(sensor, axis) {
-
-        const data = readAndGetColumFromCSV(sensor, axis);
-        const timestamp = readAndGetColumFromCSV('timestamp');
-
-        return [timestamp, data];
-    }
-
-    function readAndGetColumFromCSV(sensor, axis) {
-
-        const simulatedData = {
-            Accelerometer: {
-                X: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                Y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                Z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
-            },
-            Gyroscope: {
-                X: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                Y: Array.from({ length: 30157 }, () => Math.random() * 200 - 50),
-                Z: Array.from({ length: 30157 }, () => Math.random() * 200 - 50)
-            },
-            timestamp: Array.from({ length: 30157 }, (_, i) => i)
-        };
-
-        // Case we want Timestamps
-        if (typeof axis === 'undefined') {
-            return simulatedData[sensor];
-        }
-
-        // Case we want a specific axis
-        return simulatedData[sensor][axis];
-    }
 
     function handlePlotClick(eventData) {
         const xValue = eventData.points[0].x;
@@ -181,18 +151,18 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         console.log(`Hovering over x: ${xValue}`);
     };
 
-    function createPlot(sensor, axis, filename, data) {
+    function createPlot(sensor, axis, filename) {
+        console.log('args :', sensor, axis);
+        const bundle = getRowWithTimestamp(sensor, axis);
+        console.log("STAN bundle", bundle);
+        const data = bundle[0];
+        const timestamp = bundle[1];
 
-        // bricolage en attendant de pouvoir fetch les données du .touwi
-        if (data === undefined) {
-            const tmp = fetchData(sensor, axis);
-            data = tmp[1];
-            // data = [ [5, 7, 3, 4], [1, 2, 3, 4] ]
-
-        }
+        console.log("STAN 0", data);
+        console.log("STAN 1", timestamp);
 
         // Create timestamp array from 0 to data length
-        const timestamp = Array.from({ length: data.length }, (_, i) => i);
+        //const timestamp = Array.from({ length: data.length }, (_, i) => i);
 
         const props = {
             data: data,
@@ -249,8 +219,8 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                         onChange={(e) => setSelectedCategory(e.target.value)}
                         style={{ marginBottom: '10px', padding: '5px', width: '100%' }}
                     >
-                        <option value="Accelerometer">Accelerometer</option>
-                        <option value="Gyroscope">Gyroscope</option>
+                        <option value="accel">Accelerometer</option>
+                        <option value="gyro">Gyroscope</option>
                     </select>
                 </label>
                 <br />
@@ -261,9 +231,9 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                         onChange={(e) => setSelectedAxis(e.target.value)}
                         style={{ marginBottom: '20px', padding: '5px', width: '100%' }}
                     >
-                        <option value="X">X</option>
-                        <option value="Y">Y</option>
-                        <option value="Z">Z</option>
+                        <option value="x">X</option>
+                        <option value="y">Y</option>
+                        <option value="z">Z</option>
                     </select>
                 </label>
                 <br />

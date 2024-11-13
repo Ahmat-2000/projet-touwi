@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useVariablesContext } from "@/utils/VariablesContext";
 import { removeUnevenLinesFromCSV } from "@/services/FileService";
 import csvToTouwi from '@/team-offline/csvToTouwi';
-import {saveNewFile} from "@/team-offline/requests"
+import { saveNewFile } from "@/team-offline/requests"
 import Image from "next/image";
 
 
@@ -19,7 +19,7 @@ const ImportComponent = () => {
     accel: null,
     gyro: null,
     video: null,
-    frequency: null,
+    //frequency: null,
   });
   const [errors, setErrors] = useState({});
 
@@ -51,25 +51,27 @@ const ImportComponent = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = {};
-  
+
     if (!fields.accel) newErrors.accel = "Le fichier Accel est requis.";
     if (!fields.gyro) newErrors.gyro = "Le fichier Gyro est requis.";
+    /*
     if (!fields.frequency) newErrors.frequency = "La fréquence en Hz est requise.";
     if (isNaN(fields.frequency) || fields.frequency <= 0)
       newErrors.frequency = "Veuillez entrer une fréquence valide en Hz.";
-  
+    */
+
     setErrors(newErrors);
 
     // Générez le nom de fichier à partir du nom de fileAccel
-  
+
     if (Object.keys(newErrors).length === 0) {
       try {
         console.log("Contenu de fields :", fields);
-    
+
         // Générez le nom de fichier à partir du nom de fileAccel
         const fileName = fields.accel.name.split("_")[0] + '.touwi';
         console.log("Nom du fichier généré :", fileName);
-    
+
         // Passez fileName comme argument à csvToTouwi
         const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, fileName);
         await saveNewFile(resultFile);
@@ -79,9 +81,9 @@ const ImportComponent = () => {
       } catch (error) {
         console.error("Erreur lors de la fusion des fichiers :", error);
       }
-    } 
+    }
   };
-  
+
   const handleRemoveFile = (name) => {
     setFields({ ...fields, [name]: null });
     // Reset the input field so it can trigger the onChange event with the same file
@@ -100,7 +102,7 @@ const ImportComponent = () => {
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
         {/* Logo repositionné pour être en haut à gauche de la boîte */}
         <div className="absolute top-[-55px] left-[-120px]">
-         <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} />
+          <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} />
         </div>
 
 
@@ -144,15 +146,15 @@ const ImportComponent = () => {
               <span className="ml-4 text-gray-500">
                 {fields.accel ? fields.accel.name : "No file selected"}
               </span>
-                {fields.accel && (
-                  <button 
-                    type="button" 
-                    className="ml-2 text-red-500 hover:text-red-700" 
-                    onClick={() => handleRemoveFile("accel")}
-                  >
-                      X
-                  </button>
-                )}
+              {fields.accel && (
+                <button
+                  type="button"
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleRemoveFile("accel")}
+                >
+                  X
+                </button>
+              )}
             </div>
             {errors.accel && <p className="text-red-500">{errors.accel}</p>}
           </div>
@@ -176,12 +178,12 @@ const ImportComponent = () => {
                 {fields.gyro ? fields.gyro.name : "No file selected"}
               </span>
               {fields.gyro && (
-                <button 
-                  type="button" 
-                  className="ml-2 text-red-500 hover:text-red-700" 
-                 onClick={() => handleRemoveFile("gyro")}
+                <button
+                  type="button"
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleRemoveFile("gyro")}
                 >
-                    X
+                  X
                 </button>
               )}
             </div>
@@ -207,19 +209,19 @@ const ImportComponent = () => {
                 {fields.video ? fields.video.name : "No file selected"}
               </span>
               {fields.video && (
-                <button 
-                  type="button" 
-                  className="ml-2 text-red-500 hover:text-red-700" 
-                 onClick={() => handleRemoveFile("video")}
+                <button
+                  type="button"
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  onClick={() => handleRemoveFile("video")}
                 >
-                    X
+                  X
                 </button>
               )}
             </div>
             {errors.video && <p className="text-red-500">{errors.video}</p>}
           </div>
 
-          {/* FREQUENCY */}
+          {/* FREQUENCY 
           <div>
             <label className="block text-lg text-gray-700 mb-2">Frequency (in Hz):</label>
             <input
@@ -232,6 +234,10 @@ const ImportComponent = () => {
             />
             {errors.frequency && <p className="text-red-500">{errors.frequency}</p>}
           </div>
+          */}
+
+          {/* Add a spacer div for extra vertical space */}
+          <div className="h-8"></div>
 
           {/* SUBMIT BUTTON */}
           <div className="flex justify-between items-center">
@@ -241,9 +247,10 @@ const ImportComponent = () => {
             >
               Open
             </button>
-
-            
           </div>
+
+          {/* Add another spacer div for space after the button */}
+          <div className="h-4"></div>
         </form>
       </div>
     </div>
