@@ -19,7 +19,14 @@ const App = () => {
 
     const { variablesContext } = useVariablesContext();
 
-    const fileName = variablesContext.accel.name.split("_")[0] + '.touwi';
+    let fileName;
+     if (variablesContext.accel) {
+          fileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
+     } else {
+          fileName = variablesContext.touwi.name;
+     }
+
+    
 
     const hasVideo = variablesContext.video ? true : false;
 

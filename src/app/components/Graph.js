@@ -138,6 +138,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         const res = getRowWithTimestamp('LABEL', '', name);
         res.then(result => {
             const labelColumn = result[1];
+            console.log("test",labelColumn);
 
         });
     }

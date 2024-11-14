@@ -69,7 +69,7 @@ const ImportComponent = () => {
         console.log("Contenu de fields :", fields);
 
         // Générez le nom de fichier à partir du nom de fileAccel
-        const fileName = fields.accel.name.split("_")[0] + '.touwi';
+        const fileName = fields.accel.name.split("_accel")[0] + '.touwi';
         console.log("Nom du fichier généré :", fileName);
 
         // Passez fileName comme argument à csvToTouwi
