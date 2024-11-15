@@ -12,20 +12,45 @@ import VideoControls from './VideoControls';
 import { useVariablesContext } from '@/utils/VariablesContext';
 import {saveNewFile, receiveFile,saveModificationFile} from '@/team-offline/requests';
 import {getRowWithTimestamp, updateLabelByTimestamp, periodUpdate} from '@/team-offline/outils';
+import { useRouter } from "next/navigation";
 
 
 const App = () => {
 
 
     const { variablesContext } = useVariablesContext();
+    const router = useRouter();
 
+    //Temporary fix for routing
+
+    useEffect(() => {
+        if (variablesContext === null) {
+            router.push("/import");
+        }
+    }, [variablesContext, router]);
+
+    if (variablesContext === null) {
+        return (
+            <div>
+                <h1 style={{ color: 'red' }}>ERROR</h1>
+                <p>Please refresh from localhost:3000</p>
+                <p>Sorry for the inconvenience, proper routing will be implemented soon.</p>
+            </div>
+        );
+    }
+
+    //End of temporary fix for routing
+
+    
+    // Getting .touwi file name depending of new project or reopening project
     let fileName;
-     if (variablesContext.accel) {
-          fileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
+    if (variablesContext.touwi === null) {
+        fileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
+        //New Project at @fileName
      } else {
-          fileName = variablesContext.touwi.name;
+        fileName = variablesContext.touwi.name;
+        // Reopening Project at @fileName
      }
-
     
 
     const hasVideo = variablesContext.video ? true : false;
@@ -93,7 +118,7 @@ const App = () => {
                 const midPoint = (plotList.current[0].current.layout.xaxis.range[0] + 
                                 plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
-                highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Midpoint Indicator');
+                highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
             });
         });
     }
@@ -217,7 +242,7 @@ const App = () => {
         }
 
         //Add new INDICATOR
-        highlightFlag(midPoint, { width: 3, color: 'red', dash: 'solid' }, 'Midpoint Indicator');
+        highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
         prevMidPointRef.current = midPoint;
         
         //Update axis range for all plots
