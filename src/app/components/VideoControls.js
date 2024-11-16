@@ -63,7 +63,7 @@ const VideoControls = ({ propsData }) => {
             const videoDuration = video.duration;
 
             if (propsData.plotList.current[0].current === null) {
-                console.log('Removing deleted plot from list | code °6 ');
+                console.log('Removing deleted plot from list | code °12 ');
                 propsData.plotList.current = propsData.plotList.current.filter(ref => ref !== propsData.plotList.current[0]);
             }
 
@@ -77,7 +77,6 @@ const VideoControls = ({ propsData }) => {
                 'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
                 'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
             };
-
             propsData.syncZoom(newLayout, propsData.plotList.current);
         }
     };

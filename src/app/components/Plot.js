@@ -4,13 +4,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 
-
 const Plot = ({ propsData }) => {
 
     const plotRef = useRef(null);
     const [deletePlot, setDeletePlot] = useState(false);
+    const [verticalSync, setVerticalSync] = useState(false);
 
-    // Define the colors array with a more harmonious palette
     const colors = [
         '#2E86C1',  // Strong Blue
         '#E74C3C',  // Soft Red
@@ -18,10 +17,15 @@ const Plot = ({ propsData }) => {
         '#8E44AD'   // Royal Purple
     ];
 
-    // Get the current plot index from the plotRefList length
     const plotIndex = propsData.plotRefList.length;
-    // Use modulo to cycle through colors if we have more than 4 plots
     const plotColor = colors[plotIndex % colors.length];
+
+    // Effect to update data-vertical-sync attribute when verticalSync changes
+    useEffect(() => {
+        if (plotRef.current) {
+            plotRef.current.setAttribute('data-vertical-sync', verticalSync);
+        }
+    }, [verticalSync]);
 
     useEffect(() => {
         if (!propsData || !plotRef.current) return;
@@ -51,18 +55,22 @@ const Plot = ({ propsData }) => {
                 dragmode: propsData.appMode,
                 shapes: propsData.shapes,
                 annotations: propsData.annotations,
-                margin: { t: 20, b: 20, l: 60, r: 20 }
+                margin: { t: 20, b: 20, l: 60, r: 20 },
+                autosize: true
             },
             {
                 scrollZoom: propsData.appMode === 'pan',
                 displayModeBar: false,
                 doubleClick: false,
+                responsive: true,
+                showAxisDragHandles: false,
             }
         );
 
         // Add plot reference to list if not already present
         if (!propsData.plotRefList.includes(plotRef)) {
             propsData.plotRefList.push(plotRef);
+            plotRef.current.setAttribute('data-vertical-sync', verticalSync);
         }
 
         // Sync with other plots if there are any
@@ -76,7 +84,7 @@ const Plot = ({ propsData }) => {
                     annotations: firstPlot.layout.annotations,
                     dragmode: firstPlot._fullLayout.dragmode
                 };
-                
+
                 Plotly.relayout(plotRef.current, currentLayout);
             }
         }
@@ -85,9 +93,11 @@ const Plot = ({ propsData }) => {
         const plotElement = plotRef.current;
 
         plotElement.on('plotly_click', propsData.handlePlotClick);
-        plotElement.on('plotly_relayout', propsData.handleRelayout);
+        plotElement.on('plotly_relayout', (eventdata) => {
+            propsData.handleRelayout(eventdata, propsData.plotRefList);
+        });
 
-        if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */  }
+        if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
         // Cleanup function
         return () => {
@@ -96,7 +106,6 @@ const Plot = ({ propsData }) => {
                 plotElement.removeAllListeners('plotly_relayout');
                 Plotly.purge(plotElement);
             }
-            // Remove this plot from plotRefList when unmounting
             const index = propsData.plotRefList.indexOf(plotRef);
             if (index > -1) {
                 propsData.plotRefList.splice(index, 1);
@@ -107,13 +116,16 @@ const Plot = ({ propsData }) => {
     if (!deletePlot) {
 
         return (
-            <div className="Plot-container" style={{ height: '25vh' }
-            }>
+            <div className="Plot-container" style={{
+                height: '25vh',
+                width: '100%',
+                position: 'relative'
+            }}>
                 <div style={
                     {
                         position: 'absolute',
                         top: '10px',
-                        left: '10px',
+                        left: '20px',
                         zIndex: 1,
                         background: 'rgba(255, 255, 255, 0.95)',
                         padding: '5px 10px',
@@ -126,11 +138,35 @@ const Plot = ({ propsData }) => {
                 }>
                     {propsData.title}
                 </div>
-                < button
+                
+                <label style={{
+                    position: 'absolute',
+                    right: '50px',
+                    top: '10px',
+                    zIndex: 1,
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    padding: '5px 10px',
+                    borderRadius: '5px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    border: `2px solid ${plotColor}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                }}>
+                    <input 
+                        type="checkbox"
+                        checked={verticalSync}
+                        onChange={(e) => setVerticalSync(e.target.checked)}
+                    />
+                    Vertical Sync
+                </label>
+
+                <button
                     onClick={() => setDeletePlot(true)}
                     style={{
                         position: 'absolute',
-                        top: '10px',
                         right: '10px',
                         zIndex: 1,
                         backgroundColor: '#ff4444',
@@ -152,16 +188,15 @@ const Plot = ({ propsData }) => {
                 >
                     ✖
                 </button>
-                < div ref={plotRef} style={{ width: '100%', height: '100%' }} />
+                <div ref={plotRef} style={{ width: '100%', height: '100%' }} />
             </div>
-        )
+        );
     }
     else {
 
         propsData.plotRefList.forEach((plotRef) => {
             if (plotRef.current === null) {
-                //remove plot from plotRefList
-                console.log('Removing deleted plot from list | code °5 ');
+                console.log('Removing deleted plot from list | code °11 ');
                 propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== plotRef);
             }
         });
@@ -213,9 +248,6 @@ const Plot = ({ propsData }) => {
             
         }
     */
-
-
-
 
 };
 

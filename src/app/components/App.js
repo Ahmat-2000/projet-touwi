@@ -133,7 +133,7 @@ const App = () => {
         // Update shapes and annotations on all plots
         plotList.current.forEach((plotRef) => {
             if (plotRef.current === null) {
-                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °2 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
@@ -160,7 +160,7 @@ const App = () => {
         // Destroy all plots
         plotList.current.forEach((plotRef) => {
             if (plotRef.current === null) {
-                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °3 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
@@ -183,7 +183,7 @@ const App = () => {
         plotList.current.forEach((plotRef) => {
 
             if (plotRef.current === null) {
-                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °4 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
@@ -215,7 +215,7 @@ const App = () => {
         });
     }
 
-    function syncZoom(eventdata, plotRefList) {
+    function syncZoom2(eventdata, plotRefList) {
 
         if (!('xaxis.range[0]' in eventdata)) {
             //synczoom is also called in functions highlightFlag and deleteRegion because it updates the plot layout (atttibutes shapes & annotations)
@@ -243,16 +243,64 @@ const App = () => {
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
             if (plotRef.current === null) {
-                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °5 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
             Plotly.relayout(plotRef.current, layoutUpdate);
         });
+    };
+
+    function syncZoom(eventdata, plotRefList) {
+        if (!('xaxis.range[0]' in eventdata)) {
+            return;
+        }
 
 
+        const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
 
+        //Remove previous INDICATOR
+        if (prevMidPointRef.current !== null) {
+            deleteRegion(plotList, prevMidPointRef.current, true);
+        }
 
+        //Add new INDICATOR
+        highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
+        prevMidPointRef.current = midPoint;
+
+        //Update axis range for all plots
+        plotRefList.forEach((plotRef) => {
+            if (plotRef.current === null) {
+                console.log('Removing deleted plot from list | code °5 ');
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
+
+            // Get verticalSync state from plot's dataset
+            const verticalSync = plotRef.current.getAttribute('data-vertical-sync');
+            console.log("Vertical sync is ", verticalSync);
+
+            const plotTitle = plotRef.current.layout.title;
+            console.log(plotRef.current, verticalSync);
+
+            let layoutUpdate;
+            if (verticalSync) {
+                //console.log("Vertical sync is on for this one");
+                layoutUpdate = {
+                    'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+                    //'yaxis.autorange': true
+                };
+            } else {
+                //console.log("Vertical sync is NOT on for this one");
+                layoutUpdate = {
+                    'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+                    'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']],
+                };
+            }
+
+            Plotly.relayout(plotRef.current, layoutUpdate);
+
+        });
     };
 
     function highlightFlag(xValue, style, text) {
@@ -292,7 +340,7 @@ const App = () => {
         // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {
             if (plotRef.current === null) {
-                //remove plot from plotRefList
+                console.log('Removing deleted plot from list | code °6 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
@@ -304,7 +352,7 @@ const App = () => {
     function deleteRegion(plotList, xValue, onlyFlag) {
 
         if (plotList.current[0].current === null) {
-            console.log('Removing deleted plot from list | code °2 ');
+            console.log('Removing deleted plot from list | code °7 ');
             plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
         }
 
@@ -332,7 +380,7 @@ const App = () => {
             // Remove 1 shape from all plots
             plotRefs.forEach(plotRef => {
                 if (plotRef.current === null) {
-                    //remove plot from plotRefList
+                    console.log('Removing deleted plot from list | code °8 ');
                     plotList.current = plotList.current.filter(ref => ref !== plotRef);
                     return;
                 }
@@ -356,7 +404,7 @@ const App = () => {
             // Update shapes and annotations on the plots
             plotRefs.forEach(plotRef => {
                 if (plotRef.current === null) {
-                    //remove plot from plotRefList
+                    console.log('Removing deleted plot from list | code °9 ');
                     plotList.current = plotList.current.filter(ref => ref !== plotRef);
                     return;
                 }
