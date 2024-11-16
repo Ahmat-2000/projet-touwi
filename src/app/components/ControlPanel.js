@@ -63,6 +63,14 @@ const ControlPanel = ({ resetZoom, resetMode, resetEvents, voidPlots, plotList, 
                         <span>Delete</span>
                     </button>
                     <button
+                        onClick={() => { setPlotlyDragMode(false); setAppMode('None'); }}
+                        className={`control-button ${appMode === 'None' ? 'active' : ''}`}
+                        data-active={appMode === 'None'}
+                    >
+                        <i className="fas fa-mouse-pointer"></i>
+                        <span>None</span>
+                    </button>
+                    <button
                         onClick={() => {
                             if (window.confirm('Are you sure you want to delete all periods and flags?')) {
                                 resetEvents();

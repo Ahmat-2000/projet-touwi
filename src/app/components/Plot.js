@@ -24,108 +24,85 @@ const Plot = ({ propsData }) => {
     const plotColor = colors[plotIndex % colors.length];
 
     useEffect(() => {
+        if (!propsData || !plotRef.current) return;
 
-        if (propsData && plotRef.current) {
-
-            Plotly.newPlot(
-
-                plotRef.current,
-
-                [{
-                    x: propsData.timestamp,
-                    y: propsData.data,
-                    line: {
-                        color: plotColor,
-                        width: 2
-                    },
-                    hovertemplate: '<span style="background-color:red">X: %{x:.0f} <br> Y: %{y:.3f}</span> <extra></extra>',
-                    hoverlabel: {
-                        bgcolor: '#FF6F61', // Background color
-                        bordercolor: 'grey',
-                        font: {
-                            color: 'black',
-                            size: 14 // Font size
-                        },
-                    },
-                    hovermode: 'closest'
-                },],
-
-                {
-                    dragmode: propsData.appMode,
-                    shapes: propsData.shapes,
-                    annotations: propsData.annotations,
-                    margin: { t: 20, b: 20, l: 60, r: 20 }
+        // Create the plot
+        Plotly.newPlot(
+            plotRef.current,
+            [{
+                x: propsData.timestamp,
+                y: propsData.data,
+                line: {
+                    color: plotColor,
+                    width: 2
                 },
+                hovertemplate: '<span style="background-color:red">X: %{x:.0f} <br> Y: %{y:.3f}</span> <extra></extra>',
+                hoverlabel: {
+                    bgcolor: '#FF6F61',
+                    bordercolor: 'grey',
+                    font: {
+                        color: 'black',
+                        size: 14
+                    },
+                },
+                hovermode: 'closest'
+            }],
+            {
+                dragmode: propsData.appMode,
+                shapes: propsData.shapes,
+                annotations: propsData.annotations,
+                margin: { t: 20, b: 20, l: 60, r: 20 }
+            },
+            {
+                scrollZoom: propsData.appMode === 'pan',
+                displayModeBar: false,
+                doubleClick: false,
+            }
+        );
 
-                {
-                    scrollZoom: false,
-                    displayModeBar: false,
-                    doubleClick: false,
-                }
-
-            );
-
-        }
-
-        // Add the plot reference to the list of plots
+        // Add plot reference to list if not already present
         if (!propsData.plotRefList.includes(plotRef)) {
             propsData.plotRefList.push(plotRef);
         }
 
+        // Sync with other plots if there are any
         if (propsData.plotRefList.length > 1) {
-
-            //Get all current attributes from the first plot in the list and apply them to the new plot
-            //Might be bad practice to only get the first plot in the list 
-            //and not use the global list of shapes & etc (not in use because they ain't updated correctly)
-
-            if (propsData.plotRefList[0].current === null) {
-                console.log('Removing deleted plot from list | code °4 ');
-                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== propsData.plotRefList[0]);
+            const firstPlot = propsData.plotRefList[0].current;
+            if (firstPlot) {
+                const currentLayout = {
+                    'xaxis.range': firstPlot.layout.xaxis.range,
+                    'yaxis.range': firstPlot.layout.yaxis.range,
+                    shapes: firstPlot.layout.shapes,
+                    annotations: firstPlot.layout.annotations,
+                    dragmode: firstPlot._fullLayout.dragmode
+                };
+                
+                Plotly.relayout(plotRef.current, currentLayout);
             }
-
-            //Zoom
-            const currentLayout = {
-                'xaxis.range': propsData.plotRefList[0].current.layout.xaxis.range,
-                'yaxis.range': propsData.plotRefList[0].current.layout.yaxis.range
-            };
-
-            const currentDragMode = propsData.plotRefList[0].current._fullLayout.dragmode;
-            const currentShapes = propsData.plotRefList[0].current.layout.shapes;
-            const currentAnnotations = propsData.plotRefList[0].current.layout.annotations;
-
-
-            Plotly.relayout(plotRef.current, {
-                ...currentLayout,
-                shapes: currentShapes,
-                annotations: currentAnnotations,
-                dragmode: currentDragMode
-            });
-
-
-
         }
 
-        // Add event listeners for plot interactions
-        plotRef.current.on('plotly_click', (eventData) => {
-            if (propsData.hasVideo && propsData.videoRef.current) {
-                const clickedTime = eventData.points[0].x;
-                // Convert timestamp to video time (assuming timestamp is in milliseconds)
-                const videoTime = clickedTime / 1000;
-                propsData.videoRef.current.currentTime = videoTime;
+        // Add event listeners
+        const plotElement = plotRef.current;
+
+        plotElement.on('plotly_click', propsData.handlePlotClick);
+        plotElement.on('plotly_relayout', propsData.handleRelayout);
+
+        if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */  }
+
+        // Cleanup function
+        return () => {
+            if (plotElement) {
+                plotElement.removeAllListeners('plotly_click');
+                plotElement.removeAllListeners('plotly_relayout');
+                Plotly.purge(plotElement);
             }
-            // Call the original click handler if it exists
-            if (propsData.handlePlotClick) {
-                propsData.handlePlotClick(eventData);
+            // Remove this plot from plotRefList when unmounting
+            const index = propsData.plotRefList.indexOf(plotRef);
+            if (index > -1) {
+                propsData.plotRefList.splice(index, 1);
             }
-        });
-
-        plotRef.current.on('plotly_relayout', (eventData) => propsData.handleRelayout(eventData, propsData.plotRefList));
-
-        // Possible hover event can be added here
-        if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
-
+        };
     }, [propsData]);
-
 
     if (!deletePlot) {
 
