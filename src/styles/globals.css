@@ -23,37 +23,40 @@ body {
 /* App styles */
 .app-container {
   width: 100%;
-  padding: 20px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  flex-direction: column;
+  gap: 1vh;
 }
 
 .video-container {
-  width: 30%;
+  width: 100%;
   background: white;
-  padding: 20px;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+}
+
+.panel-container {
+  width: 100%;
+  height: auto;
+  padding: 10px;
+  background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.panel-container {
-  width: calc(70% - 20px);
-  position: relative;
-}
-
-.panel-container.full-width {
-  width: 100%;
-}
-
 .graph-container {
   width: 100%;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .addPlot-container {
-  width: calc(70% - 20px);
-  margin: 20px 0 20px auto;
-  padding-right: 20px;
+  margin-top: 20px;
+  text-align: center;
 }
 
 .addPlot-container button {
@@ -72,13 +75,12 @@ body {
 }
 
 @media (max-width: 768px) {
+
   .video-container,
   .panel-container,
-  .panel-container.full-width,
-  .addPlot-container {
+  .graph-container {
     width: 100%;
     margin: 10px 0;
-    padding-right: 0;
   }
 }
 
@@ -88,7 +90,7 @@ body {
   border-radius: 12px;
   padding: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin: 10px auto;
+  margin-top: 1vh;
 }
 
 .control-panel-header {
@@ -120,6 +122,8 @@ body {
 }
 
 .control-button {
+  flex: 1;
+  margin: 0 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -141,12 +145,12 @@ body {
 .control-button.active {
   background-color: #297DCB;
   color: white;
-  box-shadow: 0 2px 4px rgba(41,125,203,0.3);
+  box-shadow: 0 2px 4px rgba(41, 125, 203, 0.3);
 }
 
 .control-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .control-button[data-active="true"]:hover,
@@ -350,4 +354,89 @@ body {
 .sync-button:hover {
   transform: translateY(-1px);
   filter: brightness(1.1);
+}
+
+
+.Plot-fromMap {
+  margin-top: 0.25em;
+  height: 15vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.Plot-fromMap>* {
+  height: 100%;
+}
+
+.Plot-container {
+  position: relative;
+  margin-top: 0.5vh;
+  height: 100%;
+}
+
+.Plot-fromMap>* {
+  max-height: 100%;
+}
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.control-panel-container {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+}
+
+.video-control-container {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  /* Space between video and control panel */
+}
+
+.video-container {
+  flex: 0 0 200px;
+  /* Fixed width for the video container */
+  background: white;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.video-container video {
+  width: 100%;
+  /* Make video take full width of the container */
+  height: auto;
+  /* Maintain aspect ratio */
+  aspect-ratio: 16 / 9;
+  /* Maintain 16:9 aspect ratio */
+}
+
+.control-panel-container {
+  flex: 1;
+  height: 30vh;
+  /* Allow the control panel to take available space */
+  padding: 10px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.graph-container {
+  width: 100%;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }

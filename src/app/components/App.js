@@ -7,22 +7,32 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 import Graph from './Graph';
 import ControlPanel from './ControlPanel';
-
 import VideoControls from './VideoControls';
 import { useVariablesContext } from '@/utils/VariablesContext';
-import {saveNewFile, receiveFile,saveModificationFile} from '@/team-offline/requests';
-import {getRowWithTimestamp, updateLabelByTimestamp, periodUpdate} from '@/team-offline/outils';
+import { periodUpdate } from '@/team-offline/outils';
 import { useRouter } from "next/navigation";
 
-
 const App = () => {
-
 
     const { variablesContext } = useVariablesContext();
     const router = useRouter();
 
-    //Temporary fix for routing
+    // State hooks
+    const [error, setError] = useState(''); // Error message for CSV parsing
+    const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
+    const [selections, setSelections] = useState([]); // Array to store selected regions
+    const [shapes, setShapes] = useState([]);  // To store shapes (periods)
+    const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
+    const [syncEnabled, setSyncEnabled] = useState(true);
+    const [timestamps, setTimestamps] = useState([]);
 
+    // Refs
+    const timestampRef = useRef([]);
+    const prevMidPointRef = useRef(null);
+    const plotList = useRef([]);
+    const videoRef = useRef(null);
+
+    // Temporary fix for routing
     useEffect(() => {
         if (variablesContext === null) {
             router.push("/import");
@@ -41,40 +51,25 @@ const App = () => {
 
     //End of temporary fix for routing
 
-    
+
     // Getting .touwi file name depending of new project or reopening project
     let fileName;
+    let isReopen = false;
     if (variablesContext.touwi === null) {
         fileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
         //New Project at @fileName
-     } else {
+    } else {
         fileName = variablesContext.touwi.name;
+        isReopen = true;
         // Reopening Project at @fileName
-     }
-    
+    }
 
     const hasVideo = variablesContext.video ? true : false;
 
-    const [error, setError] = useState(''); // Error message for CSV parsing
 
-    const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
-    
-    const [selections, setSelections] = useState([]); // Array to store selected regions
-    const [shapes, setShapes] = useState([]);  // To store shapes (periods)
-    const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
-    const [syncEnabled, setSyncEnabled] = useState(true);
-
-    const [timestamps,setTimestamps] = useState([]);
-    const timestampRef = useRef([]);
-
-
-    const prevMidPointRef = useRef(null);
-
-    const plotList = useRef([]);
-    const videoRef = useRef(null);
-
+    // Effect to update timestampRef
     useEffect(() => {
-        if (timestamps.length > 0 ){
+        if (timestamps.length > 0) {
             timestampRef.current = timestamps;
         }
     }, [timestamps]);
@@ -109,14 +104,14 @@ const App = () => {
 
             // Wait for all layout updates to complete
             Promise.all(updates).then(() => {
-                
+
                 if (plotList.current[0].current === null) {
                     console.log('Removing deleted plot from list | code °1 ');
                     plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
                 }
-                
-                const midPoint = (plotList.current[0].current.layout.xaxis.range[0] + 
-                                plotList.current[0].current.layout.xaxis.range[1]) / 2;
+
+                const midPoint = (plotList.current[0].current.layout.xaxis.range[0] +
+                    plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
                 highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
             });
@@ -154,8 +149,7 @@ const App = () => {
         // Clear global state for shapes and annotations if they are used
         setShapes(updatedShapes);
         setAnnotations(updatedAnnotations);
-
-        periodUpdate(timestampRef.current[0],timestampRef.current[timestampRef.current.length],'NONE',fileName);
+        periodUpdate(timestampRef.current[0], timestampRef.current[timestampRef.current.length - 1], 'NONE', fileName);
 
         console.log('All periods and flags have been reset.');
     }
@@ -213,7 +207,8 @@ const App = () => {
             const config = {
                 displayModeBar: false,
                 doubleClick: false,
-                scrollZoom: newDragMode === 'pan' };
+                scrollZoom: newDragMode === 'pan'
+            };
 
             // Use Plotly.react to update the axis ranges and scrollZoom
             Plotly.react(plotRef.current, plotRef.current.data, currentLayout, config);
@@ -222,7 +217,7 @@ const App = () => {
 
     function syncZoom(eventdata, plotRefList) {
 
-        if (!('xaxis.range[0]' in eventdata)){
+        if (!('xaxis.range[0]' in eventdata)) {
             //synczoom is also called in functions highlightFlag and deleteRegion because it updates the plot layout (atttibutes shapes & annotations)
             //I don't think we can stop it so just cancel it here
             return;
@@ -235,7 +230,7 @@ const App = () => {
         };
 
         const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
-        
+
         //Remove previous INDICATOR
         if (prevMidPointRef.current !== null) {
             deleteRegion(plotList, prevMidPointRef.current, true);
@@ -244,7 +239,7 @@ const App = () => {
         //Add new INDICATOR
         highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
         prevMidPointRef.current = midPoint;
-        
+
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
             if (plotRef.current === null) {
@@ -255,9 +250,9 @@ const App = () => {
             Plotly.relayout(plotRef.current, layoutUpdate);
         });
 
-        
 
-        
+
+
     };
 
     function highlightFlag(xValue, style, text) {
@@ -312,7 +307,7 @@ const App = () => {
             console.log('Removing deleted plot from list | code °2 ');
             plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
         }
-        
+
         // Find the region that contains the clicked xValue
         let regionIndex = plotList.current[0].current.layout.shapes.findIndex(
             shape => shape.x0 === shape.x1 && shape.x0 === xValue
@@ -330,7 +325,9 @@ const App = () => {
             const plotRefs = plotList.current;
             const shape = plotRefs[0].current.layout.shapes[regionIndex];
             const isFlag = shape.x0 === shape.x1;
-            periodUpdate(timestampRef.current[shape.x0],timestampRef.current[shape.x1],'NONE',fileName);
+            if (!onlyFlag) {
+                periodUpdate(timestampRef.current[shape.x0], timestampRef.current[shape.x1], 'NONE', fileName);
+            }
 
             // Remove 1 shape from all plots
             plotRefs.forEach(plotRef => {
@@ -340,13 +337,13 @@ const App = () => {
                     return;
                 }
                 plotRef.current.layout.shapes.splice(regionIndex, 1);
-                
+
                 // Remove it's annotation if it's a flag
                 if (isFlag) {
                     const annotationIndex = plotRef.current.layout.annotations.findIndex(
                         annotation => annotation.x === xValue
                     );
-                    
+
                     if (annotationIndex !== -1) {
                         plotRef.current.layout.annotations.splice(annotationIndex, 1);
                     }
@@ -375,58 +372,57 @@ const App = () => {
         }
     }
 
-    
+
     return (
         <div className="app-container">
             {hasVideo && (
-                <div className="video-container">
-                    <VideoControls propsData={{
-                        video: hasVideo ? variablesContext.video : null,
+                <div className="video-control-container">
+                    <div className="video-container">
+                        <VideoControls propsData={{
+                            video: hasVideo ? variablesContext.video : null,
+                            plotList: plotList,
+                            syncZoom: syncZoom,
+                            videoRef: videoRef,
+                            highlightFlag: highlightFlag,
+                            deleteRegion: deleteRegion,
+                            syncEnabled: syncEnabled,
+                            setSyncEnabled: setSyncEnabled
+                        }} />
+                    </div>
+                    <div className="control-panel-container">
+                        <ControlPanel
+                            resetZoom={resetZoom}
+                            resetMode={() => setAppMode('None')}
+                            resetEvents={resetEvents}
+                            voidPlots={voidPlots}
+                            plotList={plotList}
+                            setAppMode={setAppMode}
+                            setPlotlyDragMode={setPlotlyDragMode}
+                            appMode={appMode}
+                            hasVideo={hasVideo}
+                        />
+                    </div>
+                </div>
+            )}
+            <div className="graph-container">
+                <Graph
+                    propsData={{
                         plotList: plotList,
+                        appMode: appMode,
+                        hasVideo: hasVideo,
                         syncZoom: syncZoom,
                         videoRef: videoRef,
                         highlightFlag: highlightFlag,
                         deleteRegion: deleteRegion,
-                        syncEnabled: syncEnabled,
-                        setSyncEnabled: setSyncEnabled
-                    }} />
-                </div>
-            )}
-
-            <div className={`panel-container ${!hasVideo ? 'full-width' : ''}`}>
-                    <ControlPanel
-                        resetZoom={resetZoom}
-                        resetMode={() => setAppMode('None')}
-                        resetEvents={resetEvents}
-                        voidPlots={voidPlots}
-                        plotList={plotList}
-                        setAppMode={setAppMode}
-                        setPlotlyDragMode={setPlotlyDragMode}
-                        appMode={appMode}
-                        hasVideo={hasVideo}
-                    />
+                        name: fileName,
+                        setTimestamps: setTimestamps,
+                        timestampRef: timestampRef,
+                        isReopen: isReopen
+                    }}
+                />
             </div>
-
-                <div className="graph-container">
-                    <Graph 
-                        plotList={plotList} 
-                        appMode={appMode} 
-                        setAppMode={setAppMode} 
-                        hasVideo={hasVideo} 
-                        syncZoom={syncZoom}
-                        videoRef={videoRef}
-                        highlightFlag={highlightFlag}
-                        deleteRegion={deleteRegion}
-                        name={fileName}
-                        timestamps={timestamps}
-                        setTimestamps={setTimestamps}
-                        timestampRef={timestampRef}
-
-                    />
-                </div>
         </div>
     );
-    
 };
 
 export default App;

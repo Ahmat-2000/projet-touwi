@@ -17,7 +17,7 @@ const Plot = ({ propsData }) => {
         '#27AE60',  // Forest Green
         '#8E44AD'   // Royal Purple
     ];
-    
+
     // Get the current plot index from the plotRefList length
     const plotIndex = propsData.plotRefList.length;
     // Use modulo to cycle through colors if we have more than 4 plots
@@ -28,9 +28,9 @@ const Plot = ({ propsData }) => {
         if (propsData && plotRef.current) {
 
             Plotly.newPlot(
-                
-                plotRef.current, 
-                
+
+                plotRef.current,
+
                 [{
                     x: propsData.timestamp,
                     y: propsData.data,
@@ -48,21 +48,21 @@ const Plot = ({ propsData }) => {
                         },
                     },
                     hovermode: 'closest'
-                },], 
-                
+                },],
+
                 {
                     dragmode: propsData.appMode,
                     shapes: propsData.shapes,
                     annotations: propsData.annotations,
                     margin: { t: 20, b: 20, l: 60, r: 20 }
-                }, 
-                
+                },
+
                 {
                     scrollZoom: false,
                     displayModeBar: false,
                     doubleClick: false,
                 }
-            
+
             );
 
         }
@@ -73,7 +73,7 @@ const Plot = ({ propsData }) => {
         }
 
         if (propsData.plotRefList.length > 1) {
-            
+
             //Get all current attributes from the first plot in the list and apply them to the new plot
             //Might be bad practice to only get the first plot in the list 
             //and not use the global list of shapes & etc (not in use because they ain't updated correctly)
@@ -87,21 +87,21 @@ const Plot = ({ propsData }) => {
             const currentLayout = {
                 'xaxis.range': propsData.plotRefList[0].current.layout.xaxis.range,
                 'yaxis.range': propsData.plotRefList[0].current.layout.yaxis.range
-            };        
-            
-            const currentDragMode =    propsData.plotRefList[0].current._fullLayout.dragmode;
-            const currentShapes =      propsData.plotRefList[0].current.layout.shapes;
+            };
+
+            const currentDragMode = propsData.plotRefList[0].current._fullLayout.dragmode;
+            const currentShapes = propsData.plotRefList[0].current.layout.shapes;
             const currentAnnotations = propsData.plotRefList[0].current.layout.annotations;
 
-            
+
             Plotly.relayout(plotRef.current, {
                 ...currentLayout,
                 shapes: currentShapes,
                 annotations: currentAnnotations,
                 dragmode: currentDragMode
             });
-            
-            
+
+
 
         }
 
@@ -125,28 +125,31 @@ const Plot = ({ propsData }) => {
         if (propsData.hover) { /* plotRef.current.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
     }, [propsData]);
-    
+
 
     if (!deletePlot) {
 
         return (
-            <div style={{ marginTop: '50px', position: 'relative' }}>
-                <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    zIndex: 1,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    border: `2px solid ${plotColor}`
-                }}>
+            <div className="Plot-container" style={{ height: '25vh' }
+            }>
+                <div style={
+                    {
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        zIndex: 1,
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        border: `2px solid ${plotColor}`
+                    }
+                }>
                     {propsData.title}
                 </div>
-                <button
+                < button
                     onClick={() => setDeletePlot(true)}
                     style={{
                         position: 'absolute',
@@ -172,7 +175,7 @@ const Plot = ({ propsData }) => {
                 >
                     ✖
                 </button>
-                <div ref={plotRef} style={{ width: '100%', height: '500px' }} />
+                < div ref={plotRef} style={{ width: '100%', height: '100%' }} />
             </div>
         )
     }
@@ -234,8 +237,8 @@ const Plot = ({ propsData }) => {
         }
     */
 
-    
-    
+
+
 
 };
 

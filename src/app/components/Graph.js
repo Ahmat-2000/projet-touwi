@@ -6,28 +6,41 @@ import Plotly from 'plotly.js-basic-dist-min';
 import Modal from 'react-modal';
 import Plot from './Plot';
 
-import { useVariablesContext } from '@/utils/VariablesContext';
-import { getRowWithTimestamp,periodUpdate,updateLabelByTimestamp } from '@/team-offline/outils';
+import { getRowWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
 
 
-const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoom, videoRef, highlightFlag, deleteRegion, name ,timestamps,setTimestamps,timestampRef}) => {
+
+const Graph = ({ propsData }) => {
     const [plots, setPlots] = useState([]);
     const [selections, setSelections] = useState([]);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('accel');
     const [selectedAxis, setSelectedAxis] = useState('x');
+    const [plotFinished, setPlotFinished] = useState(false);
+    const [showReloadButton, setShowReloadButton] = useState(true);
 
-    const appModeRef = useRef(appMode);
-
-    useEffect(() => {
-        appModeRef.current = appMode;
-    }, [appMode]);
+    const appModeRef = useRef(propsData.appMode);
 
     useEffect(() => {
-        createPlot('accel', 'x', name);
+        appModeRef.current = propsData.appMode;
+    }, [propsData.appMode]);
+
+
+
+    useEffect(() => {
+        createPlot('accel', 'x', propsData.name);
+        //setPlotFinished(true); // Set the flag after createPlot is called
+    }, [propsData.name]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowReloadButton(false);
+        }, 5000); // Button will disappear after 5 seconds
+
+        return () => clearTimeout(timer);
     }, []);
-    
+
 
     //--------------------------------
 
@@ -40,8 +53,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
     };
 
     const handleAddPlot = () => {
-        const filename = name;
-        createPlot(selectedCategory, selectedAxis, filename);
+        createPlot(selectedCategory, selectedAxis, propsData.name);
         setIsModalOpen(false); // Ferme la boîte modale après le choix
     };
 
@@ -55,16 +67,16 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
-            if (hasVideo) {
-                const video = videoRef.current;
+            if (propsData.hasVideo) {
+                const video = propsData.videoRef.current;
                 const videoDuration = video.duration; // Get video duration in seconds
 
-                if (plotList.current[0].current === null) {
+                if (propsData.plotList.current[0].current === null) {
                     console.log('Removing deleted plot from list | code °3 ');
-                    plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
+                    propsData.plotList.current = propsData.plotList.current.filter(ref => ref !== propsData.plotList.current[0]);
                 }
 
-                const signalLength = plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
+                const signalLength = propsData.plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
 
                 // Convert signal index to video time using linear mapping
                 const videoTime = (xValue / signalLength) * videoDuration;
@@ -76,7 +88,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
         // Handle the different modes
         if (currentAppMode === 'delete') {
-            deleteRegion(plotList, xValue, false);
+            propsData.deleteRegion(propsData.plotList, xValue, false);
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
@@ -87,14 +99,18 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     selections[selections.length - 1].end = xValue;
                     highlightRegion(selections[selections.length - 1].start, xValue);
-                    periodUpdate(timestampRef.current[selections[selections.length - 1].start] ,timestampRef.current[xValue],"PERIOD",name);
+                    const label = "testPeriod";
+                    const labelName = "PERIOD:" + label;
+                    periodUpdate(propsData.timestampRef.current[selections[selections.length - 1].start], propsData.timestampRef.current[xValue], labelName, propsData.name);
                 }
             }
 
             if (currentAppMode === 'flag') {
                 console.log(`Flag added at x: ${xValue}`);
-                highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
-                updateLabelByTimestamp(timestampRef.current[xValue],"FLAG",name);
+                propsData.highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
+                const label2 = "testFlag";
+                const labelName2 = "FLAG:" + label2;
+                updateLabelByTimestamp(propsData.timestampRef.current[xValue], labelName2, propsData.name);
             }
 
 
@@ -120,7 +136,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             }
         };
 
-        plotList.current.forEach(plotRef => {
+        propsData.plotList.current.forEach(plotRef => {
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape] });
         });
     }
@@ -134,25 +150,54 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
         console.log(`Hovering over x: ${xValue}`);
     };
 
-    function test() {
-        const res = getRowWithTimestamp('LABEL', '', name);
+
+    function reload_labels() {
+        const res = getRowWithTimestamp('LABEL', '', propsData.name);
         res.then(result => {
-            const labelColumn = result[1];
-            console.log("test",labelColumn);
+            const columnLabels = result[1];
+
+            let start = null;
+
+            for (let i = 0; i < columnLabels.length; i++) {
+                if (!columnLabels[i].startsWith('PERIOD:')) {
+
+                    if (columnLabels[i].startsWith('FLAG:')) {
+                        const labelName = columnLabels[i].slice(5); // Extract random string after 'FLAG:'
+                        propsData.highlightFlag(i, { width: 1, color: 'blue', dash: 'dashdot' }, labelName);
+                        console.log("Flag loaded at: ", i);
+                    }
+
+                    if (start !== null) {
+                        if (columnLabels[i - 1].startsWith('PERIOD:')) {
+                            highlightRegion(start, i - 1),
+                                console.log("Period loaded at: ", start, i - 1);
+                            start = null;
+                        }
+                    }
+                }
+                else if (columnLabels[i].startsWith('PERIOD:')) {
+                    if (start === null) { start = i; }
+
+                    if (i === columnLabels.length - 1) {
+                        highlightRegion(start, i);
+                        console.log("Period loaded at: ", start, i);
+                    }
+                }
+
+                else { console.error('Invalid label format: ', columnLabels[i]); }
+            };
 
         });
     }
 
     function createPlot(sensor, axis, filename) {
 
-        const bundle = getRowWithTimestamp(sensor, axis, name);
+        const bundle = getRowWithTimestamp(sensor, axis, propsData.name);
 
         bundle.then(result => {
-    
+
             const timestamp = result[0];
             const data = result[1];
-
-            setTimestamps(timestamp);
 
             const props = {
                 data: data,
@@ -160,14 +205,11 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 timestamp: Array.from({ length: data.length }, (_, i) => i),
                 handlePlotClick: (eventData) => handlePlotClick(eventData),
                 hover: handlePlotHover,
-                handleRelayout: syncZoom,
-                plotRefList: plotList.current,
+                handleRelayout: propsData.syncZoom,
+                plotRefList: propsData.plotList.current,
                 shapes: [],
                 annotations: [],
-                appMode: appMode,
-                timestampRef: timestampRef.current,
-                timestamps: timestamps,
-                setTimestamps: setTimestamps
+                appMode: propsData.appMode,
             };
 
 
@@ -175,6 +217,15 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
             <Plot key={props.title} propsData={props} />
             ]);
 
+            if (!plotFinished) {
+                console.log("First time loading plot");
+                propsData.timestampRef.current = timestamp;
+                setPlotFinished(true);
+                if (propsData.isReopen) {
+                    console.log("Reloading labels...");
+                    reload_labels();
+                }
+            }
         });
     }
 
@@ -185,7 +236,6 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
                 <button onClick={handleOpenModal}>
                     Create Plot
                 </button>
-                <button onClick={test}>Test</button>
             </div>
 
             <Modal
@@ -244,7 +294,7 @@ const Graph = ({ temporaryData, plotList, appMode, setAppMode, hasVideo, syncZoo
 
             <div className="plot-container">
                 {plots.map((plot, index) => (
-                    <div key={index} style={{ marginTop: '20px' }}>
+                    <div key={index} className='Plot_fromMap'>
                         {plot}
                     </div>
                 ))}

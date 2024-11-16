@@ -86,6 +86,10 @@ export const updateLabelByTimestamp = async (timestamp, newLabel, fileName) => {
 // Fonction pour mettre à jour les labels d'un timestamp jusqu'à un autre
 export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,fileName) => {
 
+  if (timestamp_debut === undefined || timestamp_fin === undefined || new_label === undefined || fileName === undefined) {
+    console.error(`One of the required parameters is not set properly : timestamp_debut{${timestamp_debut}}, timestamp_fin{${timestamp_fin}}, new_label{${new_label}}, fileName{${fileName}}`);
+  }
+
   // Charger le contenu du fichier
   const touwiContent = await receiveFile(fileName);
 
