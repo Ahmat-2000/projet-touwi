@@ -77,7 +77,7 @@ const VideoControls = ({ propsData }) => {
                 'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
                 'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
             };
-            propsData.syncZoom(newLayout, propsData.plotList.current);
+            propsData.syncZoom(newLayout, propsData.plotList.current, null);
         }
     };
 

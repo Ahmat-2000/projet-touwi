@@ -21,6 +21,7 @@ const Graph = ({ propsData }) => {
     const [showReloadButton, setShowReloadButton] = useState(true);
 
     const appModeRef = useRef(propsData.appMode);
+    const [plotIndexColor, setPlotIndexColor] = useState(0);
 
     useEffect(() => {
         appModeRef.current = propsData.appMode;
@@ -141,10 +142,6 @@ const Graph = ({ propsData }) => {
         });
     }
 
-    function deletePlot(plotRef) {
-        Plotly.delete(plotRef);
-    }
-
     function handlePlotHover(eventData) {
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
@@ -199,17 +196,28 @@ const Graph = ({ propsData }) => {
             const timestamp = result[0];
             const data = result[1];
 
+            const colors = [
+                '#2E86C1',  // Strong Blue
+                '#E74C3C',  // Soft Red
+                '#27AE60',  // Forest Green
+                '#8E44AD'   // Royal Purple
+            ];
+
+            const plotColor = colors[plotIndexColor % colors.length];
+            setPlotIndexColor(plotIndexColor + 1);
+
             const props = {
                 data: data,
                 title: filename + ' ' + sensor.charAt(0).toUpperCase() + sensor.slice(1) + ' ' + axis.toUpperCase(),
                 timestamp: Array.from({ length: data.length }, (_, i) => i),
-                handlePlotClick: (eventData) => handlePlotClick(eventData),
-                hover: handlePlotHover,
-                handleRelayout: propsData.syncZoom,
                 plotRefList: propsData.plotList.current,
                 shapes: [],
                 annotations: [],
+                color: plotColor,
                 appMode: propsData.appMode,
+                handlePlotClick: (eventData) => handlePlotClick(eventData),
+                handleRelayout: propsData.syncZoom,
+                hover: handlePlotHover,
             };
 
 
@@ -244,6 +252,10 @@ const Graph = ({ propsData }) => {
                 ariaHideApp={false}
                 contentLabel="Choose Plot Type"
                 style={{
+                    overlay: {
+                        zIndex: 1,
+                        backgroundColor: 'rgba(0, 0, 0, 0.75)'
+                    },
                     content: {
                         top: '50%',
                         left: '50%',
@@ -254,7 +266,7 @@ const Graph = ({ propsData }) => {
                         padding: '20px',
                         borderRadius: '8px',
                         width: '300px',
-                        textAlign: 'center'
+                        textAlign: 'center',
                     }
                 }}
             >

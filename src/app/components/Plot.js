@@ -10,16 +10,6 @@ const Plot = ({ propsData }) => {
     const [deletePlot, setDeletePlot] = useState(false);
     const [verticalSync, setVerticalSync] = useState(false);
 
-    const colors = [
-        '#2E86C1',  // Strong Blue
-        '#E74C3C',  // Soft Red
-        '#27AE60',  // Forest Green
-        '#8E44AD'   // Royal Purple
-    ];
-
-    const plotIndex = propsData.plotRefList.length;
-    const plotColor = colors[plotIndex % colors.length];
-
     // Effect to update data-vertical-sync attribute when verticalSync changes
     useEffect(() => {
         if (plotRef.current) {
@@ -37,7 +27,7 @@ const Plot = ({ propsData }) => {
                 x: propsData.timestamp,
                 y: propsData.data,
                 line: {
-                    color: plotColor,
+                    color: propsData.color,
                     width: 2
                 },
                 hovertemplate: '<span style="background-color:red">X: %{x:.0f} <br> Y: %{y:.3f}</span> <extra></extra>',
@@ -49,7 +39,7 @@ const Plot = ({ propsData }) => {
                         size: 14
                     },
                 },
-                hovermode: 'closest'
+                hovermode: 'closest',
             }],
             {
                 dragmode: propsData.appMode,
@@ -78,8 +68,8 @@ const Plot = ({ propsData }) => {
             const firstPlot = propsData.plotRefList[0].current;
             if (firstPlot) {
                 const currentLayout = {
-                    'xaxis.range': firstPlot.layout.xaxis.range,
-                    'yaxis.range': firstPlot.layout.yaxis.range,
+                    //'xaxis.autorange': true,
+                    //'yaxis.autorange': true,
                     shapes: firstPlot.layout.shapes,
                     annotations: firstPlot.layout.annotations,
                     dragmode: firstPlot._fullLayout.dragmode
@@ -94,7 +84,7 @@ const Plot = ({ propsData }) => {
 
         plotElement.on('plotly_click', propsData.handlePlotClick);
         plotElement.on('plotly_relayout', (eventdata) => {
-            propsData.handleRelayout(eventdata, propsData.plotRefList);
+            propsData.handleRelayout(eventdata, propsData.plotRefList, plotRef);
         });
 
         if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
@@ -121,73 +111,83 @@ const Plot = ({ propsData }) => {
                 width: '100%',
                 position: 'relative'
             }}>
-                <div style={
-                    {
-                        position: 'absolute',
-                        top: '10px',
-                        left: '20px',
-                        zIndex: 1,
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        border: `2px solid ${plotColor}`
-                    }
-                }>
-                    {propsData.title}
-                </div>
-                
-                <label style={{
+                <div style={{
                     position: 'absolute',
-                    right: '50px',
-                    top: '10px',
+                    left: '20px',
+                    right: '0px',
                     zIndex: 1,
-                    background: 'rgba(255, 255, 255, 0.95)',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                    border: `2px solid ${plotColor}`,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '5px'
+                    justifyContent: 'space-between'
                 }}>
-                    <input 
-                        type="checkbox"
-                        checked={verticalSync}
-                        onChange={(e) => setVerticalSync(e.target.checked)}
-                    />
-                    Vertical Sync
-                </label>
-
-                <button
-                    onClick={() => setDeletePlot(true)}
-                    style={{
-                        position: 'absolute',
-                        right: '10px',
-                        zIndex: 1,
-                        backgroundColor: '#ff4444',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        width: '32px',
-                        height: '32px',
-                        cursor: 'pointer',
+                    {/* Title and Lock Y-axis group */}
+                    <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '18px',
-                        transition: 'background-color 0.2s',
-                        fontWeight: 'bold'
-                    }}
-                    onMouseOver={(e) => e.target.style.backgroundColor = '#cc0000'}
-                    onMouseOut={(e) => e.target.style.backgroundColor = '#ff4444'}
-                >
-                    ✖
-                </button>
+                        gap: '10px'
+                    }}>
+                        {/* Title */}
+                        <div style={{
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                            border: `2px solid ${propsData.color}`
+                        }}>
+                            {propsData.title}
+                        </div>
+
+                        {/* Lock Y-axis Button */}
+                        <button
+                            onClick={() => setVerticalSync(!verticalSync)}
+                            style={{
+                                background: verticalSync ? propsData.color : 'rgba(255, 255, 255, 0.95)',
+                                padding: '5px 10px',
+                                borderRadius: '5px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                border: `2px solid ${propsData.color}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                color: verticalSync ? 'white' : 'black',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <i className={`fas fa-lock${verticalSync ? '' : '-open'}`}></i>
+                            Lock Y-axis
+                        </button>
+                    </div>
+
+                    {/* Delete Button */}
+                    <button
+                        onClick={() => setDeletePlot(true)}
+                        style={{
+                            backgroundColor: '#ff4444',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '8px',
+                            width: '32px',
+                            height: '32px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '18px',
+                            transition: 'background-color 0.2s',
+                            fontWeight: 'bold'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#cc0000'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = '#ff4444'}
+                    >
+                        ✖
+                    </button>
+                </div>
+
                 <div ref={plotRef} style={{ width: '100%', height: '100%' }} />
             </div>
         );

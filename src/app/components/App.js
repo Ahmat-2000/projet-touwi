@@ -215,24 +215,16 @@ const App = () => {
         });
     }
 
-    function syncZoom2(eventdata, plotRefList) {
-
+    function syncZoom(eventdata, plotRefList, plotSender) {
         if (!('xaxis.range[0]' in eventdata)) {
-            //synczoom is also called in functions highlightFlag and deleteRegion because it updates the plot layout (atttibutes shapes & annotations)
-            //I don't think we can stop it so just cancel it here
             return;
         }
-
-        //Get new axis range
-        const layoutUpdate = {
-            'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-            'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']]
-        };
 
         const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
 
         //Remove previous INDICATOR
         if (prevMidPointRef.current !== null) {
+            console.log('SyncZoom', prevMidPointRef.current);
             deleteRegion(plotList, prevMidPointRef.current, true);
         }
 
@@ -240,62 +232,47 @@ const App = () => {
         highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
         prevMidPointRef.current = midPoint;
 
-        //Update axis range for all plots
-        plotRefList.forEach((plotRef) => {
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °5 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
-            Plotly.relayout(plotRef.current, layoutUpdate);
-        });
-    };
+        let layoutMode;
+        let layoutUpdate;
 
-    function syncZoom(eventdata, plotRefList) {
-        if (!('xaxis.range[0]' in eventdata)) {
-            return;
-        }
-
-
-        const midPoint = (eventdata['xaxis.range[0]'] + eventdata['xaxis.range[1]']) / 2;
-
-        //Remove previous INDICATOR
-        if (prevMidPointRef.current !== null) {
-            deleteRegion(plotList, prevMidPointRef.current, true);
-        }
-
-        //Add new INDICATOR
-        highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
-        prevMidPointRef.current = midPoint;
-
-        //Update axis range for all plots
-        plotRefList.forEach((plotRef) => {
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °5 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
-
-            // Get verticalSync state from plot's dataset
-            const verticalSync = plotRef.current.getAttribute('data-vertical-sync');
-            console.log("Vertical sync is ", verticalSync);
-
-            const plotTitle = plotRef.current.layout.title;
-            console.log(plotRef.current, verticalSync);
-
-            let layoutUpdate;
-            if (verticalSync) {
-                //console.log("Vertical sync is on for this one");
-                layoutUpdate = {
-                    'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-                    //'yaxis.autorange': true
-                };
+        if (!(plotSender === null)) {
+            if (plotSender.current.getAttribute('data-vertical-sync') === 'true') {
+                layoutMode = 'horizontal';
             } else {
-                //console.log("Vertical sync is NOT on for this one");
-                layoutUpdate = {
-                    'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-                    'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']],
-                };
+                layoutMode = '2_axis';
+            }
+        }
+        else {
+            layoutMode = 'horizontal';
+        }
+
+        //Update axis range for all plots
+        plotRefList.forEach((plotRef) => {
+
+            if (plotRef.current === null) {
+                console.log('Removing deleted plot from list | code °5 ');
+                plotList.current = plotList.current.filter(ref => ref !== plotRef);
+                return;
+            }
+
+            if (layoutMode == '2_axis') {
+                if (plotRef.current.getAttribute('data-vertical-sync') === 'true') {
+                    layoutUpdate = {
+                        'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+                    };  
+                }
+                else {
+                    layoutUpdate = {
+                        'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
+                        'yaxis.range': [eventdata['yaxis.range[0]'], eventdata['yaxis.range[1]']],
+                    };
+                }
+            }
+            else if (layoutMode == 'horizontal') {
+                layoutUpdate = { 'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']] };
+            }
+            else {
+                console.error('Invalid layout mode detected');
             }
 
             Plotly.relayout(plotRef.current, layoutUpdate);
@@ -419,39 +396,35 @@ const App = () => {
             }
         }
     }
-
-
+    
     return (
-        <div className="app-container">
-            {hasVideo && (
+            <div className="app-container">
                 <div className="video-control-container">
-                    <div className="video-container">
-                        <VideoControls propsData={{
-                            video: hasVideo ? variablesContext.video : null,
-                            plotList: plotList,
-                            syncZoom: syncZoom,
-                            videoRef: videoRef,
-                            highlightFlag: highlightFlag,
-                            deleteRegion: deleteRegion,
-                            syncEnabled: syncEnabled,
-                            setSyncEnabled: setSyncEnabled
-                        }} />
-                    </div>
-                    <div className="control-panel-container">
-                        <ControlPanel
-                            resetZoom={resetZoom}
-                            resetMode={() => setAppMode('None')}
-                            resetEvents={resetEvents}
-                            voidPlots={voidPlots}
-                            plotList={plotList}
-                            setAppMode={setAppMode}
-                            setPlotlyDragMode={setPlotlyDragMode}
-                            appMode={appMode}
-                            hasVideo={hasVideo}
-                        />
-                    </div>
-                </div>
-            )}
+                    {hasVideo && (
+                        <div className="video-container">
+                            <VideoControls propsData={{
+                                video: hasVideo ? variablesContext.video : null,
+                                plotList: plotList,
+                                syncZoom: syncZoom,
+                                videoRef: videoRef,
+                                highlightFlag: highlightFlag,
+                                deleteRegion: deleteRegion,
+                                syncEnabled: syncEnabled,
+                                setSyncEnabled: setSyncEnabled
+                            }} />
+                        </div>
+                    )}
+                <ControlPanel
+                    resetZoom={resetZoom}
+                    resetMode={() => setAppMode('None')}
+                    resetEvents={resetEvents}
+                    voidPlots={voidPlots}
+                    plotList={plotList}
+                    setAppMode={setAppMode}
+                    setPlotlyDragMode={setPlotlyDragMode}
+                    appMode={appMode}
+                />
+            </div>
             <div className="graph-container">
                 <Graph
                     propsData={{
