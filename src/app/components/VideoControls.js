@@ -149,6 +149,45 @@ const VideoControls = ({ propsData }) => {
                 {videoUrl && <source src={videoUrl} type="video/webm" />}
                 Your browser does not support the video tag.
             </video>
+            <div className="window-controls">
+                <span className="window-label">Window:</span>
+
+                <div className="slider-container"
+                    onMouseEnter={() => setIsHoveringSlider(true)}
+                    onMouseLeave={() => setIsHoveringSlider(false)}>
+                    <input
+                        type="range"
+                        min="50"
+                        max="5000"
+                        value={windowSize}
+                        onChange={(e) => setWindowSize(parseInt(e.target.value))}
+                        className="window-slider"
+                    />
+                    <div
+                        className="slider-tooltip"
+                        style={{
+                            left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
+                        }}>
+                        {formatWindowSize(windowSize)}
+                    </div>
+                </div>
+
+                <div className="preset-container">
+                    {presetSizes.map((preset) => (
+                        <button
+                            key={preset.label}
+                            onClick={() => setWindowSize(preset.value)}
+                            className="preset-button"
+                            style={{
+                                backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
+                                color: windowSize === preset.value ? 'white' : '#333',
+                            }}
+                        >
+                            {preset.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
             <div className="video-controls">
                 <button 
                     onClick={() => adjustSpeed(false)}
@@ -181,45 +220,6 @@ const VideoControls = ({ propsData }) => {
             >
                 {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
             </button>
-            <div className="window-controls">
-                <span className="window-label">Window:</span>
-                
-                <div className="slider-container"
-                    onMouseEnter={() => setIsHoveringSlider(true)}
-                    onMouseLeave={() => setIsHoveringSlider(false)}>
-                    <input
-                        type="range"
-                        min="50"
-                        max="5000"
-                        value={windowSize}
-                        onChange={(e) => setWindowSize(parseInt(e.target.value))}
-                        className="window-slider"
-                    />
-                    <div 
-                        className="slider-tooltip"
-                        style={{
-                            left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
-                        }}>
-                        {formatWindowSize(windowSize)}
-                    </div>
-                </div>
-
-                <div className="preset-container">
-                    {presetSizes.map((preset) => (
-                        <button
-                            key={preset.label}
-                            onClick={() => setWindowSize(preset.value)}
-                            className="preset-button"
-                            style={{
-                                backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
-                                color: windowSize === preset.value ? 'white' : '#333',
-                            }}
-                        >
-                            {preset.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
         </div>
     );
 };

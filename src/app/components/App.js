@@ -25,6 +25,9 @@ const App = () => {
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
     const [syncEnabled, setSyncEnabled] = useState(true);
     const [timestamps, setTimestamps] = useState([]);
+    const [customLabel, setCustomLabel] = useState('defaultLabel');
+    const [labelColor, setLabelColor] = useState('grey');
+    const [labelsList, setLabelsList] = useState([]);
 
     // Refs
     const timestampRef = useRef([]);
@@ -73,8 +76,6 @@ const App = () => {
             timestampRef.current = timestamps;
         }
     }, [timestamps]);
-
-
 
     // Function to reset the zoom on all three plots
     function resetZoom() {
@@ -224,7 +225,6 @@ const App = () => {
 
         //Remove previous INDICATOR
         if (prevMidPointRef.current !== null) {
-            console.log('SyncZoom', prevMidPointRef.current);
             deleteRegion(plotList, prevMidPointRef.current, true);
         }
 
@@ -248,12 +248,14 @@ const App = () => {
 
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
-
+            
             if (plotRef.current === null) {
                 console.log('Removing deleted plot from list | code °5 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
+
+            console.log('!', plotRef.current.getAttribute('data-vertical-sync'));
 
             if (layoutMode == '2_axis') {
                 if (plotRef.current.getAttribute('data-vertical-sync') === 'true') {
@@ -415,14 +417,20 @@ const App = () => {
                         </div>
                     )}
                 <ControlPanel
-                    resetZoom={resetZoom}
-                    resetMode={() => setAppMode('None')}
-                    resetEvents={resetEvents}
-                    voidPlots={voidPlots}
-                    plotList={plotList}
-                    setAppMode={setAppMode}
-                    setPlotlyDragMode={setPlotlyDragMode}
-                    appMode={appMode}
+                    propsData={{
+                        resetZoom: resetZoom,
+                        resetMode: () => setAppMode('None'),
+                        resetEvents: resetEvents,
+                        voidPlots: voidPlots,
+                        setAppMode: setAppMode,
+                        setPlotlyDragMode: setPlotlyDragMode,
+                        appMode: appMode,
+                        customLabel: customLabel,
+                        setCustomLabel: setCustomLabel,
+                        labelColor: labelColor,
+                        setLabelColor: setLabelColor,
+                        labelsList: labelsList,
+                    }}
                 />
             </div>
             <div className="graph-container">
@@ -438,7 +446,10 @@ const App = () => {
                         name: fileName,
                         setTimestamps: setTimestamps,
                         timestampRef: timestampRef,
-                        isReopen: isReopen
+                        isReopen: isReopen,
+                        customLabel: customLabel,
+                        labelColor: labelColor,
+                        setLabelsList: setLabelsList
                     }}
                 />
             </div>

@@ -82,7 +82,13 @@ const Plot = ({ propsData }) => {
         // Add event listeners
         const plotElement = plotRef.current;
 
-        plotElement.on('plotly_click', propsData.handlePlotClick);
+        plotElement.on('plotly_click', (eventdata) => {
+            const labelText = propsData.customLabel || "debugPlot";
+            const labelTextColor = propsData.labelColor || "black";
+
+            propsData.handlePlotClick(eventdata, labelText, labelTextColor);
+            
+        });
         plotElement.on('plotly_relayout', (eventdata) => {
             propsData.handleRelayout(eventdata, propsData.plotRefList, plotRef);
         });
@@ -206,48 +212,6 @@ const Plot = ({ propsData }) => {
             setDeletePlot(false);
         }
     }
-
-
-    /*
-    //expected working behaviour :
-
-    if (!deletePlot) {
-
-        return (
-            <div style={{ marginTop: '50px' }}>
-                <div ref={plotRef} style={{ width: '100%', height: '500px' }}>
-                    <button
-                        onClick={() => setDeletePlot(true)}
-                        className="delete-plot-button"
-                    >
-                        ✖
-                    </button>
-                </div>
-            </div>
-        )
-    }
-    else {
-
-        if (propsData.plotRefList.length <= 1) {
-            alert("Cannot delete the last plot. At least one plot must remain.");
-            setDeletePlot(false);
-            console.log('PlotRefList length is ' + propsData.plotRefList.length, propsData.plotRefList.current);
-        }
-
-        else {
-            propsData.plotRefList.forEach((plotRef) => {
-            if (plotRef.current === null) {
-                //remove plot from plotRefList
-                console.log('Removing deleted plot from list | code °5 ');
-                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== plotRef);
-            }
-            });
-    console.log('PlotRefList length is ' + propsData.plotRefList.length, propsData.plotRefList.current);
-    return;
-    }
-            
-        }
-    */
 
 };
 

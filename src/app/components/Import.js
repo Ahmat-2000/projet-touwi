@@ -33,19 +33,22 @@ const ImportComponent = () => {
 
   const handleFileChange = async (e) => {
     const { name, files: selectedFiles } = e.target;
-    const file = selectedFiles[0];
-    const processedFile = await removeUnevenLinesFromCSV(file);
-    setFields({ ...fields, [name]: { file: processedFile, name: file.name } });
+    if (selectedFiles && selectedFiles.length > 0) {
+      const file = selectedFiles[0];
+      const processedFile = await removeUnevenLinesFromCSV(file);
+      setFields({ ...fields, [name]: { file: processedFile, name: file.name } });
+    }
   };
 
   const handleReOpenTouwi = async (e) => {
     const { files: selectedFiles } = e.target;
-    const file = selectedFiles[0];
-    const processedFile = await removeUnevenLinesFromCSV(file);
-    setVariablesContext(processedFile);
-    await saveNewFile(file);
-    console.log("Fichiers .touwi recupérer:", fields);
-    setIsTouwiForm(true);
+    if (selectedFiles && selectedFiles.length > 0) {
+      const file = selectedFiles[0];
+      const processedFile = await removeUnevenLinesFromCSV(file);
+      setVariablesContext(processedFile);
+      await saveNewFile(file);
+      setIsTouwiForm(true);
+    }
   };
 
 
@@ -62,17 +65,15 @@ const ImportComponent = () => {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-        console.log("Contenu de fields :", fields);
-
         // Générez le nom de fichier à partir du nom de fileAccel
         const fileName = fields.accel.name.split("_accel")[0] + '.touwi';
-        console.log("Nom du fichier généré :", fileName);
 
         // Passez fileName comme argument à csvToTouwi
         const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, fileName);
         await saveNewFile(resultFile);
-        console.log("Fichiers envoyés :", fields);
+
         setVariablesContext(fields);
+        console.log("Fichiers envoyés :", fields);
         redirect();
       } catch (error) {
         console.error("Erreur lors de la fusion des fichiers :", error);
@@ -91,8 +92,6 @@ const ImportComponent = () => {
 
     if (Object.keys(newErrors).length === 0) {
       try {
-
-        console.log("Fichiers envoyés :", fields);
         setVariablesContext(fields);
         redirect();
 

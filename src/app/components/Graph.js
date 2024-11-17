@@ -31,8 +31,35 @@ const Graph = ({ propsData }) => {
 
     useEffect(() => {
         createPlot('accel', 'x', propsData.name);
-        //setPlotFinished(true); // Set the flag after createPlot is called
     }, [propsData.name]);
+
+
+
+    useEffect(() => {
+        setPlots(prevPlots => {
+            const firstPlot = propsData.plotList.current[0]?.current;
+            if (!firstPlot) {
+                return prevPlots;
+            }
+
+            const currentLayout = {
+                shapes: firstPlot.layout.shapes,
+                annotations: firstPlot.layout.annotations
+            };
+
+            return prevPlots.map(plot => 
+                React.cloneElement(plot, {
+                    propsData: {
+                        ...plot.props.propsData,
+                        customLabel: propsData.customLabel,
+                        labelColor: propsData.labelColor,
+                        shapes: currentLayout.shapes,
+                        annotations: currentLayout.annotations
+                    }
+                })
+            );
+        });
+    }, [propsData.customLabel, propsData.labelColor, propsData.plotList]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -61,7 +88,7 @@ const Graph = ({ propsData }) => {
     //--------------------------------
 
 
-    function handlePlotClick(eventData) {
+    function handlePlotClick(eventData, labelText, labelTextColor) {
         const xValue = eventData.points[0].x;
 
         const currentAppMode = appModeRef.current;
@@ -99,9 +126,8 @@ const Graph = ({ propsData }) => {
                 else {
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     selections[selections.length - 1].end = xValue;
-                    highlightRegion(selections[selections.length - 1].start, xValue);
-                    const label = "testPeriod";
-                    const labelName = "PERIOD:" + label;
+                    highlightRegion(selections[selections.length - 1].start, xValue, labelTextColor);
+                    const labelName = "PERIOD:" + labelText;
                     periodUpdate(propsData.timestampRef.current[selections[selections.length - 1].start], propsData.timestampRef.current[xValue], labelName, propsData.name);
                 }
             }
@@ -118,7 +144,7 @@ const Graph = ({ propsData }) => {
         }
     };
 
-    function highlightRegion(start, end) {
+    function highlightRegion(start, end, color) {
         if (start > end) {
             [start, end] = [end, start];
         }
@@ -131,7 +157,8 @@ const Graph = ({ propsData }) => {
             y1: 1,
             xref: 'x',
             yref: 'paper',
-            fillcolor: 'rgba(255, 0, 0, 0.35)',
+            fillcolor: color,
+            opacity: 0.5,
             line: {
                 width: 0
             }
@@ -154,6 +181,7 @@ const Graph = ({ propsData }) => {
             const columnLabels = result[1];
 
             let start = null;
+            const periodList = [];
 
             for (let i = 0; i < columnLabels.length; i++) {
                 if (!columnLabels[i].startsWith('PERIOD:')) {
@@ -161,13 +189,15 @@ const Graph = ({ propsData }) => {
                     if (columnLabels[i].startsWith('FLAG:')) {
                         const labelName = columnLabels[i].slice(5); // Extract random string after 'FLAG:'
                         propsData.highlightFlag(i, { width: 1, color: 'blue', dash: 'dashdot' }, labelName);
-                        console.log("Flag loaded at: ", i);
+                        //console.log("Flag loaded at: ", i, labelName);
                     }
 
                     if (start !== null) {
                         if (columnLabels[i - 1].startsWith('PERIOD:')) {
-                            highlightRegion(start, i - 1),
-                                console.log("Period loaded at: ", start, i - 1);
+                            const labelName = columnLabels[i - 1].slice(7);
+                            //highlightRegion(start, i - 1, labelColor);
+                            periodList.push([start, i - 1, labelName]);
+                            //console.log("Period loaded at: ", start, i - 1, labelName, labelColor);
                             start = null;
                         }
                     }
@@ -176,15 +206,40 @@ const Graph = ({ propsData }) => {
                     if (start === null) { start = i; }
 
                     if (i === columnLabels.length - 1) {
-                        highlightRegion(start, i);
-                        console.log("Period loaded at: ", start, i);
+                        const labelName = columnLabels[i - 1].slice(7);
+                        //highlightRegion(start, i, labelColor);
+                        periodList.push([start, i, labelName]);
+                        //console.log("Period loaded at: ", start, i, labelName, labelColor);
                     }
                 }
 
                 else { console.error('Invalid label format: ', columnLabels[i]); }
             };
 
+            console.log("Period list: ", periodList);
+
+            const labels = [...new Set(periodList.map(period => period[2]))];  
+
+            const colors = generateColors(labels.length);
+
+            for (let i = 0; i < periodList.length; i++) {
+                const periodColor = colors[labels.indexOf(periodList[i][2])];
+                highlightRegion(periodList[i][0], periodList[i][1], periodColor);
+                console.log("Highlighted: ", periodList[i][0], periodList[i][1], periodColor);
+            }
+
+            const buttonSetter = [];
+            for (let i = 0; i < labels.length; i++) {
+                buttonSetter.push([labels[i], colors[i]]);  
+            }
+
+            console.log("Button setter: ", buttonSetter);
+            propsData.setLabelsList(buttonSetter);
         });
+    }
+
+    function generateColors(n){
+        return Array(n).fill('#964B00');
     }
 
     function createPlot(sensor, axis, filename) {
@@ -215,9 +270,11 @@ const Graph = ({ propsData }) => {
                 annotations: [],
                 color: plotColor,
                 appMode: propsData.appMode,
-                handlePlotClick: (eventData) => handlePlotClick(eventData),
+                handlePlotClick: handlePlotClick,
                 handleRelayout: propsData.syncZoom,
                 hover: handlePlotHover,
+                customLabel: propsData.customLabel,
+                labelColor: propsData.labelColor,
             };
 
 
@@ -226,17 +283,14 @@ const Graph = ({ propsData }) => {
             ]);
 
             if (!plotFinished) {
-                console.log("First time loading plot");
                 propsData.timestampRef.current = timestamp;
                 setPlotFinished(true);
                 if (propsData.isReopen) {
-                    console.log("Reloading labels...");
                     reload_labels();
                 }
             }
         });
     }
-
 
     return (
         <div>
