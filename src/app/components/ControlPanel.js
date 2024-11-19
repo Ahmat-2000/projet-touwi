@@ -77,8 +77,7 @@ const ControlPanel = ({ propsData }) => {
                         <span className="mode-label">Current Mode:</span>
                         <span 
                             className="mode-value" 
-                            style={{backgroundColor: propsData.appMode === 'period' ? propsData.labelColor : '#297DCB'}}
-                        >
+                            style={{backgroundColor: propsData.appMode === 'period' ? propsData.labelColor : (propsData.appMode === 'delete' ? 'red' : '#297DCB')}}>
                             {propsData.appMode === 'period' ? `${propsData.appMode} - ${propsData.customLabel}` : propsData.appMode}
                         </span>
                     </div>
@@ -102,6 +101,7 @@ const ControlPanel = ({ propsData }) => {
                                 <i className="fas fa-mouse-pointer"></i>
                                 <span>None</span>
                             </button>
+                            {/*
                             <button
                                 onClick={() => { propsData.setAppMode('period'); propsData.setPlotlyDragMode(false); }}
                                 className={`control-button ${propsData.appMode === 'period' ? 'active' : ''}`}
@@ -110,6 +110,7 @@ const ControlPanel = ({ propsData }) => {
                                 <i className="fas fa-arrows-alt-h"></i>
                                 <span>Add Period</span>
                             </button>
+                            */}
                             <button
                                 onClick={() => { propsData.setPlotlyDragMode(false); propsData.setAppMode('flag'); }}
                                 className={`control-button ${propsData.appMode === 'flag' ? 'active' : ''}`}

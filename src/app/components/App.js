@@ -114,7 +114,8 @@ const App = () => {
                 const midPoint = (plotList.current[0].current.layout.xaxis.range[0] +
                     plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
-                highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
+                //highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
+                highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, '');
             });
         });
     }
@@ -229,7 +230,8 @@ const App = () => {
         }
 
         //Add new INDICATOR
-        highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
+        //highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
+        highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, '');
         prevMidPointRef.current = midPoint;
 
         let layoutMode;
@@ -296,25 +298,38 @@ const App = () => {
             line: style,
         };
 
-        // create new annotation
         const annotation = {
             x: xValue,
-            y: 1, // Adjust this value to position the text on the y-axis
+            y: 1,
             xref: 'x',
             yref: 'paper',
             text: text,
             showarrow: false,
             font: {
                 size: 12,
-                color: 'black'
+                color: 'white'
             },
-            bordercolor: 'grey',
-            borderwidth: 2,
+            bgcolor: style.color,
+            bordercolor: 'rgba(0,0,0,0.2)',
+            borderwidth: 1,
+            borderpad: 4,
+            align: 'center',
+            valign: 'middle',
+            hoverlabel: {
+                bgcolor: style.color,
+                font: { color: 'white' }
+            },
+            clicktoshow: false,
+            hovertext: 'Flag at ' + xValue,
+            //hovertext: 'Click to delete flag',
+            opacity: 0.66,
+            padding: 8,
             borderpad: 4,
             align: 'left',
             valign: 'middle',
-
         };
+
+        
 
         // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {

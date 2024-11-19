@@ -42,14 +42,14 @@ const Plot = ({ propsData }) => {
                 hovermode: 'closest',
             }],
             {
-                dragmode: propsData.appMode,
+                dragmode: propsData.appModeRef.current,
                 shapes: propsData.shapes,
                 annotations: propsData.annotations,
                 margin: { t: 20, b: 20, l: 60, r: 20 },
                 autosize: true
             },
             {
-                scrollZoom: propsData.appMode === 'pan',
+                scrollZoom: propsData.appModeRef.current === 'pan',
                 displayModeBar: false,
                 doubleClick: false,
                 responsive: true,
@@ -65,14 +65,15 @@ const Plot = ({ propsData }) => {
 
         // Sync with other plots if there are any
         if (propsData.plotRefList.length > 1) {
-            const firstPlot = propsData.plotRefList[0].current;
-            if (firstPlot) {
+            const referencePlot = propsData.plotRefList[0].current;
+            if (referencePlot) {
                 const currentLayout = {
                     //'xaxis.autorange': true,
                     //'yaxis.autorange': true,
-                    shapes: firstPlot.layout.shapes,
-                    annotations: firstPlot.layout.annotations,
-                    dragmode: firstPlot._fullLayout.dragmode
+                    'xaxis.range' : referencePlot.layout.xaxis.range,
+                    shapes: referencePlot.layout.shapes,
+                    annotations: referencePlot.layout.annotations,
+                    dragmode: referencePlot._fullLayout.dragmode
                 };
 
                 Plotly.relayout(plotRef.current, currentLayout);
@@ -95,11 +96,23 @@ const Plot = ({ propsData }) => {
 
         if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
+        //test
+        plotElement.on('plotly_clickannotation', (eventData) => {
+            const currentMode = propsData.appModeRef.current;
+            console.log('Mode is ', currentMode);
+            if (currentMode === 'delete') {
+                const modifiedList = { current: propsData.plotRefList };
+                propsData.deleteRegion(modifiedList, eventData.annotation.x, false);
+            }
+        });
+
         // Cleanup function
         return () => {
             if (plotElement) {
                 plotElement.removeAllListeners('plotly_click');
                 plotElement.removeAllListeners('plotly_relayout');
+                //test
+                plotElement.removeAllListeners('plotly_clickannotation');
                 Plotly.purge(plotElement);
             }
             const index = propsData.plotRefList.indexOf(plotRef);
@@ -166,6 +179,32 @@ const Plot = ({ propsData }) => {
                         >
                             <i className={`fas fa-lock${verticalSync ? '' : '-open'}`}></i>
                             Lock Y-axis
+                        </button>
+
+                        {/* Additional Button */}
+                        <button
+                            onClick={() => Plotly.relayout(plotRef.current, {
+                                'xaxis.autorange': true,
+                                'yaxis.autorange': true
+                            })}
+                            style={{
+                                background: 'rgba(255, 255, 255, 0.95)',
+                                padding: '5px 10px',
+                                borderRadius: '5px',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                border: `2px solid ${propsData.color}`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                color: 'black',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            <i className="fas fa-home"></i>
+                            
                         </button>
                     </div>
 

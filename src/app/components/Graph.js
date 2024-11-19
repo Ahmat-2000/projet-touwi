@@ -37,14 +37,14 @@ const Graph = ({ propsData }) => {
 
     useEffect(() => {
         setPlots(prevPlots => {
-            const firstPlot = propsData.plotList.current[0]?.current;
-            if (!firstPlot) {
+            const referencePlot = propsData.plotList.current[0]?.current;
+            if (!referencePlot) {
                 return prevPlots;
             }
 
             const currentLayout = {
-                shapes: firstPlot.layout.shapes,
-                annotations: firstPlot.layout.annotations
+                shapes: referencePlot.layout.shapes,
+                annotations: referencePlot.layout.annotations
             };
 
             return prevPlots.map(plot => 
@@ -133,11 +133,13 @@ const Graph = ({ propsData }) => {
             }
 
             if (currentAppMode === 'flag') {
-                console.log(`Flag added at x: ${xValue}`);
-                propsData.highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, 'Flag');
-                const label2 = "testFlag";
-                const labelName2 = "FLAG:" + label2;
-                updateLabelByTimestamp(propsData.timestampRef.current[xValue], labelName2, propsData.name);
+                const flagText = prompt("Enter flag text:");
+                if (flagText) {
+                    const flagLabel = "FLAG:" + flagText;
+                    propsData.highlightFlag(xValue, { width: 1, color: 'blue', dash: 'dashdot' }, flagText);
+                    updateLabelByTimestamp(propsData.timestampRef.current[xValue], flagLabel, propsData.name);
+                    console.log(`Flag added at x: ${xValue} : ${flagText}`);
+                }
             }
 
 
@@ -269,12 +271,13 @@ const Graph = ({ propsData }) => {
                 shapes: [],
                 annotations: [],
                 color: plotColor,
-                appMode: propsData.appMode,
+                appModeRef: appModeRef,
                 handlePlotClick: handlePlotClick,
                 handleRelayout: propsData.syncZoom,
                 hover: handlePlotHover,
                 customLabel: propsData.customLabel,
                 labelColor: propsData.labelColor,
+                deleteRegion: propsData.deleteRegion,
             };
 
 

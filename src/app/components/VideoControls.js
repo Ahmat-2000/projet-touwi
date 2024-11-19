@@ -149,77 +149,84 @@ const VideoControls = ({ propsData }) => {
                 {videoUrl && <source src={videoUrl} type="video/webm" />}
                 Your browser does not support the video tag.
             </video>
-            <div className="window-controls">
-                <span className="window-label">Window:</span>
-
-                <div className="slider-container"
-                    onMouseEnter={() => setIsHoveringSlider(true)}
-                    onMouseLeave={() => setIsHoveringSlider(false)}>
-                    <input
-                        type="range"
-                        min="50"
-                        max="5000"
-                        value={windowSize}
-                        onChange={(e) => setWindowSize(parseInt(e.target.value))}
-                        className="window-slider"
-                    />
-                    <div
-                        className="slider-tooltip"
-                        style={{
-                            left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
-                        }}>
-                        {formatWindowSize(windowSize)}
+            <div className="controls-group">
+                <div className="window-controls">
+                    <div className="window-controls-content">
+                        <span className="window-label">Window:</span>
+                        <div 
+                            className="slider-container"
+                            onMouseEnter={() => setIsHoveringSlider(true)}
+                            onMouseLeave={() => setIsHoveringSlider(false)}
+                        >
+                            <input
+                                type="range"
+                                min="50"
+                                max="5000"
+                                value={windowSize}
+                                onChange={(e) => setWindowSize(parseInt(e.target.value))}
+                                className="window-slider"
+                            />
+                            <div
+                                className="slider-tooltip"
+                                style={{
+                                    left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
+                                }}
+                            >
+                                {formatWindowSize(windowSize)}
+                            </div>
+                        </div>
+                        <div className="preset-container">
+                            {presetSizes.map((preset) => (
+                                <button
+                                    key={preset.label}
+                                    onClick={() => setWindowSize(preset.value)}
+                                    className="preset-button"
+                                    style={{
+                                        backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
+                                        color: windowSize === preset.value ? 'white' : '#333',
+                                    }}
+                                >
+                                    {preset.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
-
-                <div className="preset-container">
-                    {presetSizes.map((preset) => (
-                        <button
-                            key={preset.label}
-                            onClick={() => setWindowSize(preset.value)}
-                            className="preset-button"
-                            style={{
-                                backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
-                                color: windowSize === preset.value ? 'white' : '#333',
-                            }}
+                <div className="video-sync-controls">
+                    <div className="video-controls">
+                        <button 
+                            onClick={() => adjustSpeed(false)}
+                            className="video-button"
+                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
-                            {preset.label}
+                            -
                         </button>
-                    ))}
+                        <span 
+                            className="speed-display"
+                            onClick={resetSpeed}
+                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                            {(videoRef.current && videoRef.current.playbackRate) ? videoRef.current.playbackRate.toFixed(2) : '1.00'}x
+                        </span>
+                        <button 
+                            onClick={() => adjustSpeed(true)}
+                            className="video-button"
+                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                            +
+                        </button>
+                    </div>
+                    <button 
+                        onClick={toggleSync}
+                        className={`sync-button ${propsData.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
+                    >
+                        {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+                    </button>
                 </div>
             </div>
-            <div className="video-controls">
-                <button 
-                    onClick={() => adjustSpeed(false)}
-                    className="video-button"
-                    onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                    onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                    -
-                </button>
-                <span 
-                    className="speed-display"
-                    onClick={resetSpeed}
-                    onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                    onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                    {(videoRef.current && videoRef.current.playbackRate) ? videoRef.current.playbackRate.toFixed(2) : '1.00'}x
-                </span>
-                <button 
-                    onClick={() => adjustSpeed(true)}
-                    className="video-button"
-                    onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                    onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                    +
-                </button>
-            </div>
-            <button 
-                onClick={toggleSync}
-                className={`sync-button ${propsData.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
-            >
-                {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
-            </button>
         </div>
     );
 };
