@@ -3,7 +3,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
-const ControlPanel = ({ propsData }) => {
+const ControlPanel = ({ propsControlPanel }) => {
     const [buttonText, setButtonText] = useState('');
     const [customButtons, setCustomButtons] = useState([]);
     const [counter, setCounter] = useState(0);
@@ -12,10 +12,10 @@ const ControlPanel = ({ propsData }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (propsData.labelsList.length > 0) {
+        if (propsControlPanel.labelsList.length > 0) {
             // Create all new buttons at once
             let index = 0;
-            const newButtons = propsData.labelsList.map((label) => 
+            const newButtons = propsControlPanel.labelsList.map((label) => 
                 handleRecreateButton(label[0], label[1], index++)
             );
             
@@ -25,7 +25,7 @@ const ControlPanel = ({ propsData }) => {
             inputRef.current?.focus();
             setCounter(index);
         }
-    }, [propsData.labelsList]);
+    }, [propsControlPanel.labelsList]);
     
     const handleCreateButton = () => {
         if (buttonText.trim()) {
@@ -62,10 +62,10 @@ const ControlPanel = ({ propsData }) => {
 
     const handleCustomButtonClick = (text, color) => {
         console.log(`Period label set to: ${text} with color: ${color}`);
-        propsData.setAppMode('period');
-        propsData.setPlotlyDragMode(false);
-        propsData.setCustomLabel(text);
-        propsData.setLabelColor(color);
+        propsControlPanel.setAppMode('period');
+        propsControlPanel.setPlotlyDragMode(false);
+        propsControlPanel.setCustomLabel(text);
+        propsControlPanel.setLabelColor(color);
     };
 
     return (
@@ -77,8 +77,8 @@ const ControlPanel = ({ propsData }) => {
                         <span className="mode-label">Current Mode:</span>
                         <span 
                             className="mode-value" 
-                            style={{backgroundColor: propsData.appMode === 'period' ? propsData.labelColor : (propsData.appMode === 'delete' ? 'red' : '#297DCB')}}>
-                            {propsData.appMode === 'period' ? `${propsData.appMode} - ${propsData.customLabel}` : propsData.appMode}
+                            style={{backgroundColor: propsControlPanel.appMode === 'period' ? propsControlPanel.labelColor : (propsControlPanel.appMode === 'delete' ? 'red' : '#297DCB')}}>
+                            {propsControlPanel.appMode === 'period' ? `${propsControlPanel.appMode} - ${propsControlPanel.customLabel}` : propsControlPanel.appMode}
                         </span>
                     </div>
                 </div>
@@ -87,34 +87,34 @@ const ControlPanel = ({ propsData }) => {
                     <div className="control-section">
                         <div className="button-grid">
                             <button
-                                onClick={propsData.resetZoom}
+                                onClick={propsControlPanel.resetZoom}
                                 className="control-button"
                             >
                                 <i className="fas fa-home"></i>
                                 <span>Home</span>
                             </button>
                             <button
-                                onClick={() => { propsData.setPlotlyDragMode(false); propsData.setAppMode('None'); }}
-                                className={`control-button ${propsData.appMode === 'None' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'None'}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('None'); }}
+                                className={`control-button ${propsControlPanel.appMode === 'None' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'None'}
                             >
                                 <i className="fas fa-mouse-pointer"></i>
                                 <span>None</span>
                             </button>
                             {/*
                             <button
-                                onClick={() => { propsData.setAppMode('period'); propsData.setPlotlyDragMode(false); }}
-                                className={`control-button ${propsData.appMode === 'period' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'period'}
+                                onClick={() => { propsControlPanel.setAppMode('period'); propsControlPanel.setPlotlyDragMode(false); }}
+                                className={`control-button ${propsControlPanel.appMode === 'period' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'period'}
                             >
                                 <i className="fas fa-arrows-alt-h"></i>
                                 <span>Add Period</span>
                             </button>
                             */}
                             <button
-                                onClick={() => { propsData.setPlotlyDragMode(false); propsData.setAppMode('flag'); }}
-                                className={`control-button ${propsData.appMode === 'flag' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'flag'}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('flag'); }}
+                                className={`control-button ${propsControlPanel.appMode === 'flag' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'flag'}
                             >
                                 <i className="fas fa-flag"></i>
                                 <span>Add Flag</span>
@@ -137,17 +137,17 @@ const ControlPanel = ({ propsData }) => {
                     <div className="control-section">
                         <div className="button-grid">
                             <button
-                                onClick={() => { propsData.setPlotlyDragMode('zoom'); propsData.setAppMode('zoom'); }}
-                                className={`control-button ${propsData.appMode === 'zoom' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'zoom'}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('zoom'); }}
+                                className={`control-button ${propsControlPanel.appMode === 'zoom' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'zoom'}
                             >
                                 <i className="fas fa-search-plus"></i>
                                 <span>Zoom</span>
                             </button>
                             <button
-                                onClick={() => { propsData.setPlotlyDragMode('pan'); propsData.setAppMode('pan'); }}
-                                className={`control-button ${propsData.appMode === 'pan' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'pan'}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('pan'); }}
+                                className={`control-button ${propsControlPanel.appMode === 'pan' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'pan'}
                             >
                                 <i className="fas fa-hand-paper"></i>
                                 <span>Pan</span>
@@ -216,9 +216,9 @@ const ControlPanel = ({ propsData }) => {
                     <div className="control-section">
                         <div className="button-grid">
                             <button
-                                onClick={() => { propsData.setPlotlyDragMode(false); propsData.setAppMode('delete'); }}
-                                className={`control-button ${propsData.appMode === 'delete' ? 'active' : ''}`}
-                                data-active={propsData.appMode === 'delete'}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('delete'); }}
+                                className={`control-button ${propsControlPanel.appMode === 'delete' ? 'active' : ''}`}
+                                data-active={propsControlPanel.appMode === 'delete'}
                             >
                                 <i className="fas fa-trash"></i>
                                 <span>Delete</span>
@@ -226,7 +226,7 @@ const ControlPanel = ({ propsData }) => {
                             <button
                                 onClick={() => {
                                     if (window.confirm('Are you sure you want to delete all periods and flags?')) {
-                                        propsData.resetEvents();
+                                        propsControlPanel.resetEvents();
                                     }
                                 }}
                                 className="control-button danger"

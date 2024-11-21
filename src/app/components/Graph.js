@@ -5,6 +5,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 import Modal from 'react-modal';
 import Plot from './Plot';
+import VideoControls from './VideoControls';
+import ControlPanel from './ControlPanel';
 
 import { getRowWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
 
@@ -20,8 +22,12 @@ const Graph = ({ propsData }) => {
     const [plotFinished, setPlotFinished] = useState(false);
     const [showReloadButton, setShowReloadButton] = useState(true);
 
+    const [customLabel, setCustomLabel] = useState('defaultLabel');
+    const [labelColor, setLabelColor] = useState('grey');
+
     const appModeRef = useRef(propsData.appMode);
     const [plotIndexColor, setPlotIndexColor] = useState(0);
+    const [labelsList, setLabelsList] = useState([]);
 
     useEffect(() => {
         appModeRef.current = propsData.appMode;
@@ -44,22 +50,22 @@ const Graph = ({ propsData }) => {
 
             const currentLayout = {
                 shapes: referencePlot.layout.shapes,
-                annotations: referencePlot.layout.annotations
+                annotations: referencePlot.layout.annotations,
             };
 
             return prevPlots.map(plot => 
                 React.cloneElement(plot, {
                     propsData: {
                         ...plot.props.propsData,
-                        customLabel: propsData.customLabel,
-                        labelColor: propsData.labelColor,
+                        customLabel: customLabel,
+                        labelColor: labelColor,
                         shapes: currentLayout.shapes,
-                        annotations: currentLayout.annotations
+                        annotations: currentLayout.annotations,
                     }
                 })
             );
         });
-    }, [propsData.customLabel, propsData.labelColor, propsData.plotList]);
+    }, [customLabel, labelColor, propsData.plotList]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -218,30 +224,34 @@ const Graph = ({ propsData }) => {
                 else { console.error('Invalid label format: ', columnLabels[i]); }
             };
 
-            console.log("Period list: ", periodList);
-
             const labels = [...new Set(periodList.map(period => period[2]))];  
-
             const colors = generateColors(labels.length);
 
             for (let i = 0; i < periodList.length; i++) {
                 const periodColor = colors[labels.indexOf(periodList[i][2])];
                 highlightRegion(periodList[i][0], periodList[i][1], periodColor);
-                console.log("Highlighted: ", periodList[i][0], periodList[i][1], periodColor);
             }
 
             const buttonSetter = [];
             for (let i = 0; i < labels.length; i++) {
                 buttonSetter.push([labels[i], colors[i]]);  
             }
-
-            console.log("Button setter: ", buttonSetter);
-            propsData.setLabelsList(buttonSetter);
+            setLabelsList(buttonSetter);
         });
     }
 
     function generateColors(n){
-        return Array(n).fill('#964B00');
+        const split = 360 / n;
+        const colors = [];
+        for (let i = 0; i < n; i++) {
+            colors.push('#' + hsvToHex(i * split, 100, 70));
+        }
+        return colors;
+    }
+
+    function hsvToHex(h, s, v) {
+        var convert = require('color-convert');
+        return convert.hsv.hex(h, s, v);
     }
 
     function createPlot(sensor, axis, filename) {
@@ -275,8 +285,8 @@ const Graph = ({ propsData }) => {
                 handlePlotClick: handlePlotClick,
                 handleRelayout: propsData.syncZoom,
                 hover: handlePlotHover,
-                customLabel: propsData.customLabel,
-                labelColor: propsData.labelColor,
+                customLabel: customLabel,
+                labelColor: labelColor,
                 deleteRegion: propsData.deleteRegion,
             };
 
@@ -297,11 +307,46 @@ const Graph = ({ propsData }) => {
 
     return (
         <div>
-            <div className="addPlot-container">
-                <button onClick={handleOpenModal}>
-                    Create Plot
-                </button>
+            <div className="video-control-container">
+                {propsData.hasVideo && (
+                    <div className="video-container">
+                        <VideoControls propsVideoControls={{
+                            video: propsData.video,
+                            plotList: propsData.plotList,
+                            syncZoom: propsData.syncZoom,
+                            videoRef: propsData.videoRef,
+                            highlightFlag: propsData.highlightFlag,
+                            deleteRegion: propsData.deleteRegion,
+                            syncEnabled: propsData.syncEnabled,
+                            setSyncEnabled: propsData.setSyncEnabled
+                        }} />
+                    </div>
+                )}
+                <div className="control-panel">
+                    <ControlPanel
+                        propsControlPanel={{
+                            resetZoom: propsData.resetZoom,
+                            resetMode: propsData.setAppMode,
+                            resetEvents: propsData.resetEvents,
+                            voidPlots: propsData.voidPlots,
+                            setAppMode: propsData.setAppMode,
+                            setPlotlyDragMode: propsData.setPlotlyDragMode,
+                            appMode: propsData.appMode,
+                            customLabel: customLabel,
+                            setCustomLabel: setCustomLabel,
+                            labelColor: labelColor,
+                            setLabelColor: setLabelColor,
+                            labelsList: labelsList,
+                        }}
+                    />
+                    <div className="addPlot-container">
+                        <button onClick={handleOpenModal}>
+                            Create Plot
+                        </button>
+                    </div>
+                </div>
             </div>
+            
 
             <Modal
                 isOpen={isModalOpen}

@@ -18,16 +18,12 @@ const App = () => {
     const router = useRouter();
 
     // State hooks
-    const [error, setError] = useState(''); // Error message for CSV parsing
     const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
-    const [selections, setSelections] = useState([]); // Array to store selected regions
+    //const [selections, setSelections] = useState([]); // Array to store selected regions
     const [shapes, setShapes] = useState([]);  // To store shapes (periods)
     const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
     const [syncEnabled, setSyncEnabled] = useState(true);
     const [timestamps, setTimestamps] = useState([]);
-    const [customLabel, setCustomLabel] = useState('defaultLabel');
-    const [labelColor, setLabelColor] = useState('grey');
-    const [labelsList, setLabelsList] = useState([]);
 
     // Refs
     const timestampRef = useRef([]);
@@ -143,7 +139,7 @@ const App = () => {
         });
 
         // Reset clicks
-        setSelections([]);
+        //setSelections([]);
 
         // Reset mode after clearing events
         setAppMode('None');
@@ -170,10 +166,7 @@ const App = () => {
         });
 
         // Reset clicks
-        setSelections([]);
-
-        // Reset error
-        setError('');
+        //setSelections([]);
     }
 
 
@@ -250,7 +243,7 @@ const App = () => {
 
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
-            
+
             if (plotRef.current === null) {
                 console.log('Removing deleted plot from list | code °5 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
@@ -263,7 +256,7 @@ const App = () => {
                 if (plotRef.current.getAttribute('data-vertical-sync') === 'true') {
                     layoutUpdate = {
                         'xaxis.range': [eventdata['xaxis.range[0]'], eventdata['xaxis.range[1]']],
-                    };  
+                    };
                 }
                 else {
                     layoutUpdate = {
@@ -329,7 +322,7 @@ const App = () => {
             valign: 'middle',
         };
 
-        
+
 
         // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {
@@ -393,7 +386,7 @@ const App = () => {
             });
 
             // Reset clicks
-            selections.splice(regionIndex, 1);
+            //selections.splice(regionIndex, 1);
 
             // Update shapes and annotations on the plots
             plotRefs.forEach(plotRef => {
@@ -413,48 +406,19 @@ const App = () => {
             }
         }
     }
-    
+
     return (
-            <div className="app-container">
-                <div className="video-control-container">
-                    {hasVideo && (
-                        <div className="video-container">
-                            <VideoControls propsData={{
-                                video: hasVideo ? variablesContext.video : null,
-                                plotList: plotList,
-                                syncZoom: syncZoom,
-                                videoRef: videoRef,
-                                highlightFlag: highlightFlag,
-                                deleteRegion: deleteRegion,
-                                syncEnabled: syncEnabled,
-                                setSyncEnabled: setSyncEnabled
-                            }} />
-                        </div>
-                    )}
-                <ControlPanel
-                    propsData={{
-                        resetZoom: resetZoom,
-                        resetMode: () => setAppMode('None'),
-                        resetEvents: resetEvents,
-                        voidPlots: voidPlots,
-                        setAppMode: setAppMode,
-                        setPlotlyDragMode: setPlotlyDragMode,
-                        appMode: appMode,
-                        customLabel: customLabel,
-                        setCustomLabel: setCustomLabel,
-                        labelColor: labelColor,
-                        setLabelColor: setLabelColor,
-                        labelsList: labelsList,
-                    }}
-                />
-            </div>
+        <div className="app-container">
             <div className="graph-container">
                 <Graph
                     propsData={{
+                        hasVideo: hasVideo,
+                        video: hasVideo ? variablesContext.video : null,
                         plotList: plotList,
                         appMode: appMode,
-                        hasVideo: hasVideo,
                         syncZoom: syncZoom,
+                        syncEnabled: syncEnabled,
+                        setSyncEnabled: setSyncEnabled,
                         videoRef: videoRef,
                         highlightFlag: highlightFlag,
                         deleteRegion: deleteRegion,
@@ -462,9 +426,12 @@ const App = () => {
                         setTimestamps: setTimestamps,
                         timestampRef: timestampRef,
                         isReopen: isReopen,
-                        customLabel: customLabel,
-                        labelColor: labelColor,
-                        setLabelsList: setLabelsList
+                        resetZoom: resetZoom,
+                        resetMode: () => setAppMode('None'),
+                        resetEvents: resetEvents,
+                        voidPlots: voidPlots,
+                        setAppMode: setAppMode,
+                        setPlotlyDragMode: setPlotlyDragMode,
                     }}
                 />
             </div>

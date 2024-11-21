@@ -8,7 +8,7 @@ const Plot = ({ propsData }) => {
 
     const plotRef = useRef(null);
     const [deletePlot, setDeletePlot] = useState(false);
-    const [verticalSync, setVerticalSync] = useState(false);
+    const [verticalSync, setVerticalSync] = useState(true);
 
     // Effect to update data-vertical-sync attribute when verticalSync changes
     useEffect(() => {
@@ -46,7 +46,9 @@ const Plot = ({ propsData }) => {
                 shapes: propsData.shapes,
                 annotations: propsData.annotations,
                 margin: { t: 20, b: 20, l: 60, r: 20 },
-                autosize: true
+                autosize: true,
+                xaxis: propsData.xaxisRange ? { range: propsData.xaxisRange } : {},
+                //yaxis: propsData.yaxisRange ? { range: propsData.yaxisRange } : {}
             },
             {
                 scrollZoom: propsData.appModeRef.current === 'pan',

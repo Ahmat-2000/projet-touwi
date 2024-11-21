@@ -3,23 +3,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 
-const VideoControls = ({ propsData }) => {
+const VideoControls = ({ propsVideoControls }) => {
 
-    const videoRef = propsData.videoRef;
+    const videoRef = propsVideoControls.videoRef;
     const [, forceUpdate] = useState({});
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);
 
     useEffect(() => {
-        if (propsData.video && propsData.video.file) {
-            const url = URL.createObjectURL(propsData.video.file);
+        if (propsVideoControls.video && propsVideoControls.video.file) {
+            const url = URL.createObjectURL(propsVideoControls.video.file);
             setVideoUrl(url);
             return () => {
                 URL.revokeObjectURL(url); // Clean up the URL when the component unmounts
             };
         }
-    }, [propsData.video]);
+    }, [propsVideoControls.video]);
 
     const adjustSpeed = (increment) => {
         try {
@@ -57,37 +57,37 @@ const VideoControls = ({ propsData }) => {
     ];
 
     const timeUpdateListener = () => {
-        if (propsData.plotList.current.length > 0) {
+        if (propsVideoControls.plotList.current.length > 0) {
             const video = videoRef.current;
             const currentVideoTime = video.currentTime;
             const videoDuration = video.duration;
 
-            if (propsData.plotList.current[0].current === null) {
+            if (propsVideoControls.plotList.current[0].current === null) {
                 console.log('Removing deleted plot from list | code °12 ');
-                propsData.plotList.current = propsData.plotList.current.filter(ref => ref !== propsData.plotList.current[0]);
+                propsVideoControls.plotList.current = propsVideoControls.plotList.current.filter(ref => ref !== propsVideoControls.plotList.current[0]);
             }
 
-            const signalLength = propsData.plotList.current[0].current.data[0].x.length;
+            const signalLength = propsVideoControls.plotList.current[0].current.data[0].x.length;
             
             const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
 
             const newLayout = {
                 'xaxis.range[0]': currentSignalIndex - windowSize,
                 'xaxis.range[1]': currentSignalIndex + windowSize,
-                'yaxis.range[0]': propsData.plotList.current[0].current.layout.yaxis.range[0],
-                'yaxis.range[1]': propsData.plotList.current[0].current.layout.yaxis.range[1]  
+                'yaxis.range[0]': propsVideoControls.plotList.current[0].current.layout.yaxis.range[0],
+                'yaxis.range[1]': propsVideoControls.plotList.current[0].current.layout.yaxis.range[1]  
             };
-            propsData.syncZoom(newLayout, propsData.plotList.current, null);
+            propsVideoControls.syncZoom(newLayout, propsVideoControls.plotList.current, null);
         }
     };
 
     const toggleSync = () => {
-        if (propsData.syncEnabled) {
+        if (propsVideoControls.syncEnabled) {
             videoRef.current.removeEventListener('timeupdate', timeUpdateListener);
         } else {
             videoRef.current.addEventListener('timeupdate', timeUpdateListener);
         }
-        propsData.setSyncEnabled(!propsData.syncEnabled);
+        propsVideoControls.setSyncEnabled(!propsVideoControls.syncEnabled);
     };
 
     useEffect(() => {
@@ -102,8 +102,8 @@ const VideoControls = ({ propsData }) => {
             
             switch (event.code) {
                 case 'Space':
-                    if (!propsData.syncEnabled) {
-                        propsData.setSyncEnabled(true);
+                    if (!propsVideoControls.syncEnabled) {
+                        propsVideoControls.setSyncEnabled(true);
                     }
                     event.preventDefault();
                     video.paused ? video.play() : video.pause();
@@ -119,9 +119,9 @@ const VideoControls = ({ propsData }) => {
                     video.pause();
                     break;
                 case 'Escape':
-                    if (propsData.syncEnabled) {
+                    if (propsVideoControls.syncEnabled) {
                         video.removeEventListener('timeupdate', timeUpdateListener);
-                        propsData.setSyncEnabled(false);
+                        propsVideoControls.setSyncEnabled(false);
                     }
                     break;
                 default:
@@ -131,7 +131,7 @@ const VideoControls = ({ propsData }) => {
 
         window.addEventListener('keydown', handleKeydown);
 
-        if (propsData.syncEnabled) {
+        if (propsVideoControls.syncEnabled) {
             video.addEventListener('timeupdate', timeUpdateListener);
         }
 
@@ -141,7 +141,7 @@ const VideoControls = ({ propsData }) => {
                 video.removeEventListener('timeupdate', timeUpdateListener);
             }
         };
-    }, [propsData.syncEnabled, windowSize]);
+    }, [propsVideoControls.syncEnabled, windowSize]);
 
     return (
         <div>
@@ -221,9 +221,9 @@ const VideoControls = ({ propsData }) => {
                     </div>
                     <button 
                         onClick={toggleSync}
-                        className={`sync-button ${propsData.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
+                        className={`sync-button ${propsVideoControls.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
                     >
-                        {propsData.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
+                        {propsVideoControls.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
                     </button>
                 </div>
             </div>
