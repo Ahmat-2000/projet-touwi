@@ -4,10 +4,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 const ControlPanel = ({ propsControlPanel }) => {
-    const [buttonText, setButtonText] = useState('');
     const [customButtons, setCustomButtons] = useState([]);
     const [counter, setCounter] = useState(0);
-    const [selectedColor, setSelectedColor] = useState('#297DCB'); // Default blue color
+    const [buttonSelectorColor, setButtonSelectorColor] = useState('#297DCB');
+    
+    const [buttonText, setButtonText] = useState('');
+
+    //setLabelColor
+    //setCustomLabel
 
     const inputRef = useRef(null);
 
@@ -21,7 +25,6 @@ const ControlPanel = ({ propsControlPanel }) => {
             
             // Update state once with all new buttons
             setCustomButtons(prevButtons => [...prevButtons, ...newButtons]);
-            setButtonText('');
             inputRef.current?.focus();
             setCounter(index);
         }
@@ -32,7 +35,7 @@ const ControlPanel = ({ propsControlPanel }) => {
             const newButton = {
                 id: counter,
                 text: buttonText.trim(),
-                color: selectedColor
+                color: buttonSelectorColor
             };
             setCounter(counter + 1);
             setCustomButtons([...customButtons, newButton]);
@@ -61,7 +64,6 @@ const ControlPanel = ({ propsControlPanel }) => {
     };
 
     const handleCustomButtonClick = (text, color) => {
-        console.log(`Period label set to: ${text} with color: ${color}`);
         propsControlPanel.setAppMode('period');
         propsControlPanel.setPlotlyDragMode(false);
         propsControlPanel.setCustomLabel(text);
@@ -93,6 +95,7 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 <i className="fas fa-home"></i>
                                 <span>Home</span>
                             </button>
+
                             <button
                                 onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('None'); }}
                                 className={`control-button ${propsControlPanel.appMode === 'None' ? 'active' : ''}`}
@@ -170,8 +173,8 @@ const ControlPanel = ({ propsControlPanel }) => {
                             />
                             <input
                                 type="color"
-                                value={selectedColor}
-                                onChange={(e) => setSelectedColor(e.target.value)}
+                                value={buttonSelectorColor}
+                                onChange={(e) => setButtonSelectorColor(e.target.value)}
                                 className="color-picker"
                                 style={{
                                     width: '40px',

@@ -172,8 +172,6 @@ const App = () => {
 
     function setPlotlyDragMode(newDragMode) {
 
-        console.log(`Plotly drag mode set to: ${newDragMode}`);
-
         // Update drag mode for all plots
         plotList.current.forEach((plotRef) => {
 
@@ -249,8 +247,6 @@ const App = () => {
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
-
-            console.log('!', plotRef.current.getAttribute('data-vertical-sync'));
 
             if (layoutMode == '2_axis') {
                 if (plotRef.current.getAttribute('data-vertical-sync') === 'true') {

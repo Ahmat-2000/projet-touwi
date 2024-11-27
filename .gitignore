@@ -38,3 +38,5 @@ next-env.d.ts
 # environments
 .env.local
 *.MP4
+*.html
+package-lock.json

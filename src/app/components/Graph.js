@@ -20,7 +20,6 @@ const Graph = ({ propsData }) => {
     const [selectedCategory, setSelectedCategory] = useState('accel');
     const [selectedAxis, setSelectedAxis] = useState('x');
     const [plotFinished, setPlotFinished] = useState(false);
-    const [showReloadButton, setShowReloadButton] = useState(true);
 
     const [customLabel, setCustomLabel] = useState('defaultLabel');
     const [labelColor, setLabelColor] = useState('grey');
@@ -29,52 +28,31 @@ const Graph = ({ propsData }) => {
     const [plotIndexColor, setPlotIndexColor] = useState(0);
     const [labelsList, setLabelsList] = useState([]);
 
+    const [keyCounter, setKeyCounter] = useState(0);
+
     useEffect(() => {
         appModeRef.current = propsData.appMode;
     }, [propsData.appMode]);
 
 
-
     useEffect(() => {
         createPlot('accel', 'x', propsData.name);
-    }, [propsData.name]);
-
-
-
-    useEffect(() => {
-        setPlots(prevPlots => {
-            const referencePlot = propsData.plotList.current[0]?.current;
-            if (!referencePlot) {
-                return prevPlots;
-            }
-
-            const currentLayout = {
-                shapes: referencePlot.layout.shapes,
-                annotations: referencePlot.layout.annotations,
-            };
-
-            return prevPlots.map(plot => 
-                React.cloneElement(plot, {
-                    propsData: {
-                        ...plot.props.propsData,
-                        customLabel: customLabel,
-                        labelColor: labelColor,
-                        shapes: currentLayout.shapes,
-                        annotations: currentLayout.annotations,
-                    }
-                })
-            );
-        });
-    }, [customLabel, labelColor, propsData.plotList]);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setShowReloadButton(false);
-        }, 5000); // Button will disappear after 5 seconds
-
-        return () => clearTimeout(timer);
     }, []);
 
+    useEffect(() => {
+        propsData.plotList.current.forEach(plotRef => {
+            plotRef.current.setAttribute('data-label-color', labelColor);
+            plotRef.current.setAttribute('data-custom-label', customLabel);
+        });
+    }, [labelColor, setLabelColor, customLabel, setCustomLabel]);
+
+    function clearDiv(keyNumber) {
+        setPlots(prevPlots => {
+            const newPlots = prevPlots.filter(plot => String(plot.key) !== String(keyNumber));
+            console.log(`Plot ${keyNumber} removed. Remaining plots: ${newPlots.length}`);
+            return newPlots;
+        });
+    }
 
     //--------------------------------
 
@@ -94,7 +72,7 @@ const Graph = ({ propsData }) => {
     //--------------------------------
 
 
-    function handlePlotClick(eventData, labelText, labelTextColor) {
+    function handlePlotClick(eventData) {
         const xValue = eventData.points[0].x;
 
         const currentAppMode = appModeRef.current;
@@ -131,7 +109,13 @@ const Graph = ({ propsData }) => {
                 }
                 else {
                     console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
+                    
                     selections[selections.length - 1].end = xValue;
+
+                    const referencePlot = propsData.plotList.current[0].current;
+                    const labelText = referencePlot.getAttribute('data-custom-label');
+                    const labelTextColor = referencePlot.getAttribute('data-label-color');
+
                     highlightRegion(selections[selections.length - 1].start, xValue, labelTextColor);
                     const labelName = "PERIOD:" + labelText;
                     periodUpdate(propsData.timestampRef.current[selections[selections.length - 1].start], propsData.timestampRef.current[xValue], labelName, propsData.name);
@@ -197,15 +181,12 @@ const Graph = ({ propsData }) => {
                     if (columnLabels[i].startsWith('FLAG:')) {
                         const labelName = columnLabels[i].slice(5); // Extract random string after 'FLAG:'
                         propsData.highlightFlag(i, { width: 1, color: 'blue', dash: 'dashdot' }, labelName);
-                        //console.log("Flag loaded at: ", i, labelName);
                     }
 
                     if (start !== null) {
                         if (columnLabels[i - 1].startsWith('PERIOD:')) {
                             const labelName = columnLabels[i - 1].slice(7);
-                            //highlightRegion(start, i - 1, labelColor);
                             periodList.push([start, i - 1, labelName]);
-                            //console.log("Period loaded at: ", start, i - 1, labelName, labelColor);
                             start = null;
                         }
                     }
@@ -215,9 +196,7 @@ const Graph = ({ propsData }) => {
 
                     if (i === columnLabels.length - 1) {
                         const labelName = columnLabels[i - 1].slice(7);
-                        //highlightRegion(start, i, labelColor);
                         periodList.push([start, i, labelName]);
-                        //console.log("Period loaded at: ", start, i, labelName, labelColor);
                     }
                 }
 
@@ -273,8 +252,12 @@ const Graph = ({ propsData }) => {
             const plotColor = colors[plotIndexColor % colors.length];
             setPlotIndexColor(plotIndexColor + 1);
 
+            const keyID = keyCounter;
+            setKeyCounter(keyCounter + 1);
+
             const props = {
                 data: data,
+                keyID: keyID,
                 title: filename + ' ' + sensor.charAt(0).toUpperCase() + sensor.slice(1) + ' ' + axis.toUpperCase(),
                 timestamp: Array.from({ length: data.length }, (_, i) => i),
                 plotRefList: propsData.plotList.current,
@@ -288,11 +271,12 @@ const Graph = ({ propsData }) => {
                 customLabel: customLabel,
                 labelColor: labelColor,
                 deleteRegion: propsData.deleteRegion,
+                clearDiv: clearDiv,
             };
 
 
             setPlots(prevPlots => [...prevPlots,
-            <Plot key={props.title} propsData={props} />
+                <Plot key={keyID} propsData={props} />
             ]);
 
             if (!plotFinished) {
@@ -406,9 +390,18 @@ const Graph = ({ propsData }) => {
                 </button>
             </Modal>
 
+            <div>
+                <button onClick={ () => {
+                    console.log("======================");
+                    console.log(plots.length, "plots", plots);
+                    console.log(propsData.plotList.current.length, "propsData.plotlist", propsData.plotList.current);
+                    console.log("======================");
+                }}>test</button>
+            </div>
+
             <div className="plot-container">
-                {plots.map((plot, index) => (
-                    <div key={index} className='Plot_fromMap'>
+                {plots.map((plot) => (
+                    <div key={plot.key} className='Plot_fromMap'>
                         {plot}
                     </div>
                 ))}

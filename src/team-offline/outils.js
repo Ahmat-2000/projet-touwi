@@ -89,6 +89,7 @@ export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,file
   if (timestamp_debut === undefined || timestamp_fin === undefined || new_label === undefined || fileName === undefined) {
     console.error(`One of the required parameters is not set properly : timestamp_debut{${timestamp_debut}}, timestamp_fin{${timestamp_fin}}, new_label{${new_label}}, fileName{${fileName}}`);
   }
+  console.log('Period added from ' + timestamp_debut + ' to ' + timestamp_fin + ' with label ' + new_label);
 
   // Charger le contenu du fichier
   const touwiContent = await receiveFile(fileName);

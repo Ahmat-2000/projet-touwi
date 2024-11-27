@@ -18,6 +18,12 @@ const Plot = ({ propsData }) => {
     }, [verticalSync]);
 
     useEffect(() => {
+        if (deletePlot) {
+            propsData.clearDiv(propsData.keyID);
+        }
+    }, [deletePlot]);
+
+    useEffect(() => {
         if (!propsData || !plotRef.current) return;
 
         // Create the plot
@@ -48,7 +54,6 @@ const Plot = ({ propsData }) => {
                 margin: { t: 20, b: 20, l: 60, r: 20 },
                 autosize: true,
                 xaxis: propsData.xaxisRange ? { range: propsData.xaxisRange } : {},
-                //yaxis: propsData.yaxisRange ? { range: propsData.yaxisRange } : {}
             },
             {
                 scrollZoom: propsData.appModeRef.current === 'pan',
@@ -59,20 +64,19 @@ const Plot = ({ propsData }) => {
             }
         );
 
-        // Add plot reference to list if not already present
-        if (!propsData.plotRefList.includes(plotRef)) {
-            propsData.plotRefList.push(plotRef);
-            plotRef.current.setAttribute('data-vertical-sync', verticalSync);
-        }
+        plotRef.current.setAttribute('data-custom-label', propsData.customLabel);
+        plotRef.current.setAttribute('data-label-color', propsData.labelColor);
+        plotRef.current.setAttribute('data-vertical-sync', verticalSync);
+
+        propsData.plotRefList.push(plotRef);
 
         // Sync with other plots if there are any
         if (propsData.plotRefList.length > 1) {
             const referencePlot = propsData.plotRefList[0].current;
-            if (referencePlot) {
+            if (referencePlot.layout) {
+
                 const currentLayout = {
-                    //'xaxis.autorange': true,
-                    //'yaxis.autorange': true,
-                    'xaxis.range' : referencePlot.layout.xaxis.range,
+                    'xaxis.range': referencePlot.layout.xaxis.range,
                     shapes: referencePlot.layout.shapes,
                     annotations: referencePlot.layout.annotations,
                     dragmode: referencePlot._fullLayout.dragmode
@@ -86,23 +90,18 @@ const Plot = ({ propsData }) => {
         const plotElement = plotRef.current;
 
         plotElement.on('plotly_click', (eventdata) => {
-            const labelText = propsData.customLabel || "debugPlot";
-            const labelTextColor = propsData.labelColor || "black";
-
-            propsData.handlePlotClick(eventdata, labelText, labelTextColor);
-            
+            propsData.handlePlotClick(eventdata);
         });
+
         plotElement.on('plotly_relayout', (eventdata) => {
             propsData.handleRelayout(eventdata, propsData.plotRefList, plotRef);
         });
 
         if (propsData.hover) { /* plotElement.on('plotly_hover', (eventData) =>     propsData.hover(eventData) ); */ }
 
-        //test
         plotElement.on('plotly_clickannotation', (eventData) => {
-            const currentMode = propsData.appModeRef.current;
-            console.log('Mode is ', currentMode);
-            if (currentMode === 'delete') {
+
+            if (propsData.appModeRef.current === 'delete') {
                 const modifiedList = { current: propsData.plotRefList };
                 propsData.deleteRegion(modifiedList, eventData.annotation.x, false);
             }
@@ -113,7 +112,6 @@ const Plot = ({ propsData }) => {
             if (plotElement) {
                 plotElement.removeAllListeners('plotly_click');
                 plotElement.removeAllListeners('plotly_relayout');
-                //test
                 plotElement.removeAllListeners('plotly_clickannotation');
                 Plotly.purge(plotElement);
             }
@@ -122,7 +120,7 @@ const Plot = ({ propsData }) => {
                 propsData.plotRefList.splice(index, 1);
             }
         };
-    }, [propsData]);
+    }, []);
 
     if (!deletePlot) {
 
