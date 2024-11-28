@@ -149,14 +149,26 @@ const CropVideoControls = ({ propsVideoControls }) => {
                         </button>
                     </div>
 
-                    <div>
-                        <p>Crop Video Start: {propsVideoControls.cropVideoStart}</p>
-                        <p>Crop Video End: {propsVideoControls.cropVideoEnd}</p>
+                    <div className="crop-info">
+                        <div className="crop-values">
+                            <p className="crop-timestamp">
+                                <span className="crop-label">Crop Video Start:</span>
+                                <span className="crop-value">{propsVideoControls.cropVideoStart?.toFixed(2) || '-'}</span>
+                            </p>
+                            <p className="crop-timestamp">
+                                <span className="crop-label">Crop Video End:</span>
+                                <span className="crop-value">{propsVideoControls.cropVideoEnd?.toFixed(2) || '-'}</span>
+                            </p>
+                        </div>
 
-                        <button onClick={() => cropVideo(
-                            propsVideoControls.cropVideoStart, 
-                            propsVideoControls.cropVideoEnd
-                        )}>
+                        <button 
+                            onClick={() => cropVideo(
+                                propsVideoControls.cropVideoStart, 
+                                propsVideoControls.cropVideoEnd
+                            )}
+                            className="crop-button"
+                            disabled={!propsVideoControls.cropVideoStart || !propsVideoControls.cropVideoEnd}
+                        >
                             Crop Video
                         </button>
                     </div>
