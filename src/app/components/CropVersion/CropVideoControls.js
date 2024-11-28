@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
+import CustomVideoPlayer from './CustomVideoPlayer';
 
 const CropVideoControls = ({ propsVideoControls }) => {
     const [videoUrl, setVideoUrl] = useState(null); //Video URL value/setter
 
     const videoRef = propsVideoControls.videoRef;   //Video UseRef
     const timeUpdateHandlerRef = useRef(null);      //TEMPORARY WILL BE REMOVED FEATURE WIP
+    const [, forceUpdate] = useState({});          //Does something
 
     useEffect(() => {                               //Link video URL from file
         const url = URL.createObjectURL(propsVideoControls.video.file);
@@ -38,9 +39,9 @@ const CropVideoControls = ({ propsVideoControls }) => {
         forceUpdate({});
     };
 
-    function cropVideo (start, end) {
+    function cropVideo(start, end) {
         const video = videoRef.current;
-        
+
         if (timeUpdateHandlerRef.current) {
             video.removeEventListener('timeupdate', timeUpdateHandlerRef.current);
         }
@@ -50,7 +51,7 @@ const CropVideoControls = ({ propsVideoControls }) => {
                 video.currentTime = start;
             }
             else if (video.currentTime >= end) {
-                video.currentTime = end;
+                video.currentTime = start;
                 video.pause();
             }
         };
@@ -71,25 +72,25 @@ const CropVideoControls = ({ propsVideoControls }) => {
         const handleKeydown = (event) => {
             if (!videoRef) return;
 
-        const baseJumpTime = 0.5;
-        switch (event.code) {
-            case 'Space':
-                event.preventDefault();
-                videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
-                break;
-            case 'ArrowLeft':
-                event.preventDefault();
-                videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - baseJumpTime);
-                break;
-            case 'ArrowRight':
-                event.preventDefault();
-                videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + baseJumpTime);
+            const baseJumpTime = 0.5;
+            switch (event.code) {
+                case 'Space':
+                    event.preventDefault();
+                    videoRef.current.paused ? videoRef.current.play() : videoRef.current.pause();
+                    break;
+                case 'ArrowLeft':
+                    event.preventDefault();
+                    videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - baseJumpTime);
+                    break;
+                case 'ArrowRight':
+                    event.preventDefault();
+                    videoRef.current.currentTime = Math.min(videoRef.current.duration, videoRef.current.currentTime + baseJumpTime);
                     break;
             }
         };
 
         const handleTimebarClick = () => {
-            
+
             const currentAppMode = propsVideoControls.appModeRef.current;
 
             const isStartVideo = currentAppMode === 'video_start';
@@ -97,7 +98,7 @@ const CropVideoControls = ({ propsVideoControls }) => {
 
             if (isStartVideo) {
                 propsVideoControls.setCropVideoStart(video.currentTime);
-            } 
+            }
             else if (isEndVideo) {
                 propsVideoControls.setCropVideoEnd(video.currentTime);
             }
@@ -107,7 +108,7 @@ const CropVideoControls = ({ propsVideoControls }) => {
         video.addEventListener('seeked', handleTimebarClick);
         window.addEventListener('keydown', handleKeydown);
 
-        return () => {  
+        return () => {
             window.removeEventListener('keydown', handleKeydown);
             video.removeEventListener('seeked', handleTimebarClick);
         };
@@ -116,10 +117,39 @@ const CropVideoControls = ({ propsVideoControls }) => {
 
     return (
         <div>
-            <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
-                {videoUrl && <source src={videoUrl} type="video/webm" />}
-                Your browser does not support the video tag.
-            </video>
+            { /*
+            <div className="video-wrapper relative">
+                <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
+                    {videoUrl && <source src={videoUrl} type="video/webm" />}
+                    Your browser does not support the video tag.
+                </video>
+                <div className="video-controls-wrapper">
+                    {propsVideoControls.cropVideoStart && (
+                        <div 
+                            className="video-start-indicator"
+                            style={{
+                                left: `${(propsVideoControls.cropVideoStart / videoRef.current.duration) * 100}%`
+                            }}
+                        />
+                    )}
+                    {propsVideoControls.cropVideoEnd && (
+                        <div 
+                            className="video-end-indicator"
+                            style={{
+                                left: `${(propsVideoControls.cropVideoEnd / videoRef.current.duration) * 100}%`
+                            }}
+                        />
+                    )}
+                </div>
+            </div>
+            */ }
+
+            <CustomVideoPlayer
+                videoRef={videoRef}
+                videoUrl={videoUrl}
+                cropVideoStart={propsVideoControls.cropVideoStart}
+                cropVideoEnd={propsVideoControls.cropVideoEnd}
+            />
             <div className="controls-group">
                 <div className="video-sync-controls">
                     <div className="video-controls">
@@ -161,9 +191,9 @@ const CropVideoControls = ({ propsVideoControls }) => {
                             </p>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => cropVideo(
-                                propsVideoControls.cropVideoStart, 
+                                propsVideoControls.cropVideoStart,
                                 propsVideoControls.cropVideoEnd
                             )}
                             className="crop-button"
