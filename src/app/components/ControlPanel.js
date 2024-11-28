@@ -4,26 +4,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Plotly from 'plotly.js-basic-dist-min';
 const ControlPanel = ({ propsControlPanel }) => {
-    const [customButtons, setCustomButtons] = useState([]);
-    const [counter, setCounter] = useState(0);
-    const [buttonSelectorColor, setButtonSelectorColor] = useState('#297DCB');
-    
-    const [buttonText, setButtonText] = useState('');
 
-    //setLabelColor
-    //setCustomLabel
+    const [customButtons, setCustomButtons] = useState([]);                     //List of created buttons value/setter
+    const [buttonText, setButtonText] = useState('');                           //Next created button text value/setter
+    const [buttonSelectorColor, setButtonSelectorColor] = useState('#297DCB');  //Next created button color value/setter
+    const [counter, setCounter] = useState(0);                                  //Counter for button key ID
 
-    const inputRef = useRef(null);
+    const inputRef = useRef(null);                                              //UseRef for input field 
 
     useEffect(() => {
-        if (propsControlPanel.labelsList.length > 0) {
-            // Create all new buttons at once
+        if (propsControlPanel.labelsList.length > 0) {                           //Reopen mode loading all existing periods corresponding buttons
             let index = 0;
             const newButtons = propsControlPanel.labelsList.map((label) => 
                 handleRecreateButton(label[0], label[1], index++)
             );
             
-            // Update state once with all new buttons
             setCustomButtons(prevButtons => [...prevButtons, ...newButtons]);
             inputRef.current?.focus();
             setCounter(index);
@@ -140,7 +135,7 @@ const ControlPanel = ({ propsControlPanel }) => {
                     <div className="control-section">
                         <div className="button-grid">
                             <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('zoom'); }}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('None'); }}
                                 className={`control-button ${propsControlPanel.appMode === 'zoom' ? 'active' : ''}`}
                                 data-active={propsControlPanel.appMode === 'zoom'}
                             >
@@ -148,7 +143,7 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 <span>Zoom</span>
                             </button>
                             <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('pan'); }}
+                                onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('None'); }}
                                 className={`control-button ${propsControlPanel.appMode === 'pan' ? 'active' : ''}`}
                                 data-active={propsControlPanel.appMode === 'pan'}
                             >

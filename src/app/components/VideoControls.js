@@ -5,8 +5,8 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 const VideoControls = ({ propsVideoControls }) => {
 
-    const videoRef = propsVideoControls.videoRef;
-    const [, forceUpdate] = useState({});
+    const videoRef = propsVideoControls.videoRef;                   //hf for this part
+    const [, forceUpdate] = useState({});                           //Bad code merge fused 2 different codes but it works
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);

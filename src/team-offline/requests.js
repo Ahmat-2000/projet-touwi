@@ -38,6 +38,7 @@ export const saveModificationFile = async (touwiFile) => {
     }
 };
 
+//unused function
 export const saveVideoSynchronisationData = async (jsonData) => {
     //jsonData doit ête un objet de type dictionnaire
     try {
@@ -87,5 +88,37 @@ export const receiveFile = async (name) => {
 
     } catch (error) {
         console.error('Erreur lors de la récupération du fichier:', error);
+    }
+};
+
+
+export const saveVideoTimers = async (startTime, endTime, filename) => {
+    try {
+        const jsonData = {
+            [filename]: {
+                videoTimers: {
+                    start: startTime,
+                    end: endTime
+                }
+            }
+        };
+
+        const response = await fetch("http://localhost:3000/api/local/saveVideoTimers", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Error saving video timers:', error);
+        throw error;
     }
 };

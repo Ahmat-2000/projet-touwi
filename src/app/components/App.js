@@ -2,52 +2,55 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Papa from 'papaparse';
 import Plotly from 'plotly.js-basic-dist-min';
 
 import Graph from './Graph';
-import ControlPanel from './ControlPanel';
-import VideoControls from './VideoControls';
 import { useVariablesContext } from '@/utils/VariablesContext';
 import { periodUpdate } from '@/team-offline/outils';
 import { useRouter } from "next/navigation";
 
 const App = () => {
-
-    const { variablesContext } = useVariablesContext();
     const router = useRouter();
 
+    const { variablesContext } = useVariablesContext();
+    console.log("All", variablesContext);
+
     // State hooks
-    const [appMode, setAppMode] = useState('None'); // Mode for app Actions ONLY
-    //const [selections, setSelections] = useState([]); // Array to store selected regions
-    const [shapes, setShapes] = useState([]);  // To store shapes (periods)
-    const [annotations, setAnnotations] = useState([]);  // To store annotations (flags)
-    const [syncEnabled, setSyncEnabled] = useState(true);
-    const [timestamps, setTimestamps] = useState([]);
+    const [appMode, setAppMode] = useState('None');         // App mode value/setter
+    const [dragMode, setDragMode] = useState(false);        // Drag mode value/setter
+    const [shapes, setShapes] = useState([]);               //Useless (I think)
+    const [annotations, setAnnotations] = useState([]);     //Useless (I think)
+    const [timestamps, setTimestamps] = useState([]);       //list of timestamps same format as .csv used to convert back points to timestamps
+    
+    //If video is given :
+    const [syncEnabled, setSyncEnabled] = useState(true);   //Link/Unlink video playing to signals
+    const videoRef = useRef(null);                          //UseRef for video
 
     // Refs
-    const timestampRef = useRef([]);
-    const prevMidPointRef = useRef(null);
-    const plotList = useRef([]);
-    const videoRef = useRef(null);
+    const timestampRef = useRef([]);                        //UseRef for timestamps (Unsure if needed)
+    const prevMidPointRef = useRef(null);                   //UseRef for midPoint indicator
+    const plotList = useRef([]);                            //UseRef for list containing components Plot.js
+
+
+    useEffect(() => {                                       //Update timestampRef when timestamps change
+        if (timestamps.length > 0) {                        //Only needed for the default plot
+            timestampRef.current = timestamps;              //list needs to be stored once and remain unchanged
+        }
+    }, [timestamps]);
 
     // Temporary fix for routing
     useEffect(() => {
         if (variablesContext === null) {
             router.push("/import");
+            return (
+                <div>
+                    <h1 style={{ color: 'red' }}>ERROR</h1>
+                    <p>Please refresh from localhost:3000</p>
+                    <p>Sorry for the inconvenience, proper routing will be implemented soon.</p>
+                </div>
+            );
         }
     }, [variablesContext, router]);
-
-    if (variablesContext === null) {
-        return (
-            <div>
-                <h1 style={{ color: 'red' }}>ERROR</h1>
-                <p>Please refresh from localhost:3000</p>
-                <p>Sorry for the inconvenience, proper routing will be implemented soon.</p>
-            </div>
-        );
-    }
-
     //End of temporary fix for routing
 
 
@@ -66,14 +69,6 @@ const App = () => {
     const hasVideo = variablesContext.video ? true : false;
 
 
-    // Effect to update timestampRef
-    useEffect(() => {
-        if (timestamps.length > 0) {
-            timestampRef.current = timestamps;
-        }
-    }, [timestamps]);
-
-    // Function to reset the zoom on all three plots
     function resetZoom() {
 
         // Stop video if playing
@@ -110,17 +105,10 @@ const App = () => {
                 const midPoint = (plotList.current[0].current.layout.xaxis.range[0] +
                     plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
-                //highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
                 highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, '');
             });
         });
     }
-
-    function resetMode() {
-        setAppMode('None');
-        setPlotlyDragMode(false);
-    }
-
 
     function resetEvents() {
 
@@ -138,21 +126,12 @@ const App = () => {
             Plotly.relayout(plotRef.current, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
-        // Reset clicks
-        //setSelections([]);
-
-        // Reset mode after clearing events
-        setAppMode('None');
-
         // Clear global state for shapes and annotations if they are used
         setShapes(updatedShapes);
         setAnnotations(updatedAnnotations);
         periodUpdate(timestampRef.current[0], timestampRef.current[timestampRef.current.length - 1], 'NONE', fileName);
-
-        console.log('All periods and flags have been reset.');
     }
 
-    // Function to completely purge plots and reset the state
     function voidPlots() {
 
         // Destroy all plots
@@ -165,12 +144,11 @@ const App = () => {
             Plotly.purge(plotRef.current);
         });
 
-        // Reset clicks
-        //setSelections([]);
     }
 
-
     function setPlotlyDragMode(newDragMode) {
+
+        setDragMode(newDragMode);
 
         // Update drag mode for all plots
         plotList.current.forEach((plotRef) => {
@@ -381,9 +359,6 @@ const App = () => {
                 }
             });
 
-            // Reset clicks
-            //selections.splice(regionIndex, 1);
-
             // Update shapes and annotations on the plots
             plotRefs.forEach(plotRef => {
                 if (plotRef.current === null) {
@@ -408,26 +383,27 @@ const App = () => {
             <div className="graph-container">
                 <Graph
                     propsData={{
-                        hasVideo: hasVideo,
-                        video: hasVideo ? variablesContext.video : null,
-                        plotList: plotList,
                         appMode: appMode,
-                        syncZoom: syncZoom,
-                        syncEnabled: syncEnabled,
-                        setSyncEnabled: setSyncEnabled,
-                        videoRef: videoRef,
-                        highlightFlag: highlightFlag,
                         deleteRegion: deleteRegion,
-                        name: fileName,
-                        setTimestamps: setTimestamps,
-                        timestampRef: timestampRef,
+                        dragMode: dragMode,
+                        hasVideo: hasVideo,
+                        highlightFlag: highlightFlag,
                         isReopen: isReopen,
+                        name: fileName,
+                        plotList: plotList,
                         resetZoom: resetZoom,
-                        resetMode: () => setAppMode('None'),
                         resetEvents: resetEvents,
-                        voidPlots: voidPlots,
+                        setSyncEnabled: setSyncEnabled,
+                        setTimestamps: setTimestamps,
                         setAppMode: setAppMode,
+                        setDragMode: setDragMode,
                         setPlotlyDragMode: setPlotlyDragMode,
+                        syncEnabled: syncEnabled,
+                        syncZoom: syncZoom,
+                        timestampRef: timestampRef,
+                        videoRef: videoRef,
+                        video: hasVideo ? variablesContext.video : null,
+                        voidPlots: voidPlots,
                     }}
                 />
             </div>

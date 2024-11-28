@@ -13,33 +13,38 @@ import { getRowWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/tea
 
 
 const Graph = ({ propsData }) => {
-    const [plots, setPlots] = useState([]);
-    const [selections, setSelections] = useState([]);
+    const [plots, setPlots] = useState([]);                             //Plots dom list value/setter
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState('accel');
-    const [selectedAxis, setSelectedAxis] = useState('x');
-    const [plotFinished, setPlotFinished] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);              //Modal (create plot form) handling value/setter
+    const [selectedCategory, setSelectedCategory] = useState('accel');  //Modal sensor type value/setter
+    const [selectedAxis, setSelectedAxis] = useState('x');              //Modal axis type value/setter
+    const [plotFinished, setPlotFinished] = useState(false);            //Default first plot init check value/setter
+    const [customLabel, setCustomLabel] = useState('defaultLabel');     //Next period label text value/setter
+    const [labelColor, setLabelColor] = useState('grey');               //Next period label color value/setter
+    const [keyCounter, setKeyCounter] = useState(0);                    //Counter for Plot key ID
+    const [plotIndexColor, setPlotIndexColor] = useState(0);            //Counter for next plot color
+    
+    //When App is Reopen:
+    const [labelsList, setLabelsList] = useState([]);                   //List of retrieved periods : [periodName, periodColor]
 
-    const [customLabel, setCustomLabel] = useState('defaultLabel');
-    const [labelColor, setLabelColor] = useState('grey');
+    const dragModeRef = useRef(propsData.dragMode);                     //Dragmode UseRef to force update in Plot.js
+    const appModeRef = useRef(propsData.appMode);                       //App mode UseRef to force update in Plot.js
 
-    const appModeRef = useRef(propsData.appMode);
-    const [plotIndexColor, setPlotIndexColor] = useState(0);
-    const [labelsList, setLabelsList] = useState([]);
+    let selections = [];                                                //Click list
 
-    const [keyCounter, setKeyCounter] = useState(0);
-
-    useEffect(() => {
-        appModeRef.current = propsData.appMode;
+    useEffect(() => {                                                   //Listen to appMode change
+        appModeRef.current = propsData.appMode;                         //Update appModeRef to the change
     }, [propsData.appMode]);
 
+    useEffect(() => {                                                   //Listen to dragMode change
+        dragModeRef.current = propsData.dragMode;                       //Update dragModeRef to the change
+    }, [propsData.dragMode]);
 
-    useEffect(() => {
+    useEffect(() => {                                                   //Create default plot : Accelerometer X
         createPlot('accel', 'x', propsData.name);
     }, []);
 
-    useEffect(() => {
+    useEffect(() => {                                                   //Update next label(text and color) for each plot when changing
         propsData.plotList.current.forEach(plotRef => {
             plotRef.current.setAttribute('data-label-color', labelColor);
             plotRef.current.setAttribute('data-custom-label', customLabel);
@@ -104,11 +109,11 @@ const Graph = ({ propsData }) => {
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
-                    console.log(`Selected region: Start - ${xValue}`);
+                    console.log(`New period: Start - ${xValue}, End - ?`);
                     selections.push({ start: xValue, end: null });
                 }
                 else {
-                    console.log(`Selected region: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
+                    console.log(`New period: Start - ${selections[selections.length - 1].start}, End - ${xValue}`);
                     
                     selections[selections.length - 1].end = xValue;
 
@@ -165,7 +170,6 @@ const Graph = ({ propsData }) => {
         const xValue = eventData.points[0].x;
         console.log(`Hovering over x: ${xValue}`);
     };
-
 
     function reload_labels() {
         const res = getRowWithTimestamp('LABEL', '', propsData.name);
@@ -242,7 +246,7 @@ const Graph = ({ propsData }) => {
             const timestamp = result[0];
             const data = result[1];
 
-            const colors = [
+            const colors = [                    //Color loop for plots signals colors
                 '#2E86C1',  // Strong Blue
                 '#E74C3C',  // Soft Red
                 '#27AE60',  // Forest Green
@@ -264,6 +268,7 @@ const Graph = ({ propsData }) => {
                 shapes: [],
                 annotations: [],
                 color: plotColor,
+                dragModeRef: dragModeRef,
                 appModeRef: appModeRef,
                 handlePlotClick: handlePlotClick,
                 handleRelayout: propsData.syncZoom,
@@ -309,13 +314,12 @@ const Graph = ({ propsData }) => {
                 <div className="control-panel">
                     <ControlPanel
                         propsControlPanel={{
+                            appMode: propsData.appMode,
                             resetZoom: propsData.resetZoom,
-                            resetMode: propsData.setAppMode,
                             resetEvents: propsData.resetEvents,
                             voidPlots: propsData.voidPlots,
                             setAppMode: propsData.setAppMode,
                             setPlotlyDragMode: propsData.setPlotlyDragMode,
-                            appMode: propsData.appMode,
                             customLabel: customLabel,
                             setCustomLabel: setCustomLabel,
                             labelColor: labelColor,
@@ -389,15 +393,6 @@ const Graph = ({ propsData }) => {
                     Cancel
                 </button>
             </Modal>
-
-            <div>
-                <button onClick={ () => {
-                    console.log("======================");
-                    console.log(plots.length, "plots", plots);
-                    console.log(propsData.plotList.current.length, "propsData.plotlist", propsData.plotList.current);
-                    console.log("======================");
-                }}>test</button>
-            </div>
 
             <div className="plot-container">
                 {plots.map((plot) => (

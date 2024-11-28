@@ -6,24 +6,24 @@ import Plotly from 'plotly.js-basic-dist-min';
 
 const Plot = ({ propsData }) => {
 
-    const plotRef = useRef(null);
-    const [deletePlot, setDeletePlot] = useState(false);
-    const [verticalSync, setVerticalSync] = useState(true);
-
-    // Effect to update data-vertical-sync attribute when verticalSync changes
-    useEffect(() => {
+    const [deletePlot, setDeletePlot] = useState(false);    //Button boolean to delete plot
+    const [verticalSync, setVerticalSync] = useState(true); //Vertical sync boolean
+    
+    const plotRef = useRef(null);                            //UseRef for plot element
+    
+    useEffect(() => {                                        //Update vertical sync attribute when verticalSync changes
         if (plotRef.current) {
             plotRef.current.setAttribute('data-vertical-sync', verticalSync);
         }
     }, [verticalSync]);
 
-    useEffect(() => {
+    useEffect(() => {                                        //When deleting itself, remove the dom div from the parent
         if (deletePlot) {
             propsData.clearDiv(propsData.keyID);
         }
     }, [deletePlot]);
 
-    useEffect(() => {
+    useEffect(() => {                                        //Create the plot
         if (!propsData || !plotRef.current) return;
 
         // Create the plot
@@ -47,8 +47,8 @@ const Plot = ({ propsData }) => {
                 },
                 hovermode: 'closest',
             }],
-            {
-                dragmode: propsData.appModeRef.current,
+            {   
+                dragmode: propsData.dragModeRef.current,
                 shapes: propsData.shapes,
                 annotations: propsData.annotations,
                 margin: { t: 20, b: 20, l: 60, r: 20 },
@@ -56,7 +56,7 @@ const Plot = ({ propsData }) => {
                 xaxis: propsData.xaxisRange ? { range: propsData.xaxisRange } : {},
             },
             {
-                scrollZoom: propsData.appModeRef.current === 'pan',
+                scrollZoom: propsData.dragModeRef.current === 'pan',
                 displayModeBar: false,
                 doubleClick: false,
                 responsive: true,
@@ -181,7 +181,7 @@ const Plot = ({ propsData }) => {
                             Lock Y-axis
                         </button>
 
-                        {/* Additional Button */}
+                        {/* Home Button */}
                         <button
                             onClick={() => Plotly.relayout(plotRef.current, {
                                 'xaxis.autorange': true,

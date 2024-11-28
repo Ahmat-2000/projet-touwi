@@ -25,10 +25,16 @@ const ImportComponent = () => {
     touwi: null,
   });
   const [errors, setErrors] = useState({});
-  const [isTouwiForm, setIsTouwiForm] = useState(false);
+  const [isReopenForm, setIsReopenForm] = useState(false);
 
   const redirect = () => {
-    router.push("/edit");
+    if (fields.video) {
+      console.log("Redirecting to Page Crop");
+      router.push("/crop");
+    } else {
+      console.log("Redirecting to Page Edit");
+      router.push("/edit");
+    }
   };
 
   const handleFileChange = async (e) => {
@@ -37,17 +43,6 @@ const ImportComponent = () => {
       const file = selectedFiles[0];
       const processedFile = await removeUnevenLinesFromCSV(file);
       setFields({ ...fields, [name]: { file: processedFile, name: file.name } });
-    }
-  };
-
-  const handleReOpenTouwi = async (e) => {
-    const { files: selectedFiles } = e.target;
-    if (selectedFiles && selectedFiles.length > 0) {
-      const file = selectedFiles[0];
-      const processedFile = await removeUnevenLinesFromCSV(file);
-      setVariablesContext(processedFile);
-      await saveNewFile(file);
-      setIsTouwiForm(true);
     }
   };
 
@@ -73,7 +68,6 @@ const ImportComponent = () => {
         await saveNewFile(resultFile);
 
         setVariablesContext(fields);
-        console.log("Fichiers envoyés :", fields);
         redirect();
       } catch (error) {
         console.error("Erreur lors de la fusion des fichiers :", error);
@@ -81,7 +75,7 @@ const ImportComponent = () => {
     }
   };
 
-  const handleSubmitTouwi = async (e) => {
+  const handleSubmitReopen = async (e) => {
     e.preventDefault();
     const newErrors = {};
     if (!fields.touwi) newErrors.touwi = "Le fichier Touwi est requis.";
@@ -113,17 +107,17 @@ const ImportComponent = () => {
     } else if (name === "touwi" && touwiInputRef.current) {
       touwiInputRef.current.value = null;
     }
-    
+
   };
 
   return (
-    
+
     <div className="bg-[#EFEFEF] min-h-screen flex flex-col items-center justify-center relative">
       {/* Formulaire centré */}
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
         {/* Logo repositionné pour être en haut à gauche de la boîte */}
         <div className="absolute top-[-55px] left-[-120px]">
-          <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} />
+          <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} priority />
         </div>
 
 
@@ -134,14 +128,14 @@ const ImportComponent = () => {
           <button
             type="button"
             className="bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 ml-4"
-            onClick={() => setIsTouwiForm(!isTouwiForm)}
+            onClick={() => setIsReopenForm(!isReopenForm)}
           >
-            {isTouwiForm ? "Back to Import" : "Reopen"}
+            {isReopenForm ? "Back to Import" : "Reopen"}
           </button>
         </div>
 
-        {isTouwiForm ? (
-          <form onSubmit={handleSubmitTouwi} className="space-y-6">
+        {isReopenForm ? (
+          <form onSubmit={handleSubmitReopen} className="space-y-6">
             {/* Touwi File Input */}
             <div>
               <label className="block text-lg text-gray-700 mb-2">Touwi file:</label>
@@ -278,36 +272,36 @@ const ImportComponent = () => {
               {errors.gyro && <p className="text-red-500">{errors.gyro}</p>}
             </div>
 
-              {/* VIDEO */}
-              <div>
-                <label className="block text-lg text-gray-700 mb-2">Video:</label>
-                <div className="flex items-center">
-                  <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
-                    Select a video
-                    <input
-                      type="file"
-                      name="video"
-                      accept="video/*"
-                      onChange={handleFileChange}
-                      ref={videoInputRef}
-                      className="hidden"
-                    />
-                  </label>
-                  <span className="ml-4 text-gray-500">
-                    {fields.video ? fields.video.name : "No file selected"}
-                  </span>
-                  {fields.video && (
-                    <button
-                      type="button"
-                      className="ml-2 text-red-500 hover:text-red-700"
-                      onClick={() => handleRemoveFile("video")}
-                    >
-                      X
-                    </button>
-                  )}
-                </div>
-                {errors.video && <p className="text-red-500">{errors.video}</p>}
+            {/* VIDEO */}
+            <div>
+              <label className="block text-lg text-gray-700 mb-2">Video:</label>
+              <div className="flex items-center">
+                <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                  Select a video
+                  <input
+                    type="file"
+                    name="video"
+                    accept="video/*"
+                    onChange={handleFileChange}
+                    ref={videoInputRef}
+                    className="hidden"
+                  />
+                </label>
+                <span className="ml-4 text-gray-500">
+                  {fields.video ? fields.video.name : "No file selected"}
+                </span>
+                {fields.video && (
+                  <button
+                    type="button"
+                    className="ml-2 text-red-500 hover:text-red-700"
+                    onClick={() => handleRemoveFile("video")}
+                  >
+                    X
+                  </button>
+                )}
               </div>
+              {errors.video && <p className="text-red-500">{errors.video}</p>}
+            </div>
 
             {/* Submit Button for Import */}
             <div className="flex justify-between items-center">
