@@ -100,9 +100,9 @@ const CropVideo = () => {
             <h1 className="text-2xl font-bold text-[#1B649F] mb-4">Crop Video</h1>
             
             {/* Main Container */}
-            <div className="flex-container">
+            <div className="flex justify-between items-start w-full">
                 {/* Video Controls Section */}
-                <div className="video-container">
+                <div className="bg-white p-4 rounded-xl shadow-md m-[1vw_0.5vw_0_1vw] w-[80vh]">
                     <CropVideoControls
                         propsVideoControls={{
                             video: variablesContext.video,
@@ -118,12 +118,11 @@ const CropVideo = () => {
                 </div>
 
                 {/* Control Panel */}
-                <div className="control-panel">
-                    
+                <div className="w-full h-full p-3 bg-white rounded-xl shadow-md mt-[1vw] mx-[0.5vw_1vw] flex flex-col gap-3">
                     <div className="grid grid-cols-2 gap-4">
                         <button 
                             onClick={() => { setAppMode('video_start'); setPlotlyDragMode(false); }}
-                            className={`control-button ${appMode === 'video_start' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${appMode === 'video_start' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={appMode === 'video_start'}
                         >
                             <i className="fas fa-film"></i>
@@ -132,7 +131,7 @@ const CropVideo = () => {
 
                         <button
                             onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }}
-                            className={`control-button ${dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={dragMode === 'zoom'}
                         >
                             <i className="fas fa-search-plus"></i>
@@ -143,7 +142,7 @@ const CropVideo = () => {
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <button
                             onClick={() => { setAppMode('video_end'); setPlotlyDragMode(false); }}
-                            className={`control-button ${appMode === 'video_end' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${appMode === 'video_end' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={appMode === 'video_end'}
                         >
                             <i className="fas fa-film"></i>
@@ -152,7 +151,7 @@ const CropVideo = () => {
                         
                         <button
                             onClick={() => { setPlotlyDragMode('pan'); setAppMode('None'); }}
-                            className={`control-button ${dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={dragMode === 'pan'}
                         >
                             <i className="fas fa-hand-paper"></i>
@@ -163,7 +162,7 @@ const CropVideo = () => {
                     <div className="grid grid-cols-2 gap-4 mt-4">
                         <button 
                             onClick={() => { setPlotlyDragMode(false); setAppMode('None'); }}
-                            className={`control-button ${appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={appMode === 'None'}
                         >
                             <i className="fas fa-mouse-pointer"></i>
@@ -172,7 +171,7 @@ const CropVideo = () => {
 
                         <button
                             onClick={() => { setAppMode('delete'); setPlotlyDragMode(false); }}
-                            className={`control-button ${appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:bg-blue-500 hover:text-white ${appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-gray-100'}`}
                             data-active={appMode === 'delete'}
                         >
                             <i className="fas fa-trash"></i>

@@ -379,8 +379,8 @@ const App = () => {
     }
 
     return (
-        <div className="app-container">
-            <div className="graph-container">
+        <div className="w-full flex flex-col gap-4">
+            <div className="w-full p-5 mx-2.5 bg-white rounded-xl shadow-md">
                 <Graph
                     propsData={{
                         appMode: appMode,

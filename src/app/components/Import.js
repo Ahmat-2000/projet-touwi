@@ -10,7 +10,6 @@ import Image from "next/image";
 
 import FileUploader from './FileUploader';
 
-
 const ImportComponent = () => {
   const router = useRouter();
   const accelInputRef = useRef(null);
@@ -28,7 +27,10 @@ const ImportComponent = () => {
   const [isReopenForm, setIsReopenForm] = useState(false);
 
   const redirect = () => {
-    if (fields.video) {
+    if (fields.touwi) {
+      console.log("Redirecting to Page Reopen");
+      router.push("/edit");
+    } else if (fields.video) {
       console.log("Redirecting to Page Crop");
       router.push("/crop");
     } else {
@@ -111,15 +113,11 @@ const ImportComponent = () => {
   };
 
   return (
-
-    <div className="bg-[#EFEFEF] min-h-screen flex flex-col items-center justify-center relative">
-      {/* Formulaire centré */}
+    <div className="min-h-screen bg-[#EFEFEF] flex flex-col items-center justify-center">
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
-        {/* Logo repositionné pour être en haut à gauche de la boîte */}
-        <div className="absolute top-[-55px] left-[-120px]">
-          <Image src={"/images/image11.svg"} alt="Logo" width={150} height={50} priority />
+        <div className="absolute -top-14 -left-32">
+          <Image src="/images/image11.svg" alt="Logo" width={150} height={50} priority />
         </div>
-
 
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-[#1B649F]">
@@ -127,7 +125,7 @@ const ImportComponent = () => {
           </h1>
           <button
             type="button"
-            className="bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 ml-4"
+            className="bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200 ml-4"
             onClick={() => setIsReopenForm(!isReopenForm)}
           >
             {isReopenForm ? "Back to Import" : "Reopen"}
@@ -136,11 +134,10 @@ const ImportComponent = () => {
 
         {isReopenForm ? (
           <form onSubmit={handleSubmitReopen} className="space-y-6">
-            {/* Touwi File Input */}
             <div>
               <label className="block text-lg text-gray-700 mb-2">Touwi file:</label>
               <div className="flex items-center">
-                <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600">
+                <label className="cursor-pointer bg-[#297DCB] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200">
                   Select touwi file
                   <input
                     type="file"
@@ -157,14 +154,14 @@ const ImportComponent = () => {
                 {fields.touwi && (
                   <button
                     type="button"
-                    className="ml-2 text-red-500 hover:text-red-700"
+                    className="ml-2 text-red-500 hover:text-red-700 transition-colors duration-200"
                     onClick={() => handleRemoveFile("touwi")}
                   >
                     X
                   </button>
                 )}
               </div>
-              {errors.touwi && <p className="text-red-500">{errors.touwi}</p>}
+              {errors.touwi && <p className="text-red-500 mt-1">{errors.touwi}</p>}
             </div>
 
             {/* VIDEO */}
@@ -202,7 +199,7 @@ const ImportComponent = () => {
             <div className="flex justify-between items-center">
               <button
                 type="submit"
-                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200"
               >
                 Open
               </button>
@@ -307,7 +304,7 @@ const ImportComponent = () => {
             <div className="flex justify-between items-center">
               <button
                 type="submit"
-                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600"
+                className="bg-[#297DCB] text-white font-bold py-2 px-6 rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200"
               >
                 Open
               </button>

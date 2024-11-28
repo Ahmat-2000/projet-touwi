@@ -125,58 +125,25 @@ const Plot = ({ propsData }) => {
     if (!deletePlot) {
 
         return (
-            <div className="Plot-container" style={{
-                height: '25vh',
-                width: '100%',
-                position: 'relative'
-            }}>
-                <div style={{
-                    position: 'absolute',
-                    left: '20px',
-                    right: '0px',
-                    zIndex: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
+            <div className="h-[22vh] w-full relative">
+                <div className="absolute left-5 right-0 z-10 flex items-center justify-between">
                     {/* Title and Lock Y-axis group */}
-                    <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px'
-                    }}>
+                    <div className="flex items-center gap-2.5">
                         {/* Title */}
-                        <div style={{
-                            background: 'rgba(255, 255, 255, 0.95)',
-                            padding: '5px 10px',
-                            borderRadius: '5px',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            border: `2px solid ${propsData.color}`
-                        }}>
+                        <div className={`bg-white/95 px-2.5 py-1.5 rounded-md text-sm font-bold shadow-sm border-2 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}
+                             style={{ borderColor: propsData.color }}>
                             {propsData.title}
                         </div>
 
                         {/* Lock Y-axis Button */}
                         <button
                             onClick={() => setVerticalSync(!verticalSync)}
-                            style={{
-                                background: verticalSync ? propsData.color : 'rgba(255, 255, 255, 0.95)',
-                                padding: '5px 10px',
-                                borderRadius: '5px',
-                                fontSize: '14px',
-                                fontWeight: 'bold',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                border: `2px solid ${propsData.color}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                color: verticalSync ? 'white' : 'black',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
+                            className={`px-2.5 py-1.5 rounded-md text-sm font-bold shadow-sm border-2 flex items-center gap-1.5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5
+                                      ${verticalSync ? 'text-white' : 'bg-white/95 text-black'}`}
+                            style={{ 
+                                backgroundColor: verticalSync ? propsData.color : 'rgba(255, 255, 255, 0.95)',
+                                borderColor: propsData.color 
+                            }}>
                             <i className={`fas fa-lock${verticalSync ? '' : '-open'}`}></i>
                             Lock Y-axis
                         </button>
@@ -187,53 +154,22 @@ const Plot = ({ propsData }) => {
                                 'xaxis.autorange': true,
                                 'yaxis.autorange': true
                             })}
-                            style={{
-                                background: 'rgba(255, 255, 255, 0.95)',
-                                padding: '5px 10px',
-                                borderRadius: '5px',
-                                fontSize: '14px',
-                                fontWeight: 'bold',
-                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                                border: `2px solid ${propsData.color}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                color: 'black',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                            }}
-                        >
+                            className={`bg-white/95 px-2.5 py-1.5 rounded-md text-sm font-bold shadow-sm border-2 flex items-center gap-1.5 text-black cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5`}
+                            style={{ borderColor: propsData.color }}>
                             <i className="fas fa-home"></i>
-                            
                         </button>
                     </div>
 
                     {/* Delete Button */}
                     <button
                         onClick={() => setDeletePlot(true)}
-                        style={{
-                            backgroundColor: '#ff4444',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            width: '32px',
-                            height: '32px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '18px',
-                            transition: 'background-color 0.2s',
-                            fontWeight: 'bold'
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = '#cc0000'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = '#ff4444'}
+                        className="bg-[#ff4444] hover:bg-[#cc0000] text-white rounded-lg w-8 h-8 flex items-center justify-center text-lg font-bold transition-colors duration-200 cursor-pointer border-0"
                     >
-                        ✖
+                        <i className="fas fa-trash-alt"></i>
                     </button>
                 </div>
 
-                <div ref={plotRef} style={{ width: '100%', height: '100%' }} />
+                <div ref={plotRef} className="w-full h-full" />
             </div>
         );
     }

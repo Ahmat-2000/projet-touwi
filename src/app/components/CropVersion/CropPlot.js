@@ -61,36 +61,13 @@ const CropPlot = ({ propsData }) => {
 
 
     return (
-        <div className="Plot-container" style={{
-            height: '25vh',
-            width: '100%',
-            position: 'relative'
-        }}>
-            <div style={{
-                position: 'absolute',
-                left: '20px',
-                right: '0px',
-                zIndex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between'
-            }}>
+        <div className="h-[25vh] w-full relative">
+            <div className="absolute left-5 right-0 z-10 flex items-center justify-between">
                 {/* Title and Lock Y-axis group */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                }}>
+                <div className="flex items-center gap-2.5">
                     {/* Title */}
-                    <div style={{
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        padding: '5px 10px',
-                        borderRadius: '5px',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                        border: `2px solid ${propsData.color}`
-                    }}>
+                    <div className="bg-white/95 px-2.5 py-1.5 rounded-md text-sm font-bold shadow-sm border-2 hover:translate-y-[-2px] transition-all hover:shadow-md"
+                         style={{ borderColor: propsData.color }}>
                         {propsData.title}
                     </div>
 
@@ -102,29 +79,14 @@ const CropPlot = ({ propsData }) => {
                             'xaxis.autorange': true,
                             'yaxis.autorange': true
                         }) }}
-                        style={{
-                            background: 'rgba(255, 255, 255, 0.95)',
-                            padding: '5px 10px',
-                            borderRadius: '5px',
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            border: `2px solid ${propsData.color}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            color: 'black',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
+                        className="bg-white/95 px-2.5 py-1.5 rounded-md text-sm font-bold shadow-sm border-2 flex items-center gap-1.5 text-black cursor-pointer transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md"
+                        style={{ borderColor: propsData.color }}>
                         <i className="fas fa-home"></i>
-
                     </button>
                 </div>
             </div>
 
-            <div ref={plotRef} style={{ width: '100%', height: '100%' }} />
+            <div ref={plotRef} className="w-full h-full" />
         </div>
     );
 }

@@ -7,6 +7,7 @@ import Modal from 'react-modal';
 import Plot from './Plot';
 import VideoControls from './VideoControls';
 import ControlPanel from './ControlPanel';
+import Image from 'next/image';
 
 import { getRowWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
 
@@ -296,9 +297,12 @@ const Graph = ({ propsData }) => {
 
     return (
         <div>
-            <div className="video-control-container">
+            <div className="w-full flex mb-4">
                 {propsData.hasVideo && (
-                    <div className="video-container">
+                    /*
+                        <div className="bg-white p-4 rounded-xl shadow-md m-4 w-[80vh]">
+                        */
+                    <div>
                         <VideoControls propsVideoControls={{
                             video: propsData.video,
                             plotList: propsData.plotList,
@@ -311,7 +315,32 @@ const Graph = ({ propsData }) => {
                         }} />
                     </div>
                 )}
-                <div className="control-panel">
+                <div className="w-full h-full p-3 bg-white rounded-xl shadow-md flex flex-col gap-3 box-border mt-4 mx-2">
+                    <div className="flex justify-between items-center mb-2">
+                        <h2 className="text-xl font-semibold text-gray-800">Chronos Signal Labeling WebApp</h2>
+                        <div>
+                            <Image src="/images/temp_logo.png" alt="Chronos Logo" width={100} height={100} />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="relative group">
+                                <button 
+                                    onClick={handleOpenModal}
+                                    className="bg-[#297DCB] text-white px-5 py-2.5 rounded-lg font-semibold cursor-pointer transition-all duration-200 hover:bg-[#1e5b9c] hover:shadow-lg flex items-center gap-2 group-hover:translate-y-[-2px]"
+                                >
+                                    <i className="fas fa-plus-circle"></i>
+                                    <span>Add Signal</span>
+                                </button>
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                                    Create new plot visualization
+                                </div>
+                            </div>
+                            <div className="h-8 w-[1px] bg-gray-200"></div>
+                            <span className="text-sm text-gray-500">
+                                {plots.length} signal{plots.length !== 1 ? 's' : ''} displayed
+                            </span>
+                        </div>
+                    </div>
+                    
                     <ControlPanel
                         propsControlPanel={{
                             appMode: propsData.appMode,
@@ -327,93 +356,66 @@ const Graph = ({ propsData }) => {
                             labelsList: labelsList,
                         }}
                     />
-                    <div className="addPlot-container">
-                        <button onClick={handleOpenModal}>
-                            Create Plot
-                        </button>
-                    </div>
                 </div>
             </div>
-            
 
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={handleCloseModal}
                 ariaHideApp={false}
                 contentLabel="Choose Plot Type"
-                style={{
-                    overlay: {
-                        zIndex: 1,
-                        backgroundColor: 'rgba(0, 0, 0, 0.75)'
-                    },
-                    content: {
-                        top: '50%',
-                        left: '50%',
-                        right: 'auto',
-                        bottom: 'auto',
-                        marginRight: '-50%',
-                        transform: 'translate(-50%, -50%)',
-                        padding: '20px',
-                        borderRadius: '8px',
-                        width: '300px',
-                        textAlign: 'center',
-                    }
-                }}
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-5 rounded-lg w-[300px] text-center"
+                overlayClassName="fixed inset-0 bg-black/75 z-10"
             >
-                <h2>Choose Signal Type</h2>
-                <label>
-                    Category:
+                <h2 className="text-xl font-bold mb-4">Choose Signal Type</h2>
+                <label className="block mb-4">
+                    Sensor :
                     <select
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
-                        style={{ marginBottom: '10px', padding: '5px', width: '100%' }}
+                        className="mt-2 mb-2.5 p-1.5 w-full border rounded"
                     >
                         <option value="accel">Accelerometer</option>
                         <option value="gyro">Gyroscope</option>
                     </select>
                 </label>
-                <br />
-                <label>
-                    Axis:
+                <label className="block mb-4">
+                    Axis :
                     <select
                         value={selectedAxis}
                         onChange={(e) => setSelectedAxis(e.target.value)}
-                        style={{ marginBottom: '20px', padding: '5px', width: '100%' }}
+                        className="mt-2 mb-5 p-1.5 w-full border rounded"
                     >
                         <option value="x">X</option>
                         <option value="y">Y</option>
                         <option value="z">Z</option>
                     </select>
                 </label>
-                <br />
-                <button onClick={handleAddPlot} style={{ padding: '10px', backgroundColor: 'green', color: 'white', borderRadius: '5px' }}>
-                    Add Plot
-                </button>
-                <button onClick={handleCloseModal} style={{ marginLeft: '10px', padding: '10px', backgroundColor: 'red', color: 'white', borderRadius: '5px' }}>
-                    Cancel
-                </button>
+                <div className="flex gap-2.5 justify-center">
+                    <button 
+                        onClick={handleAddPlot}
+                        className="px-2.5 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                    >
+                        Add Plot
+                    </button>
+                    <button 
+                        onClick={handleCloseModal}
+                        className="px-2.5 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                </div>
             </Modal>
 
-            <div className="plot-container">
+            <div className="flex flex-col items-center w-full">
                 {plots.map((plot) => (
-                    <div key={plot.key} className='Plot_fromMap'>
+                    <div key={plot.key} className="mt-1 flex flex-col w-full">
                         {plot}
                     </div>
                 ))}
             </div>
         </div>
     );
-};
-
-const styles = {
-    plotContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: 'auto',
-        width: '100%',
-        overflow: 'hidden'
-    }
 };
 
 export default Graph;

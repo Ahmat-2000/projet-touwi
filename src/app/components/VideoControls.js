@@ -1,7 +1,7 @@
 // VideoControls.js
 
 import React, { useEffect, useRef, useState } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
+import CustomVideoPlayer from './CropVersion/CustomVideoPlayer';
 
 const VideoControls = ({ propsVideoControls }) => {
 
@@ -10,6 +10,7 @@ const VideoControls = ({ propsVideoControls }) => {
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);
+    const [isPlaying, setIsPlaying] = useState(false);
 
     useEffect(() => {
         if (propsVideoControls.video && propsVideoControls.video.file) {
@@ -25,10 +26,10 @@ const VideoControls = ({ propsVideoControls }) => {
         try {
             const currentSpeed = videoRef.current.playbackRate;
             let newSpeed = increment ? currentSpeed * 2 : currentSpeed / 2;
-             
+
             // Limit the speed between 0.1 and 16
             newSpeed = Math.min(16, Math.max(0.1, newSpeed));
-            
+
             videoRef.current.playbackRate = newSpeed;
             forceUpdate({});
         } catch (error) {
@@ -43,9 +44,9 @@ const VideoControls = ({ propsVideoControls }) => {
 
     const formatWindowSize = (size) => {
         if (size >= 1000) {
-            return `${(size/1000).toFixed(1)}k`;
+            return `${(size / 1000).toFixed(1)}k`;
         }
-        return size;
+        return size.toString();
     };
 
     const presetSizes = [
@@ -68,14 +69,14 @@ const VideoControls = ({ propsVideoControls }) => {
             }
 
             const signalLength = propsVideoControls.plotList.current[0].current.data[0].x.length;
-            
+
             const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
 
             const newLayout = {
                 'xaxis.range[0]': currentSignalIndex - windowSize,
                 'xaxis.range[1]': currentSignalIndex + windowSize,
                 'yaxis.range[0]': propsVideoControls.plotList.current[0].current.layout.yaxis.range[0],
-                'yaxis.range[1]': propsVideoControls.plotList.current[0].current.layout.yaxis.range[1]  
+                'yaxis.range[1]': propsVideoControls.plotList.current[0].current.layout.yaxis.range[1]
             };
             propsVideoControls.syncZoom(newLayout, propsVideoControls.plotList.current, null);
         }
@@ -92,14 +93,14 @@ const VideoControls = ({ propsVideoControls }) => {
 
     useEffect(() => {
         const video = videoRef.current;
-        
+
         const handleKeydown = (event) => {
             if (!videoRef) return;
 
             // Base jump time in seconds
             const baseJumpTime = 0.5;
             const scaledJumpTime = baseJumpTime * video.playbackRate;
-            
+
             switch (event.code) {
                 case 'Space':
                     if (!propsVideoControls.syncEnabled) {
@@ -144,89 +145,128 @@ const VideoControls = ({ propsVideoControls }) => {
     }, [propsVideoControls.syncEnabled, windowSize]);
 
     return (
-        <div>
-            <video ref={videoRef} id="syncVideo" width="600" height="400" controls loop>
-                {videoUrl && <source src={videoUrl} type="video/webm" />}
-                Your browser does not support the video tag.
-            </video>
-            <div className="controls-group">
-                <div className="window-controls">
-                    <div className="window-controls-content">
-                        <span className="window-label">Window:</span>
-                        <div 
-                            className="slider-container"
-                            onMouseEnter={() => setIsHoveringSlider(true)}
-                            onMouseLeave={() => setIsHoveringSlider(false)}
-                        >
-                            <input
-                                type="range"
-                                min="50"
-                                max="5000"
-                                value={windowSize}
-                                onChange={(e) => setWindowSize(parseInt(e.target.value))}
-                                className="window-slider"
-                            />
-                            <div
-                                className="slider-tooltip"
-                                style={{
-                                    left: `${((windowSize - 50) / (5000 - 50)) * 100}%`
-                                }}
-                            >
-                                {formatWindowSize(windowSize)}
+        <div className={`flex gap-2 container p-4 rounded-xl shadow-md w-[60vh] mx-auto max-w-[98%] ${propsVideoControls.syncEnabled ? 'bg-green-500/50' : 'bg-red-600/50'}`}>
+            
+            {/* Left Section - Video Player and Controls */}
+            <div className={`flex-1 p-4 rounded-xl shadow-md ${propsVideoControls.syncEnabled ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                {/* Video Player */}
+                <div className="w-full mb-4">
+                    <CustomVideoPlayer
+                        videoRef={videoRef}
+                        videoUrl={videoUrl}
+                        cropVideoStart={propsVideoControls.cropVideoStart}
+                        cropVideoEnd={propsVideoControls.cropVideoEnd}
+                        isPlaying={isPlaying}
+                        setIsPlaying={setIsPlaying}
+                    />
+                </div>
+
+                {/* Controls Container */}
+                <div className="w-full bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        {/* X-Scale Slider */}
+                        <div className="w-full bg-gray-100 rounded-lg p-4">
+                            <div className="flex flex-col md:flex-row items-start md:items-center gap-4 min-w-0">
+                                <span className="font-bold text-gray-700 whitespace-nowrap shrink-0">X-Scale:</span>
+
+                                {/* Slider Container */}
+                                <div className="flex-grow w-full md:w-auto min-w-0">
+                                    <div className="relative h-8 flex items-center">
+                                        <div className="relative w-full flex items-center"
+                                            onMouseEnter={() => setIsHoveringSlider(true)}
+                                            onMouseLeave={() => setIsHoveringSlider(false)}
+                                        >
+                                            <input
+                                                type="range"
+                                                min="10"
+                                                max="5000"
+                                                value={windowSize}
+                                                onChange={(e) => setWindowSize(parseInt(e.target.value))}
+                                                className="w-full h-1 bg-blue-500 rounded-full appearance-none cursor-pointer 
+                                                 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 
+                                                 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full 
+                                                 [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:border-2 
+                                                 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md 
+                                                 [&::-webkit-slider-thumb]:transition-transform 
+                                                 hover:[&::-webkit-slider-thumb]:scale-110"
+                                            />
+                                            <div
+                                                className={`absolute bottom-5 left-1/2 -translate-x-1/2 -translate-y-full bg-blue-300 text-white rounded-md px-2 py-1 whitespace-nowrap ${isHoveringSlider ? 'opacity-100' : 'opacity-0'}`}
+                                                style={{
+                                                    left: `${((windowSize - 10) / (5000 - 10)) * 100}%`
+                                                }}
+                                            >
+                                                {formatWindowSize(windowSize)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Preset Buttons */}
+                                <div className="flex flex-wrap gap-1.5 shrink-0">
+                                    {presetSizes.map((preset) => (
+                                        <button
+                                            key={preset.label}
+                                            onClick={() => setWindowSize(preset.value)}
+                                            className={`px-3 py-1.5 text-sm rounded-md transition-all
+                                        ${windowSize === preset.value
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+                                        >
+                                            {preset.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Speed Control */}
+                                <div className="inline-flex items-center bg-[#297DCB] rounded-lg overflow-hidden h-8 shrink-0">
+                                    <button
+                                        onClick={() => adjustSpeed(false)}
+                                        className="px-3 h-full text-white hover:bg-black/10 transition-colors"
+                                        aria-label="Decrease speed"
+                                    >
+                                        <span className="text-lg">-</span>
+                                    </button>
+                                    <span
+                                        className="px-3 h-full flex items-center text-white border-l border-r 
+                                         border-white/30 cursor-pointer hover:bg-black/10 transition-colors 
+                                         min-w-[70px] justify-center font-medium"
+                                        onClick={resetSpeed}
+                                    >
+                                        {(videoRef.current && videoRef.current.playbackRate)
+                                            ? videoRef.current.playbackRate.toFixed(2)
+                                            : '1.00'}x
+                                    </span>
+                                    <button
+                                        onClick={() => adjustSpeed(true)}
+                                        className="px-3 h-full text-white hover:bg-black/10 transition-colors"
+                                        aria-label="Increase speed"
+                                    >
+                                        <span className="text-lg">+</span>
+                                    </button>
+                                </div>
+
+
                             </div>
                         </div>
-                        <div className="preset-container">
-                            {presetSizes.map((preset) => (
-                                <button
-                                    key={preset.label}
-                                    onClick={() => setWindowSize(preset.value)}
-                                    className="preset-button"
-                                    style={{
-                                        backgroundColor: windowSize === preset.value ? '#4CAF50' : '#e0e0e0',
-                                        color: windowSize === preset.value ? 'white' : '#333',
-                                    }}
-                                >
-                                    {preset.label}
-                                </button>
-                            ))}
-                        </div>
+                        
                     </div>
-                </div>
-                <div className="video-sync-controls">
-                    <div className="video-controls">
-                        <button 
-                            onClick={() => adjustSpeed(false)}
-                            className="video-button"
-                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                        >
-                            -
-                        </button>
-                        <span 
-                            className="speed-display"
-                            onClick={resetSpeed}
-                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                        >
-                            {(videoRef.current && videoRef.current.playbackRate) ? videoRef.current.playbackRate.toFixed(2) : '1.00'}x
-                        </span>
-                        <button 
-                            onClick={() => adjustSpeed(true)}
-                            className="video-button"
-                            onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                        >
-                            +
-                        </button>
-                    </div>
-                    <button 
-                        onClick={toggleSync}
-                        className={`sync-button ${propsVideoControls.syncEnabled ? 'bg-[#4CAF50]' : 'bg-[#f44336]'}`}
-                    >
-                        {propsVideoControls.syncEnabled ? 'Disable Sync' : 'Enable Sync'}
-                    </button>
                 </div>
             </div>
+
+            {/* Right Section - Sync Button */}
+            <div className="flex-none">
+                <button
+                    onClick={toggleSync}
+                    className={`h-full w-8 rounded-lg font-medium text-white transition-all 
+                        hover:opacity-90 flex flex-col items-center justify-center gap-2
+                        ${propsVideoControls.syncEnabled ? 'bg-green-500' : 'bg-red-500'}`}
+                >
+                    <i className={`fas fa-${propsVideoControls.syncEnabled ? 'link' : 'unlink'} text-2xl`} />
+                    <span className="text-sm"></span>
+                </button>
+            </div>
+
         </div>
     );
 };
