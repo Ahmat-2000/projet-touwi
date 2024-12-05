@@ -1,5 +1,10 @@
-import CropVideo from '../components/CropVersion/CropVideo';
+"use client";
 
+import dynamic from 'next/dynamic';
+
+const CropVideo = dynamic(() => import('../components/CropVersion/CropVideo'), {
+  ssr: false
+});
 
 export default function Home() {
     return (

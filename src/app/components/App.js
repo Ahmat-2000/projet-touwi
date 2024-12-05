@@ -15,6 +15,15 @@ const App = () => {
     const { variablesContext } = useVariablesContext();
     console.log("All", variablesContext);
 
+    let cropPoints = [];
+    const [hasCrop, setHasCrop] = useState(false);
+    if (variablesContext.crop){
+        cropPoints = [ variablesContext.crop.start, variablesContext.crop.end ]
+        setHasCrop(true);
+        console.log("We have some crop data", variablesContext.crop);
+
+    }
+
     // State hooks
     const [appMode, setAppMode] = useState('None');         // App mode value/setter
     const [dragMode, setDragMode] = useState(false);        // Drag mode value/setter
