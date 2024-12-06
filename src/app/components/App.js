@@ -68,6 +68,10 @@ const App = () => {
                     }
                 }
             }
+            else {
+                setHasVideo(false);
+                setPreRender(true);
+            }
             
         };
 
@@ -453,8 +457,8 @@ const App = () => {
                 />
                 ) : (
                     <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
-                        <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
-                        <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
+                        
+                        <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
 
                             {/*
                             <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
@@ -463,7 +467,8 @@ const App = () => {
                                 <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>
                                 <div className='h-8 w-8 bg-black rounded-full animate-bounce'></div>
                             </div>
-                            <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
+                            <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
+                        <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
                             */}
 
                             
