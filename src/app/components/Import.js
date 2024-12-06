@@ -116,7 +116,7 @@ const ImportComponent = () => {
     <div className="min-h-screen bg-[#EFEFEF] flex flex-col items-center justify-center">
       <div className="relative bg-[#D9D9D9] p-8 shadow-lg rounded-lg max-w-lg w-full mt-4">
         <div className="absolute -top-14 -left-32">
-          <Image src="/images/image11.svg" alt="Logo" width={150} height={50} priority />
+          <Image src="/images/image11.svg" width={150} height={45} alt="Logo" priority />
         </div>
 
         <div className="flex items-center justify-between mb-6">

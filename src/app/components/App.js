@@ -2,12 +2,15 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
 
-import Graph from './Graph';
 import { useVariablesContext } from '@/utils/VariablesContext';
 import { periodUpdate } from '@/team-offline/outils';
 import { useRouter } from "next/navigation";
+
+import Graph from './Graph';
+import Plotly from 'plotly.js-basic-dist-min';
+import LifeLine from "react-loading-indicators/LifeLine";
+import { getVideoTimers } from '@/team-offline/outils';
 
 const App = () => {
     const router = useRouter();
@@ -15,14 +18,6 @@ const App = () => {
     const { variablesContext } = useVariablesContext();
     console.log("All", variablesContext);
 
-    let cropPoints = [];
-    const [hasCrop, setHasCrop] = useState(false);
-    if (variablesContext.crop){
-        cropPoints = [ variablesContext.crop.start, variablesContext.crop.end ]
-        setHasCrop(true);
-        console.log("We have some crop data", variablesContext.crop);
-
-    }
 
     // State hooks
     const [appMode, setAppMode] = useState('None');         // App mode value/setter
@@ -30,7 +25,10 @@ const App = () => {
     const [shapes, setShapes] = useState([]);               //Useless (I think)
     const [annotations, setAnnotations] = useState([]);     //Useless (I think)
     const [timestamps, setTimestamps] = useState([]);       //list of timestamps same format as .csv used to convert back points to timestamps
-    
+    const [preRender, setPreRender] = useState(false);      //If false, do not render the graph
+    const [hasVideo, setHasVideo] = useState(variablesContext.video ? true : false);
+    const [cropPoints, setCropPoints] = useState([]);
+
     //If video is given :
     const [syncEnabled, setSyncEnabled] = useState(true);   //Link/Unlink video playing to signals
     const videoRef = useRef(null);                          //UseRef for video
@@ -47,20 +45,50 @@ const App = () => {
         }
     }, [timestamps]);
 
+
+
+    useEffect(() => {                                       //Look for video crop Timers if there is a video
+        const fetchTimers = async () => {                   //If found -> set cropPoints
+            if (hasVideo) {                                 //Else -> do not display video
+                if (variablesContext.crop) {
+                    setCropPoints([variablesContext.crop.start, variablesContext.crop.end]);
+                    setPreRender(true);
+                }
+                else {
+                    const timers = await fetchVideoTimers();
+                    if (timers) {
+                        setCropPoints([timers.videoTimers.start, timers.videoTimers.end]);
+                        setPreRender(true);
+
+                    } else {
+                        setHasVideo(false);
+                        alert("No crop timers found for this video, video will be removed");
+                        setPreRender(true);
+
+                    }
+                }
+            }
+            
+        };
+
+        fetchTimers();
+    }, [hasVideo, variablesContext]);
+
+
     // Temporary fix for routing
     useEffect(() => {
         if (variablesContext === null) {
             router.push("/import");
-            return (
-                <div>
-                    <h1 style={{ color: 'red' }}>ERROR</h1>
-                    <p>Please refresh from localhost:3000</p>
-                    <p>Sorry for the inconvenience, proper routing will be implemented soon.</p>
-                </div>
-            );
+            return;
         }
     }, [variablesContext, router]);
     //End of temporary fix for routing
+
+    // Add null check before accessing variablesContext
+    if (variablesContext === null) {
+        return null; // or return a loading state
+    }
+
 
 
     // Getting .touwi file name depending of new project or reopening project
@@ -75,7 +103,6 @@ const App = () => {
         // Reopening Project at @fileName
     }
 
-    const hasVideo = variablesContext.video ? true : false;
 
 
     function resetZoom() {
@@ -387,14 +414,23 @@ const App = () => {
         }
     }
 
+    
+    async function fetchVideoTimers() {
+        const tmp = await getVideoTimers(fileName);
+        return tmp;
+    }
+    
+
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="w-full p-5 mx-2.5 bg-white rounded-xl shadow-md">
-                <Graph
-                    propsData={{
+                {preRender ? (
+                    <Graph
+                        propsData={{
                         appMode: appMode,
                         deleteRegion: deleteRegion,
                         dragMode: dragMode,
+                        cropPoints: cropPoints,
                         hasVideo: hasVideo,
                         highlightFlag: highlightFlag,
                         isReopen: isReopen,
@@ -415,7 +451,27 @@ const App = () => {
                         voidPlots: voidPlots,
                     }}
                 />
+                ) : (
+                    <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
+                        <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
+                        <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
+
+                            {/*
+                            <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
+                                <span className='sr-only'>Loading...</span>
+                                <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                                <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                                <div className='h-8 w-8 bg-black rounded-full animate-bounce'></div>
+                            </div>
+                            <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
+                            */}
+
+                            
+                            
+                    </div>
+                )}
             </div>
+
         </div>
     );
 };

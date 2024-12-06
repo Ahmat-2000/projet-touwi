@@ -11,6 +11,8 @@ const CropVideoControls = ({ propsVideoControls }) => {
     const timeUpdateHandlerRef = useRef(null);      //TEMPORARY WILL BE REMOVED FEATURE WIP
     const [, forceUpdate] = useState({});          //Does something
 
+    const [isPlaying, setIsPlaying] = useState(false); //Is video playing
+
     useEffect(() => {                               //Link video URL from file
         const url = URL.createObjectURL(propsVideoControls.video.file);
         setVideoUrl(url);
@@ -120,8 +122,9 @@ const CropVideoControls = ({ propsVideoControls }) => {
             <CustomVideoPlayer
                 videoRef={videoRef}
                 videoUrl={videoUrl}
-                cropVideoStart={propsVideoControls.cropVideoStart}
-                cropVideoEnd={propsVideoControls.cropVideoEnd}
+                isPlaying={isPlaying}
+                setIsPlaying={setIsPlaying}
+                cropPoints={[]}
             />
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">

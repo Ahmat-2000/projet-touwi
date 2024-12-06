@@ -1,4 +1,4 @@
-import { receiveFile,saveModificationFile, saveNewFile} from "@/team-offline/requests";
+import { receiveFile, saveModificationFile, saveNewFile, receiveVideoTimers } from "@/team-offline/requests";
 
 export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 
@@ -128,4 +128,10 @@ export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,file
 
   await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
 
+}
+
+export const getVideoTimers = async (fileName) => {
+  const videoTimers = await receiveVideoTimers(fileName);
+  const jsonVideoTimers = JSON.parse(videoTimers);
+  return jsonVideoTimers[fileName];
 }

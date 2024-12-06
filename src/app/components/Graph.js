@@ -304,14 +304,15 @@ const Graph = ({ propsData }) => {
                         */
                     <div>
                         <VideoControls propsVideoControls={{
-                            video: propsData.video,
+                            cropPoints: propsData.cropPoints,
+                            deleteRegion: propsData.deleteRegion,
+                            highlightFlag: propsData.highlightFlag,
                             plotList: propsData.plotList,
+                            setSyncEnabled: propsData.setSyncEnabled,
+                            syncEnabled: propsData.syncEnabled,
                             syncZoom: propsData.syncZoom,
                             videoRef: propsData.videoRef,
-                            highlightFlag: propsData.highlightFlag,
-                            deleteRegion: propsData.deleteRegion,
-                            syncEnabled: propsData.syncEnabled,
-                            setSyncEnabled: propsData.setSyncEnabled
+                            video: propsData.video
                         }} />
                     </div>
                 )}
@@ -319,7 +320,7 @@ const Graph = ({ propsData }) => {
                     <div className="flex justify-between items-center mb-2">
                         <h2 className="text-xl font-semibold text-gray-800">Chronos Signal Labeling WebApp</h2>
                         <div>
-                            <Image src="/images/temp_logo.png" alt="Chronos Logo" width={100} height={100} />
+                            <Image src="/images/temp_logo.png" width={100} height={70} alt="Chronos Logo" />
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="relative group">

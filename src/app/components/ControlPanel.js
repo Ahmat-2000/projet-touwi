@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import Plotly from 'plotly.js-basic-dist-min';
 const ControlPanel = ({ propsControlPanel }) => {
 
     const [customButtons, setCustomButtons] = useState([]);                     //List of created buttons value/setter

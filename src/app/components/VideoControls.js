@@ -20,6 +20,7 @@ const VideoControls = ({ propsVideoControls }) => {
                 URL.revokeObjectURL(url); // Clean up the URL when the component unmounts
             };
         }
+        
     }, [propsVideoControls.video]);
 
     const adjustSpeed = (increment) => {
@@ -107,7 +108,8 @@ const VideoControls = ({ propsVideoControls }) => {
                         propsVideoControls.setSyncEnabled(true);
                     }
                     event.preventDefault();
-                    video.paused ? video.play() : video.pause();
+                    setIsPlaying(!isPlaying);
+                    isPlaying ? video.pause() : video.play();
                     break;
                 case 'ArrowLeft':
                     event.preventDefault();
@@ -124,6 +126,7 @@ const VideoControls = ({ propsVideoControls }) => {
                         video.removeEventListener('timeupdate', timeUpdateListener);
                         propsVideoControls.setSyncEnabled(false);
                     }
+                    isPlaying ? video.pause() : video.play();
                     break;
                 default:
                     break;
@@ -142,7 +145,7 @@ const VideoControls = ({ propsVideoControls }) => {
                 video.removeEventListener('timeupdate', timeUpdateListener);
             }
         };
-    }, [propsVideoControls.syncEnabled, windowSize]);
+    }, [propsVideoControls.syncEnabled, windowSize, isPlaying]);
 
     return (
         <div className={`flex gap-2 container p-4 rounded-xl shadow-md w-[60vh] mx-auto max-w-[98%] ${propsVideoControls.syncEnabled ? 'bg-green-500/50' : 'bg-red-600/50'}`}>
@@ -154,10 +157,9 @@ const VideoControls = ({ propsVideoControls }) => {
                     <CustomVideoPlayer
                         videoRef={videoRef}
                         videoUrl={videoUrl}
-                        cropVideoStart={propsVideoControls.cropVideoStart}
-                        cropVideoEnd={propsVideoControls.cropVideoEnd}
                         isPlaying={isPlaying}
                         setIsPlaying={setIsPlaying}
+                        cropPoints={propsVideoControls.cropPoints}
                     />
                 </div>
 
