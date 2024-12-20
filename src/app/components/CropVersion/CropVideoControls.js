@@ -13,6 +13,7 @@ const CropVideoControls = ({ propsVideoControls }) => {
 
     const [isPlaying, setIsPlaying] = useState(false); //Is video playing
 
+
     useEffect(() => {                               //Link video URL from file
         const url = URL.createObjectURL(propsVideoControls.video.file);
         setVideoUrl(url);
@@ -41,31 +42,6 @@ const CropVideoControls = ({ propsVideoControls }) => {
         forceUpdate({});
     };
 
-    function cropVideo(start, end) {
-        const video = videoRef.current;
-
-        if (timeUpdateHandlerRef.current) {
-            video.removeEventListener('timeupdate', timeUpdateHandlerRef.current);
-        }
-
-        const handleTimeUpdate = () => {
-            if (video.currentTime <= start) {
-                video.currentTime = start;
-            }
-            else if (video.currentTime >= end) {
-                video.currentTime = start;
-                video.pause();
-            }
-        };
-
-        timeUpdateHandlerRef.current = handleTimeUpdate;
-
-        video.addEventListener('timeupdate', handleTimeUpdate);
-
-        return () => {
-            video.removeEventListener('timeupdate', handleTimeUpdate);
-        };
-    };
 
 
     useEffect(() => {
@@ -94,15 +70,17 @@ const CropVideoControls = ({ propsVideoControls }) => {
         const handleTimebarClick = () => {
 
             const currentAppMode = propsVideoControls.appModeRef.current;
+            const currentTime = video.currentTime;
 
-            const isStartVideo = currentAppMode === 'video_start';
-            const isEndVideo = currentAppMode === 'video_end';
-
-            if (isStartVideo) {
-                propsVideoControls.setCropVideoStart(video.currentTime);
+            if (currentAppMode === 'video_start') {
+                const newPoints = {start: currentTime, end: propsVideoControls.videoCropPointsRef.current?.end || null};
+                propsVideoControls.setVideoCropPoints(newPoints);
+                propsVideoControls.videoCropPointsRef.current = newPoints;
             }
-            else if (isEndVideo) {
-                propsVideoControls.setCropVideoEnd(video.currentTime);
+            else if (currentAppMode === 'video_end') {
+                const newPoints = {start: propsVideoControls.videoCropPointsRef.current?.start || null, end: currentTime};
+                propsVideoControls.setVideoCropPoints(newPoints);
+                propsVideoControls.videoCropPointsRef.current = newPoints;
             }
 
         };
@@ -119,60 +97,34 @@ const CropVideoControls = ({ propsVideoControls }) => {
 
     return (
         <div className="flex flex-col gap-4">
-            <CustomVideoPlayer
-                videoRef={videoRef}
-                videoUrl={videoUrl}
-                isPlaying={isPlaying}
-                setIsPlaying={setIsPlaying}
-                cropPoints={[]}
-            />
-            <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                        <div className="inline-flex items-center bg-[#297DCB] rounded-lg overflow-hidden h-8">
+            <div className="relative">
+                <CustomVideoPlayer
+                    videoRef={videoRef}
+                    videoUrl={videoUrl}
+                    isPlaying={isPlaying}
+                    setIsPlaying={setIsPlaying}
+                    cropPoints={propsVideoControls.videoCropPoints}
+                />
+                <div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-white p-1 rounded-full shadow-md">
+                        <div className="inline-flex items-center bg-[#297DCB] rounded-full overflow-hidden h-8">
                             <button
                                 onClick={() => adjustSpeed(false)}
-                                className="px-4 h-full text-white hover:bg-black/10 transition-colors"
-                                onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                                className="w-8 h-full text-white hover:bg-black/10 transition-colors flex items-center justify-center text-lg font-medium"
                             >
                                 -
                             </button>
-                            <span
-                                className="px-4 h-full flex items-center text-white border-l border-r border-white/30 cursor-pointer hover:bg-black/10 transition-colors"
+                            <div
+                                className="px-3 h-full flex items-center text-white border-l border-r border-white/30 cursor-pointer hover:bg-black/10 transition-colors min-w-[60px] justify-center text-sm font-medium"
                                 onClick={resetSpeed}
                             >
                                 {(videoRef.current && videoRef.current.playbackRate) ? videoRef.current.playbackRate.toFixed(2) : '1.00'}x
-                            </span>
+                            </div>
                             <button
                                 onClick={() => adjustSpeed(true)}
-                                className="px-4 h-full text-white hover:bg-black/10 transition-colors"
+                                className="w-8 h-full text-white hover:bg-black/10 transition-colors flex items-center justify-center text-lg font-medium"
                             >
                                 +
-                            </button>
-                        </div>
-
-                        <div className="flex-1 bg-gray-50 rounded-lg border border-gray-200 p-3 flex items-center justify-between">
-                            <div className="flex flex-col gap-1">
-                                <p className="flex items-center gap-2">
-                                    <span className="text-gray-600 font-medium">Crop Video Start:</span>
-                                    <span className="text-gray-900">{propsVideoControls.cropVideoStart?.toFixed(2) || '-'}</span>
-                                </p>
-                                <p className="flex items-center gap-2">
-                                    <span className="text-gray-600 font-medium">Crop Video End:</span>
-                                    <span className="text-gray-900">{propsVideoControls.cropVideoEnd?.toFixed(2) || '-'}</span>
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => cropVideo(
-                                    propsVideoControls.cropVideoStart,
-                                    propsVideoControls.cropVideoEnd
-                                )}
-                                disabled={!propsVideoControls.cropVideoStart || !propsVideoControls.cropVideoEnd}
-                                className="px-4 py-2 bg-[#297DCB] text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#1e5c9c] transition-colors"
-                            >
-                                Crop Video
                             </button>
                         </div>
                     </div>

@@ -5,9 +5,16 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
     const [progress, setProgress] = useState(0);
     const [isMuted, setIsMuted] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
-    const [isHovering, setIsHovering] = useState(false);
+    const [displayProgressBar, setDisplayProgressBar] = useState(false);
     const progressBarRef = useRef(null);
     const playerRef = useRef(null);
+
+    const formatTime = (seconds) => {
+        if (!seconds) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
     useEffect(() => {
         const video = videoRef.current;
@@ -17,8 +24,8 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
             setProgress(progress);
         };
 
-        if (cropPoints) {
-            reduceVideo(cropPoints[0], cropPoints[1]);
+        if (cropPoints.start !== null && cropPoints.end !== null) {
+            reduceVideo(cropPoints.start, cropPoints.end);
         }
         else {
             console.log("No crop in CustomVideoPlayer", cropPoints);
@@ -128,8 +135,8 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
         <div
             className="relative w-full bg-black rounded-xl overflow-hidden"
             ref={playerRef}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+            onMouseEnter={() => setDisplayProgressBar(true)}
+            onMouseLeave={() => setDisplayProgressBar(false)}
         >
             <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
                 <video
@@ -141,7 +148,7 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
                 </video>
             </div>
 
-            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5 transition-opacity duration-300 ${isHovering ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5 transition-opacity duration-300 ${displayProgressBar ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="relative w-full mb-2.5">
                     <div
                         className="w-full h-2.5 bg-white/30 cursor-pointer rounded"
@@ -152,6 +159,37 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
                             className="h-full bg-[#297DCB] rounded transition-all duration-100"
                             style={{ width: `${progress}%` }}
                         />
+                        {/* Crop indicators */}
+                        {cropPoints.start !== null && (
+                            <div 
+                                className="absolute top-0 h-full w-0.5 bg-green-500"
+                                style={{ 
+                                    left: `${(cropPoints.start / videoRef.current?.duration) * 100}%`,
+                                    transform: 'translateX(-50%)'
+                                }}
+                            >
+                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-green-500">
+                                    Start
+                                </div>
+                            </div>
+                        )}
+                        {cropPoints.end !== null && (
+                            <div 
+                                className="absolute top-0 h-full w-0.5 bg-red-500"
+                                style={{ 
+                                    left: `${(cropPoints.end / videoRef.current?.duration) * 100}%`,
+                                    transform: 'translateX(-50%)'
+                                }}
+                            >
+                                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 text-xs text-red-500">
+                                    End
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="absolute -top-6 left-0 right-0 flex justify-between text-white text-sm">
+                        <span>{formatTime(videoRef.current?.currentTime || 0)}</span>
+                        <span>{formatTime(videoRef.current?.duration || 0)}</span>
                     </div>
                 </div>
 
@@ -165,6 +203,10 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
                     <div className="flex gap-2.5">
                         <button onClick={toggleMute} className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors w-8 h-8 flex items-center justify-center">
                             <i className={`fas fa-volume-${isMuted ? 'mute' : 'up'}`} />
+                        </button>
+
+                        <button onClick={() => setDisplayProgressBar(!displayProgressBar)} className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors w-8 h-8 flex items-center justify-center">
+                            <i className="fas fa-external-link-alt" />
                         </button>
 
                         <button onClick={togglePiP} className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors w-8 h-8 flex items-center justify-center">

@@ -71,7 +71,8 @@ const VideoControls = ({ propsVideoControls }) => {
 
             const signalLength = propsVideoControls.plotList.current[0].current.data[0].x.length;
 
-            const currentSignalIndex = Math.floor((currentVideoTime / videoDuration) * signalLength);
+            const currentSignalIndex = Math.floor(( (Math.max(0, currentVideoTime - propsVideoControls.cropPoints.start) ) / (propsVideoControls.cropPoints.end - propsVideoControls.cropPoints.start)) * signalLength);
+
 
             const newLayout = {
                 'xaxis.range[0]': currentSignalIndex - windowSize,
@@ -93,6 +94,7 @@ const VideoControls = ({ propsVideoControls }) => {
     };
 
     useEffect(() => {
+
         const video = videoRef.current;
 
         const handleKeydown = (event) => {
@@ -113,12 +115,14 @@ const VideoControls = ({ propsVideoControls }) => {
                     break;
                 case 'ArrowLeft':
                     event.preventDefault();
-                    video.currentTime = Math.max(0, video.currentTime - scaledJumpTime);
+                    console.log("max( ", propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime );
+                    video.currentTime = Math.max(propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime);
                     video.pause();
                     break;
                 case 'ArrowRight':
                     event.preventDefault();
-                    video.currentTime = Math.min(video.duration, video.currentTime + scaledJumpTime);
+                    console.log("min( ", propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime );
+                    video.currentTime = Math.min(propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime);
                     video.pause();
                     break;
                 case 'Escape':
@@ -137,6 +141,7 @@ const VideoControls = ({ propsVideoControls }) => {
 
         if (propsVideoControls.syncEnabled) {
             video.addEventListener('timeupdate', timeUpdateListener);
+            timeUpdateListener();
         }
 
         return () => {

@@ -91,14 +91,38 @@ export const receiveFile = async (name) => {
     }
 };
 
+export const receiveExportFile = async (name) => {
+    try {
+        const response = await fetch("http://localhost:3000/api/local/sendFile", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                "filename": name,
+            })
+        });
 
-export const saveVideoTimers = async (startTime, endTime, filename) => {
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+        }
+
+        const blob = new Blob( [ await response.text()], { type: 'touwi' });
+        const file = new File([blob], name, { type: 'touwi', lastModified: new Date() });
+        return file
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération du fichier:', error);
+    }
+};
+
+export const saveVideoTimers = async (cropPoints, filename) => {
     try {
         const jsonData = {
             [filename]: {
                 videoTimers: {
-                    start: startTime,
-                    end: endTime
+                    signal: { start: cropPoints.signal.start, end: cropPoints.signal.end },
+                    video: { start: cropPoints.video.start, end: cropPoints.video.end }
                 }
             }
         };

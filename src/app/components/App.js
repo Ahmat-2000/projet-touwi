@@ -15,8 +15,17 @@ import { getVideoTimers } from '@/team-offline/outils';
 const App = () => {
     const router = useRouter();
 
-    const { variablesContext } = useVariablesContext();
-    console.log("All", variablesContext);
+    const { variablesContext } = useVariablesContext();     //Previous page informations
+
+    useEffect(() => {                                       // Handling page reload
+        if (variablesContext === null) {                    // -> redirect to import page
+            router.push("/import");
+        }
+    }, [variablesContext, router]);
+
+    if (variablesContext === null) {                        // Rendering none if page is to be redirected
+        return null;
+    }
 
 
     // State hooks
@@ -27,7 +36,7 @@ const App = () => {
     const [timestamps, setTimestamps] = useState([]);       //list of timestamps same format as .csv used to convert back points to timestamps
     const [preRender, setPreRender] = useState(false);      //If false, do not render the graph
     const [hasVideo, setHasVideo] = useState(variablesContext.video ? true : false);
-    const [cropPoints, setCropPoints] = useState([]);
+    const [cropPoints, setCropPoints] = useState({ video: { start: null, end: null }, signal: { start: null, end: null } });
 
     //If video is given :
     const [syncEnabled, setSyncEnabled] = useState(true);   //Link/Unlink video playing to signals
@@ -51,13 +60,21 @@ const App = () => {
         const fetchTimers = async () => {                   //If found -> set cropPoints
             if (hasVideo) {                                 //Else -> do not display video
                 if (variablesContext.crop) {
-                    setCropPoints([variablesContext.crop.start, variablesContext.crop.end]);
+                    setCropPoints(
+                        {
+                            signal: { start: variablesContext.crop.signal.start, end: variablesContext.crop.signal.end },
+                            video: { start: variablesContext.crop.video.start, end: variablesContext.crop.video.end }
+                        }
+                    );
                     setPreRender(true);
                 }
                 else {
                     const timers = await fetchVideoTimers();
                     if (timers) {
-                        setCropPoints([timers.videoTimers.start, timers.videoTimers.end]);
+                        setCropPoints({
+                            signal: timers.videoTimers.signal,
+                            video: timers.videoTimers.video
+                        });
                         setPreRender(true);
 
                     } else {
@@ -72,27 +89,11 @@ const App = () => {
                 setHasVideo(false);
                 setPreRender(true);
             }
-            
+
         };
 
         fetchTimers();
     }, [hasVideo, variablesContext]);
-
-
-    // Temporary fix for routing
-    useEffect(() => {
-        if (variablesContext === null) {
-            router.push("/import");
-            return;
-        }
-    }, [variablesContext, router]);
-    //End of temporary fix for routing
-
-    // Add null check before accessing variablesContext
-    if (variablesContext === null) {
-        return null; // or return a loading state
-    }
-
 
 
     // Getting .touwi file name depending of new project or reopening project
@@ -210,6 +211,8 @@ const App = () => {
                 margin: plotRef.current.layout.margin,
                 shapes: plotRef.current.layout.shapes,
                 title: plotRef.current.layout.title,
+                plot_bgcolor: 'rgba(255, 255, 255, 0)',
+                paper_bgcolor: 'rgba(255, 255, 255, 0)',
                 xaxis: { range: plotRef.current.layout.xaxis.range },
                 yaxis: { range: plotRef.current.layout.yaxis.range },
             };
@@ -418,49 +421,48 @@ const App = () => {
         }
     }
 
-    
     async function fetchVideoTimers() {
         const tmp = await getVideoTimers(fileName);
         return tmp;
     }
-    
+
 
     return (
-        <div className="w-full flex flex-col gap-4">
-            <div className="w-full p-5 mx-2.5 bg-white rounded-xl shadow-md">
+        <div className="w-full flex flex-col gap-4 bg-[#e1ebff]">
+            <div className="w-full p-5 mx-2.5">
                 {preRender ? (
                     <Graph
                         propsData={{
-                        appMode: appMode,
-                        deleteRegion: deleteRegion,
-                        dragMode: dragMode,
-                        cropPoints: cropPoints,
-                        hasVideo: hasVideo,
-                        highlightFlag: highlightFlag,
-                        isReopen: isReopen,
-                        name: fileName,
-                        plotList: plotList,
-                        resetZoom: resetZoom,
-                        resetEvents: resetEvents,
-                        setSyncEnabled: setSyncEnabled,
-                        setTimestamps: setTimestamps,
-                        setAppMode: setAppMode,
-                        setDragMode: setDragMode,
-                        setPlotlyDragMode: setPlotlyDragMode,
-                        syncEnabled: syncEnabled,
-                        syncZoom: syncZoom,
-                        timestampRef: timestampRef,
-                        videoRef: videoRef,
-                        video: hasVideo ? variablesContext.video : null,
-                        voidPlots: voidPlots,
-                    }}
-                />
+                            appMode: appMode,
+                            deleteRegion: deleteRegion,
+                            dragMode: dragMode,
+                            cropPoints: cropPoints,
+                            hasVideo: hasVideo,
+                            highlightFlag: highlightFlag,
+                            isReopen: isReopen,
+                            name: fileName,
+                            plotList: plotList,
+                            resetZoom: resetZoom,
+                            resetEvents: resetEvents,
+                            setSyncEnabled: setSyncEnabled,
+                            setTimestamps: setTimestamps,
+                            setAppMode: setAppMode,
+                            setDragMode: setDragMode,
+                            setPlotlyDragMode: setPlotlyDragMode,
+                            syncEnabled: syncEnabled,
+                            syncZoom: syncZoom,
+                            timestampRef: timestampRef,
+                            videoRef: videoRef,
+                            video: hasVideo ? variablesContext.video : null,
+                            voidPlots: voidPlots,
+                        }}
+                    />
                 ) : (
                     <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
-                        
+
                         <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
 
-                            {/*
+                        {/*
                             <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
                                 <span className='sr-only'>Loading...</span>
                                 <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>
@@ -471,8 +473,8 @@ const App = () => {
                         <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
                             */}
 
-                            
-                            
+
+
                     </div>
                 )}
             </div>

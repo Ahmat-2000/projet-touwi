@@ -41,6 +41,49 @@ export const getRowWithTimestamp = async(sensor, axis, fileName) => {
   return res
 }
 
+export const getReducedRowsWithTimestamp = async(sensor, axis, fileName, start, end) => {
+  // Retourne le fichier .touwi 
+  const touwiContent = await receiveFile(fileName);
+
+  if (!touwiContent) {
+    throw new Error("Contenu du fichier introuvable ou vide.");
+  }
+
+  // Détermine l'index de la colonne en fonction du capteur et de l'axe
+  const headers = touwiContent.split("\n")[0].split(",");
+  let axisColumn;
+  if (axis === '') {
+    axisColumn = sensor;
+  }
+  else {
+    axisColumn = `${sensor}_${axis}`;
+  }
+  const timestampIndex = headers.indexOf("timestamp");
+  const axisIndex = headers.indexOf(axisColumn);
+
+
+  const res = [[], []]
+
+
+  //récupérer les colonnes 
+  const rows = touwiContent.trim().split("\n").slice(1);
+
+  // parcours des timestamp et colonnes
+  rows.forEach(row => {
+    const columns = row.split(",");
+    const timestamp = columns[timestampIndex];
+    const axisValue = columns[axisIndex];
+
+
+    if (timestamp >= start && timestamp <= end) {
+      res[0].push(timestamp)
+      res[1].push(axisValue)
+    }
+  });
+
+  return res
+}
+
 // Fonction pour mettre à jour un label par timestamp
 export const updateLabelByTimestamp = async (timestamp, newLabel, fileName) => {
   // Charger le contenu du fichier

@@ -2,6 +2,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { receiveExportFile } from '@/team-offline/requests';
+import Image from 'next/image';
+
+
 const ControlPanel = ({ propsControlPanel }) => {
 
     const [customButtons, setCustomButtons] = useState([]);                     //List of created buttons value/setter
@@ -83,8 +87,8 @@ const ControlPanel = ({ propsControlPanel }) => {
                     <div className="bg-gray-50 rounded-lg p-2.5">
                         <div className="grid grid-cols-3 gap-2">
                             <button
-                                onClick={propsControlPanel.resetZoom}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-600 hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200"
+                                onClick={ () => { propsControlPanel.resetZoom(); propsControlPanel.setAppMode('Home'); }}
+                                className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'Home' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                             >
                                 <i className="fas fa-home text-base"></i>
                                 <span className="text-sm">Home</span>
@@ -95,7 +99,7 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                             >
                                 <i className="fas fa-mouse-pointer text-base"></i>
-                                <span className="text-sm">None</span>
+                                <span className="text-sm">Pointer</span>
                             </button>
 
                             <button
@@ -110,7 +114,23 @@ const ControlPanel = ({ propsControlPanel }) => {
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-2.5 flex justify-center items-center">
-                    <button className="w-4/5 h-15 flex flex-col items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-600 hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200" onClick={() => alert('Exporting not implemented yet')}>
+                    <button className="w-4/5 h-15 flex flex-col items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-600 hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200" onClick={() => {
+                        
+                        try {
+                            receiveExportFile(propsControlPanel.filename).then((data) => {
+                                const url = URL.createObjectURL(data);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = propsControlPanel.filename;
+                                link.click();
+                                URL.revokeObjectURL(url);
+                            });
+                        } 
+                        catch (error) {
+                            console.error("Error exporting file:", error);
+                        }
+
+                    }}>
                         <i className="fas fa-file-export text-base"></i>
                         <span className="text-sm">Export</span>
                     </button>
@@ -125,14 +145,14 @@ const ControlPanel = ({ propsControlPanel }) => {
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('None'); }}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                             >
                                 <i className="fas fa-search-plus text-base"></i>
                                 <span className="text-sm">Zoom</span>
                             </button>
                             <button
                                 onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('None'); }}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                             >
                                 <i className="fas fa-hand-paper text-base"></i>
                                 <span className="text-sm">Pan</span>
@@ -145,6 +165,25 @@ const ControlPanel = ({ propsControlPanel }) => {
                 <div className="bg-gray-50 rounded-lg p-2.5">
                     <div className="h-full flex flex-col gap-2.5">
                         <div className="flex gap-2.5 items-center">
+                            
+                            <div className="flex flex-col items-center">
+                                <div className="relative flex items-center justify-center">
+                                    <input
+                                        type="color"
+                                        value={buttonSelectorColor}
+                                        onChange={(e) => setButtonSelectorColor(e.target.value)}
+                                        className="w-10 h-10 rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                        title="Choose button color"
+                                    />
+                                    <Image 
+                                        src="/images/colorPicker.png"
+                                        alt="Color Picker"
+                                        className="w-6 h-6 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 pointer-events-none"
+                                        width={20}
+                                        height={20}
+                                    />
+                                </div>
+                            </div>
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -154,12 +193,7 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 placeholder="Enter button label"
                                 className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-md focus:border-[#297DCB] focus:outline-none focus:ring-2 focus:ring-[#297DCB] focus:ring-opacity-20 text-sm"
                             />
-                            <input
-                                type="color"
-                                value={buttonSelectorColor}
-                                onChange={(e) => setButtonSelectorColor(e.target.value)}
-                                className="w-10 h-10 rounded cursor-pointer hover:opacity-90 transition-opacity"
-                            />
+                            
                             <button onClick={handleCreateButton} className="flex items-center gap-2 px-4 py-2 bg-[#297DCB] text-white rounded-md font-semibold hover:bg-[#2370b8] transition-colors">
                                 <i className="fas fa-plus"></i>
                                 Create Button

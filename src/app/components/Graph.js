@@ -9,9 +9,7 @@ import VideoControls from './VideoControls';
 import ControlPanel from './ControlPanel';
 import Image from 'next/image';
 
-import { getRowWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
-
-
+import { getRowWithTimestamp, getReducedRowsWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
 
 const Graph = ({ propsData }) => {
     const [plots, setPlots] = useState([]);                             //Plots dom list value/setter
@@ -86,8 +84,12 @@ const Graph = ({ propsData }) => {
         // When clicking a point in a plot, if we have a video, the video should jump to the corresponding timestamp
         if (currentAppMode === 'None') {
             if (propsData.hasVideo) {
+                const start = propsData.cropPoints.video.start;
+                const end = propsData.cropPoints.video.end;
+
+                console.log( start, end );
                 const video = propsData.videoRef.current;
-                const videoDuration = video.duration; // Get video duration in seconds
+                const videoDuration = end - start;
 
                 if (propsData.plotList.current[0].current === null) {
                     console.log('Removing deleted plot from list | code °3 ');
@@ -96,8 +98,8 @@ const Graph = ({ propsData }) => {
 
                 const signalLength = propsData.plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
 
-                // Convert signal index to video time using linear mapping
-                const videoTime = (xValue / signalLength) * videoDuration;
+                // Convert signal index to video time using linear mapping and add the start offset
+                const videoTime = ((xValue / signalLength) * videoDuration) + start;
 
                 // Set video current time
                 video.currentTime = videoTime;
@@ -173,8 +175,14 @@ const Graph = ({ propsData }) => {
     };
 
     function reload_labels() {
-        const res = getRowWithTimestamp('LABEL', '', propsData.name);
-        res.then(result => {
+        let bundle;
+        if (propsData.hasVideo) {
+            bundle = getReducedRowsWithTimestamp('LABEL', '', propsData.name, propsData.cropPoints.signal.start, propsData.cropPoints.signal.end);
+        } else {
+            bundle = getRowWithTimestamp('LABEL', '', propsData.name);
+        }
+
+        bundle.then(result => {
             const columnLabels = result[1];
 
             let start = null;
@@ -184,7 +192,7 @@ const Graph = ({ propsData }) => {
                 if (!columnLabels[i].startsWith('PERIOD:')) {
 
                     if (columnLabels[i].startsWith('FLAG:')) {
-                        const labelName = columnLabels[i].slice(5); // Extract random string after 'FLAG:'
+                        const labelName = columnLabels[i].slice(5); // Extract string after 'FLAG:'
                         propsData.highlightFlag(i, { width: 1, color: 'blue', dash: 'dashdot' }, labelName);
                     }
 
@@ -208,7 +216,7 @@ const Graph = ({ propsData }) => {
                 else { console.error('Invalid label format: ', columnLabels[i]); }
             };
 
-            const labels = [...new Set(periodList.map(period => period[2]))];  
+            const labels = [...new Set(periodList.map(period => period[2]))];
             const colors = generateColors(labels.length);
 
             for (let i = 0; i < periodList.length; i++) {
@@ -218,7 +226,7 @@ const Graph = ({ propsData }) => {
 
             const buttonSetter = [];
             for (let i = 0; i < labels.length; i++) {
-                buttonSetter.push([labels[i], colors[i]]);  
+                buttonSetter.push([labels[i], colors[i]]);
             }
             setLabelsList(buttonSetter);
         });
@@ -240,7 +248,14 @@ const Graph = ({ propsData }) => {
 
     function createPlot(sensor, axis, filename) {
 
-        const bundle = getRowWithTimestamp(sensor, axis, propsData.name);
+        let bundle;
+
+        if (propsData.hasVideo) {
+            bundle = getReducedRowsWithTimestamp(sensor, axis, propsData.name, propsData.cropPoints.signal.start, propsData.cropPoints.signal.end);
+        }
+        else {
+            bundle = getRowWithTimestamp(sensor, axis, propsData.name);
+        }
 
         bundle.then(result => {
 
@@ -304,7 +319,7 @@ const Graph = ({ propsData }) => {
                         */
                     <div>
                         <VideoControls propsVideoControls={{
-                            cropPoints: propsData.cropPoints,
+                            cropPoints: propsData.cropPoints.video,
                             deleteRegion: propsData.deleteRegion,
                             highlightFlag: propsData.highlightFlag,
                             plotList: propsData.plotList,
@@ -345,16 +360,18 @@ const Graph = ({ propsData }) => {
                     <ControlPanel
                         propsControlPanel={{
                             appMode: propsData.appMode,
-                            resetZoom: propsData.resetZoom,
-                            resetEvents: propsData.resetEvents,
-                            voidPlots: propsData.voidPlots,
-                            setAppMode: propsData.setAppMode,
-                            setPlotlyDragMode: propsData.setPlotlyDragMode,
                             customLabel: customLabel,
-                            setCustomLabel: setCustomLabel,
+                            dragMode: propsData.dragMode,
+                            filename: propsData.name,
                             labelColor: labelColor,
-                            setLabelColor: setLabelColor,
                             labelsList: labelsList,
+                            resetEvents: propsData.resetEvents,
+                            resetZoom: propsData.resetZoom,
+                            setAppMode: propsData.setAppMode,
+                            setCustomLabel: setCustomLabel,
+                            setLabelColor: setLabelColor,
+                            setPlotlyDragMode: propsData.setPlotlyDragMode,
+                            voidPlots: propsData.voidPlots,
                         }}
                     />
                 </div>

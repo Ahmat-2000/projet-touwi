@@ -17,7 +17,7 @@ export default function Home() {
 const styles = {
     container: {
         textAlign: 'center',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#e1ebff',
         minHeight: '100vh',
     },
 };

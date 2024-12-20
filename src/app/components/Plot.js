@@ -48,6 +48,8 @@ const Plot = ({ propsData }) => {
                 hovermode: 'closest',
             }],
             {   
+                plot_bgcolor: 'rgba(255, 255, 255, 0)',
+                paper_bgcolor: 'rgba(255, 255, 255, 0)',
                 dragmode: propsData.dragModeRef.current,
                 shapes: propsData.shapes,
                 annotations: propsData.annotations,
@@ -79,7 +81,9 @@ const Plot = ({ propsData }) => {
                     'xaxis.range': referencePlot.layout.xaxis.range,
                     shapes: referencePlot.layout.shapes,
                     annotations: referencePlot.layout.annotations,
-                    dragmode: referencePlot._fullLayout.dragmode
+                    dragmode: referencePlot._fullLayout.dragmode,
+                    plot_bgcolor: referencePlot._fullLayout.plot_bgcolor,
+                    paper_bgcolor: referencePlot._fullLayout.paper_bgcolor,
                 };
 
                 Plotly.relayout(plotRef.current, currentLayout);
