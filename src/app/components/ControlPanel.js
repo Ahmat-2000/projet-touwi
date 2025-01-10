@@ -23,11 +23,17 @@ const ControlPanel = ({ propsControlPanel }) => {
             );
             
             setCustomButtons(prevButtons => [...prevButtons, ...newButtons]);
-            inputRef.current?.focus();
             setCounter(index);
         }
     }, [propsControlPanel.labelsList]);
     
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeydown);
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
+    }, []);
+
     const handleCreateButton = () => {
         if (buttonText.trim()) {
             const newButton = {
@@ -68,10 +74,61 @@ const ControlPanel = ({ propsControlPanel }) => {
         propsControlPanel.setLabelColor(color);
     };
 
+    const handleKeydown = (event) => {
+        if (event.target.tagName === 'INPUT') {
+            return;
+        }
+
+        const charUpper = event.key.toUpperCase();
+        console.log(charUpper);
+
+
+        switch (charUpper) {
+
+            // Navigation modes
+            case 'Z':
+                propsControlPanel.setPlotlyDragMode('zoom');
+                propsControlPanel.setAppMode('None');
+                break;
+            case 'P':
+                propsControlPanel.setPlotlyDragMode('pan');
+                propsControlPanel.setAppMode('None');
+                break;
+
+            // Action modes
+            case 'F':
+                propsControlPanel.setPlotlyDragMode(false);
+                propsControlPanel.setAppMode('flag');
+                break;
+            case 'D':
+                propsControlPanel.setPlotlyDragMode(false);
+                propsControlPanel.setAppMode('delete');
+                break;
+            case 'DELETE':
+                if (window.confirm('Are you sure you want to delete all periods and flags?')) {
+                    propsControlPanel.resetEvents();
+                }
+                break
+
+            // Reset/Home
+            case 'H':
+                propsControlPanel.resetZoom();
+                propsControlPanel.setAppMode('Home');
+                break;
+            case 'R':
+                propsControlPanel.setPlotlyDragMode(false);
+                propsControlPanel.setAppMode('None');
+                break;
+        }
+    };
+
+    
+
     return (
-        <div className="w-full h-full p-3 bg-white rounded-xl shadow-md flex flex-col gap-3 box-border mt-4 mx-4">
+        <div className="w-full bg-white rounded-xl shadow-md flex flex-col gap-3 box-border p-3">
             {/* First Row */}
-            <div className="grid grid-cols-[1fr_2fr_1fr] gap-3 w-full">
+            <div className="grid grid-cols-[20fr_60fr_20fr] gap-3 w-full">
+                {/* Current Mode Display */}
                 <div className="bg-gray-50 rounded-lg p-2.5 h-full flex flex-col">
                     <div className="flex flex-col justify-center items-center h-full gap-2">
                         <span className="text-sm font-semibold text-gray-600">Current Mode:</span>
@@ -94,13 +151,13 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 <span className="text-sm">Home</span>
                             </button>
 
-                            <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('None'); }}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
-                            >
-                                <i className="fas fa-mouse-pointer text-base"></i>
-                                <span className="text-sm">Pointer</span>
-                            </button>
+                        <button
+                            onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('None'); }}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                        >
+                            <i className="fas fa-mouse-pointer text-base"></i>
+                            <span className="text-sm">Pointer</span>
+                        </button>
 
                             <button
                                 onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('flag'); }}
@@ -141,23 +198,21 @@ const ControlPanel = ({ propsControlPanel }) => {
             <div className="grid grid-cols-[1fr_2fr_1fr] gap-3 w-full">
                 {/* Navigation Section */}
                 <div className="bg-gray-50 rounded-lg p-2.5">
-                    <div className="bg-gray-50 rounded-lg p-2.5">
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('None'); }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
-                            >
-                                <i className="fas fa-search-plus text-base"></i>
-                                <span className="text-sm">Zoom</span>
-                            </button>
-                            <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('None'); }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
-                            >
-                                <i className="fas fa-hand-paper text-base"></i>
-                                <span className="text-sm">Pan</span>
-                            </button>
-                        </div>
+                    <div className="grid grid-cols-2 gap-2 h-full">
+                        <button
+                            onClick={() => { propsControlPanel.setPlotlyDragMode('zoom'); propsControlPanel.setAppMode('None'); }}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200 h-full`}
+                        >
+                            <i className="fas fa-search-plus text-base"></i>
+                            <span className="text-sm">Zoom</span>
+                        </button>
+                        <button
+                            onClick={() => { propsControlPanel.setPlotlyDragMode('pan'); propsControlPanel.setAppMode('None'); }}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg ${propsControlPanel.dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200 h-full`}
+                        >
+                            <i className="fas fa-hand-paper text-base"></i>
+                            <span className="text-sm">Pan</span>
+                        </button>
                     </div>
                 </div>
 
@@ -192,9 +247,14 @@ const ControlPanel = ({ propsControlPanel }) => {
                                 onKeyPress={handleKeyPress}
                                 placeholder="Enter button label"
                                 className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-md focus:border-[#297DCB] focus:outline-none focus:ring-2 focus:ring-[#297DCB] focus:ring-opacity-20 text-sm"
+                                style={{ color: buttonSelectorColor, fontWeight: 'bold' }}
                             />
                             
-                            <button onClick={handleCreateButton} className="flex items-center gap-2 px-4 py-2 bg-[#297DCB] text-white rounded-md font-semibold hover:bg-[#2370b8] transition-colors">
+                            <button 
+                                onClick={handleCreateButton} 
+                                className="flex items-center gap-2 px-4 py-2 rounded-md font-semibold hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200"
+                                style={{ backgroundColor: buttonSelectorColor, color: 'white' }}
+                            >
                                 <i className="fas fa-plus"></i>
                                 Create Button
                             </button>
@@ -228,27 +288,25 @@ const ControlPanel = ({ propsControlPanel }) => {
 
                 {/* Delete Section */}
                 <div className="bg-gray-50 rounded-lg p-2.5">
-                    <div className="bg-gray-50 rounded-lg p-2.5">
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('delete'); }}
-                                className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
-                            >
-                                <i className="fas fa-trash text-base"></i>
-                                <span className="text-sm">Delete</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (window.confirm('Are you sure you want to delete all periods and flags?')) {
-                                        propsControlPanel.resetEvents();
-                                    }
-                                }}
-                                className="flex flex-col items-center justify-center p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-red-200"
-                            >
-                                <i className="fas fa-trash-alt text-base"></i>
-                                <span className="text-sm">Clear All</span>
-                            </button>
-                        </div>
+                    <div className="grid grid-cols-2 gap-2 h-full">
+                        <button
+                            onClick={() => { propsControlPanel.setPlotlyDragMode(false); propsControlPanel.setAppMode('delete'); }}
+                            className={`flex flex-col items-center justify-center p-2 rounded-lg ${propsControlPanel.appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-gray-100 text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200 h-full`}
+                        >
+                            <i className="fas fa-trash text-base"></i>
+                            <span className="text-sm">Delete</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (window.confirm('Are you sure you want to delete all periods and flags?')) {
+                                    propsControlPanel.resetEvents();
+                                }
+                            }}
+                            className="flex flex-col items-center justify-center p-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-red-200 h-full"
+                        >
+                            <i className="fas fa-trash-alt text-base"></i>
+                            <span className="text-sm">Clear All</span>
+                        </button>
                     </div>
                 </div>
             </div>

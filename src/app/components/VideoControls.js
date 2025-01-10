@@ -103,9 +103,10 @@ const VideoControls = ({ propsVideoControls }) => {
             // Base jump time in seconds
             const baseJumpTime = 0.5;
             const scaledJumpTime = baseJumpTime * video.playbackRate;
-
-            switch (event.code) {
-                case 'Space':
+            const charUpper = event.key.toUpperCase();
+            console.log("video", charUpper);
+            switch (charUpper) {
+                case ' ':
                     if (!propsVideoControls.syncEnabled) {
                         propsVideoControls.setSyncEnabled(true);
                     }
@@ -113,19 +114,29 @@ const VideoControls = ({ propsVideoControls }) => {
                     setIsPlaying(!isPlaying);
                     isPlaying ? video.pause() : video.play();
                     break;
-                case 'ArrowLeft':
+                case 'ARROWLEFT':
                     event.preventDefault();
                     console.log("max( ", propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime );
                     video.currentTime = Math.max(propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime);
                     video.pause();
                     break;
-                case 'ArrowRight':
+                case 'ARROWRIGHT':
                     event.preventDefault();
                     console.log("min( ", propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime );
                     video.currentTime = Math.min(propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime);
                     video.pause();
                     break;
-                case 'Escape':
+                case '+':
+                    event.preventDefault();
+                    video.playbackRate = video.playbackRate * 2;
+                    forceUpdate({});
+                    break;
+                case '-':
+                    event.preventDefault();
+                    video.playbackRate = video.playbackRate / 2;
+                    forceUpdate({});
+                    break;
+                case 'ESCAPE':
                     if (propsVideoControls.syncEnabled) {
                         video.removeEventListener('timeupdate', timeUpdateListener);
                         propsVideoControls.setSyncEnabled(false);

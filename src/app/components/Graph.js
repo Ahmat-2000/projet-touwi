@@ -8,6 +8,7 @@ import Plot from './Plot';
 import VideoControls from './VideoControls';
 import ControlPanel from './ControlPanel';
 import Image from 'next/image';
+import Tips from './Tips';
 
 import { getRowWithTimestamp, getReducedRowsWithTimestamp, periodUpdate, updateLabelByTimestamp } from '@/team-offline/outils';
 
@@ -354,6 +355,7 @@ const Graph = ({ propsData }) => {
                             <span className="text-sm text-gray-500">
                                 {plots.length} signal{plots.length !== 1 ? 's' : ''} displayed
                             </span>
+                            <Tips imgPath="/images/tips.png" />
                         </div>
                     </div>
                     

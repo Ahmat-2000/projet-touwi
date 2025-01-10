@@ -144,9 +144,9 @@ const ImportComponent = () => {
         </div>
 
         {isReopenForm ? (
-          <form onSubmit={handleSubmitReopen} className="space-y-6 flex flex-col h-[400px]">
-            <div className="flex-grow space-y-6">
-              <div>
+          <form onSubmit={handleSubmitReopen} className="flex flex-col h-[400px]">
+            <div>
+              <div className="mb-12 mt-10">
                 <label className="block text-lg text-gray-700 mb-2">Touwi file:</label>
                 <div className="flex items-center">
                   <label className="cursor-pointer bg-gradient-to-r from-sky-500 to-blue-500 hover:bg-gradient-to-r hover:from-pink-600 hover:to-orange-400 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-all duration-200">
@@ -205,16 +205,10 @@ const ImportComponent = () => {
                 </div>
                 {errors.video && <p className="text-red-500">{errors.video}</p>}
               </div>
-
-              {/* Add an empty div to maintain spacing */}
-              <div className="invisible">
-                <label className="block text-lg text-gray-700 mb-2">Placeholder:</label>
-                <div className="h-[76px]"></div>
-              </div>
             </div>
 
             {/* Submit Button for Touwi */}
-            <div className="flex justify-end items-center">
+            <div className="flex justify-end items-center mt-auto">
               <button
                 type="submit"
                 className="bg-gradient-to-r from-sky-500 to-blue-500 hover:bg-gradient-to-r hover:from-pink-600 hover:to-orange-400 text-white font-bold py-2 px-6 rounded-lg shadow-md transition-all duration-200"

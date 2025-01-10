@@ -205,10 +205,6 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
                             <i className={`fas fa-volume-${isMuted ? 'mute' : 'up'}`} />
                         </button>
 
-                        <button onClick={() => setDisplayProgressBar(!displayProgressBar)} className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors w-8 h-8 flex items-center justify-center">
-                            <i className="fas fa-external-link-alt" />
-                        </button>
-
                         <button onClick={togglePiP} className="text-white p-1.5 rounded-full hover:bg-white/20 transition-colors w-8 h-8 flex items-center justify-center">
                             <i className="fas fa-external-link-alt" />
                         </button>
