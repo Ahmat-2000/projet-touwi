@@ -18,17 +18,6 @@ const CropVideo = () => {
     const { setVariablesContext } = useVariablesContext();      //Form file setter
 
     const router = useRouter();
-    
-
-    useEffect(() => {                                       // Handling page reload
-        if (variablesContext === null) {                    // -> redirect to import page
-            router.push("/import");
-        }
-    }, [variablesContext, router]);
-
-    if (variablesContext === null) {                        // Rendering none if page is to be redirected
-        return null;
-    }
 
     const [singlePlot, setSinglePlot] = useState(null);         //Signal Plot value/setter
     const [appMode, setAppMode] = useState('None');             //AppMode value/setter
@@ -44,6 +33,22 @@ const CropVideo = () => {
     const plotRef = useRef(null);                               //UseRef for plot
     const videoRef = useRef(null);                              //UseRef for video
 
+    useEffect(() => {                                       // Handling page reload
+        if (variablesContext === null) {                    // -> redirect to import page
+            router.push("/import");
+        }
+    }, [variablesContext, router]);
+
+    useEffect(() => {
+        if (!variablesContext) {
+            console.log("Page has been reloaded, redirecting to the form");
+            return;
+        }
+
+        const filename = variablesContext.accel.name.split("_accel")[0] + '.touwi';
+        createPlot(filename);
+    }, [variablesContext]);
+
     useEffect(() => {                                           //Listen to dragMode change
         dragModeRef.current = dragMode;                         //Update dragModeRef to the change
     }, [dragMode]);
@@ -51,11 +56,6 @@ const CropVideo = () => {
     useEffect(() => {                                           //Listen to appMode change
         appModeRef.current = appMode;                           //Update appModeRef to the change
     }, [appMode]);
-
-    useEffect(() => {                                           //Create default plot : Accelerometer X
-        const filename = variablesContext.accel.name.split("_accel")[0] + '.touwi';
-        createPlot(filename);
-    }, []);
 
     useEffect(() => {
         videoCropPointsRef.current = cropPoints;
@@ -114,7 +114,7 @@ const CropVideo = () => {
         Plotly.react(plotRef.current, plotRef.current.data, currentLayout, config);
     }
 
-    return (
+    return variablesContext === null ? null : (
         <div className="flex flex-col gap-4 p-10 w-full">
             {/* Main Container */}
             <div className="flex justify-between items-start gap-6 w-full">

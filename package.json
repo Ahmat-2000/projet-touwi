@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "color-convert": "^2.0.1",
     "next": "^15.0.3",
     "papaparse": "^5.4.1",
     "plotly.js-basic-dist-min": "^2.35.2",

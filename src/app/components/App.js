@@ -17,16 +17,6 @@ const App = () => {
 
     const { variablesContext } = useVariablesContext();     //Previous page informations
 
-    useEffect(() => {                                       // Handling page reload
-        if (variablesContext === null) {                    // -> redirect to import page
-            router.push("/import");
-        }
-    }, [variablesContext, router]);
-
-    if (variablesContext === null) {                        // Rendering none if page is to be redirected
-        return null;
-    }
-
 
     // State hooks
     const [appMode, setAppMode] = useState('None');         // App mode value/setter
@@ -35,8 +25,10 @@ const App = () => {
     const [annotations, setAnnotations] = useState([]);     //Useless (I think)
     const [timestamps, setTimestamps] = useState([]);       //list of timestamps same format as .csv used to convert back points to timestamps
     const [preRender, setPreRender] = useState(false);      //If false, do not render the graph
-    const [hasVideo, setHasVideo] = useState(variablesContext.video ? true : false);
+    const [hasVideo, setHasVideo] = useState(false);
     const [cropPoints, setCropPoints] = useState({ video: { start: null, end: null }, signal: { start: null, end: null } });
+    const [fileName, setFileName] = useState('');           // Store fileName
+    const [isReopen, setIsReopen] = useState(false);       // Store isReopen status
 
     //If video is given :
     const [syncEnabled, setSyncEnabled] = useState(true);   //Link/Unlink video playing to signals
@@ -47,6 +39,57 @@ const App = () => {
     const prevMidPointRef = useRef(null);                   //UseRef for midPoint indicator
     const plotList = useRef([]);                            //UseRef for list containing components Plot.js
 
+    useEffect(() => {                                       // Handling page reload & video setup
+        if (variablesContext === null) {                    // -> redirect to import page
+            router.push("/import");
+            return;
+        }
+
+        // Getting .touwi file name depending of new project or reopening project
+        if (variablesContext.touwi === null) {
+            setFileName(variablesContext.accel.name.split("_accel")[0] + '.touwi');
+            setIsReopen(false);
+            //New Project at @fileName
+        } else {
+            setFileName(variablesContext.touwi.name);
+            setIsReopen(true);
+            // Reopening Project at @fileName
+        }
+        const fetchTimers = async () => {                   //If found -> set cropPoints
+            if (!variablesContext.video) {                  //Else -> do not display video
+                setHasVideo(false);
+                setPreRender(true);
+                return;
+            }
+
+            if (variablesContext.crop) {
+                setCropPoints({
+                    signal: { start: variablesContext.crop.signal.start, end: variablesContext.crop.signal.end },
+                    video: { start: variablesContext.crop.video.start, end: variablesContext.crop.video.end }
+                });
+                setHasVideo(true);
+                setPreRender(true);
+                return;
+            }
+            else {
+                const timers = await fetchVideoTimers();
+                if (!timers) {
+                    console.log('Timers : ', timers);
+                    setHasVideo(false);
+                    alert("No crop timers found for this video, video will be removed");
+                    setPreRender(true);
+                    return;
+                }
+                setCropPoints({
+                    signal: timers.videotimers.signal,
+                    video: timers.videotimers.video
+                });
+                setHasVideo(true);
+                setPreRender(true);
+            };
+        }
+        fetchTimers();
+    }, []);
 
     useEffect(() => {                                       //Update timestampRef when timestamps change
         if (timestamps.length > 0) {                        //Only needed for the default plot
@@ -94,20 +137,6 @@ const App = () => {
 
         fetchTimers();
     }, [hasVideo, variablesContext]);
-
-
-    // Getting .touwi file name depending of new project or reopening project
-    let fileName;
-    let isReopen = false;
-    if (variablesContext.touwi === null) {
-        fileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
-        //New Project at @fileName
-    } else {
-        fileName = variablesContext.touwi.name;
-        isReopen = true;
-        // Reopening Project at @fileName
-    }
-
 
 
     function resetZoom() {
@@ -428,59 +457,62 @@ const App = () => {
 
 
     return (
-        <div className="w-full flex flex-col gap-4 bg-[#e1ebff]">
-            <div className="w-full p-5 mx-2.5">
-                {preRender ? (
-                    <Graph
-                        propsData={{
-                            appMode: appMode,
-                            deleteRegion: deleteRegion,
-                            dragMode: dragMode,
-                            cropPoints: cropPoints,
-                            hasVideo: hasVideo,
-                            highlightFlag: highlightFlag,
-                            isReopen: isReopen,
-                            name: fileName,
-                            plotList: plotList,
-                            resetZoom: resetZoom,
-                            resetEvents: resetEvents,
-                            setSyncEnabled: setSyncEnabled,
-                            setTimestamps: setTimestamps,
-                            setAppMode: setAppMode,
-                            setDragMode: setDragMode,
-                            setPlotlyDragMode: setPlotlyDragMode,
-                            syncEnabled: syncEnabled,
-                            syncZoom: syncZoom,
-                            timestampRef: timestampRef,
-                            videoRef: videoRef,
-                            video: hasVideo ? variablesContext.video : null,
-                            voidPlots: voidPlots,
-                        }}
-                    />
-                ) : (
-                    <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
+        variablesContext == null ? null : (
+            <div className="w-full flex flex-col gap-4 bg-[#e1ebff]">
+                <div className="w-full p-5 mx-2.5">
+                    {preRender ? (
+                        <Graph
+                            propsData={{
+                                appMode: appMode,
+                                deleteRegion: deleteRegion,
+                                dragMode: dragMode,
+                                cropPoints: cropPoints,
+                                hasVideo: hasVideo,
+                                highlightFlag: highlightFlag,
+                                isReopen: isReopen,
+                                name: fileName,
+                                plotList: plotList,
+                                resetZoom: resetZoom,
+                                resetEvents: resetEvents,
+                                setSyncEnabled: setSyncEnabled,
+                                setTimestamps: setTimestamps,
+                                setAppMode: setAppMode,
+                                setDragMode: setDragMode,
+                                setPlotlyDragMode: setPlotlyDragMode,
+                                syncEnabled: syncEnabled,
+                                syncZoom: syncZoom,
+                                timestampRef: timestampRef,
+                                videoRef: videoRef,
+                                video: hasVideo ? variablesContext.video : null,
+                                voidPlots: voidPlots,
+                            }}
+                        />
+                    ) : (
+                        <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
 
-                        <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
+                            <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
 
-                        {/*
-                            <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
-                                <span className='sr-only'>Loading...</span>
-                                <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>
-                                <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>
-                                <div className='h-8 w-8 bg-black rounded-full animate-bounce'></div>
-                            </div>
-                            <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
-                        <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
-                            */}
+                            {
+                            /*
+                                <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
+                                    <span className='sr-only'>Loading...</span>
+                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>
+                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>
+                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce'></div>
+                                </div>
+                                <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
+                            <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
+                                */}
 
 
 
-                    </div>
-                )}
+                        </div>
+                    )}
+                </div>
+
             </div>
-
-        </div>
-    );
+        )
+    )
 };
 
 export default App;

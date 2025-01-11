@@ -66,7 +66,7 @@ const CropPlot = ({ propsData }) => {
                     return;
                 }
 
-                const newPoints = {start: xValue, end: propsData.signalCropPointsRef.current?.end || null};
+                const newPoints = {start: xValue, end: propsData.signalCropPointsRef.current?.end || undefined};
                 propsData.signalCropPointsRef.current = newPoints;
                 propsData.setSignalCropPoints(newPoints);
                 const style = {
@@ -78,7 +78,7 @@ const CropPlot = ({ propsData }) => {
             } 
             else if (currentAppMode === 'signal_end') {
 
-                if (propsData.signalCropPointsRef.current?.end !== null) {
+                if (propsData.signalCropPointsRef.current?.end !== undefined) {
                     alert("Signal End already defined please delete previous flag before creating a new one");
                     return;
                 }
