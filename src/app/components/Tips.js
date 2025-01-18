@@ -4,7 +4,6 @@ import Image from 'next/image';
 
 const Tips = ({imgPath}) => {
     const [display, setDisplay] = useState(false);
-    console.log("tips", imgPath);
 
     return (
         <div className="relative">

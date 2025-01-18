@@ -27,9 +27,6 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
         if (cropPoints.start !== null && cropPoints.end !== null) {
             reduceVideo(cropPoints.start, cropPoints.end);
         }
-        else {
-            console.log("No crop in CustomVideoPlayer", cropPoints);
-        }
 
         const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
 
@@ -114,7 +111,6 @@ const CustomVideoPlayer = ({ videoRef, videoUrl, isPlaying, setIsPlaying, cropPo
             }
             else if (video.currentTime >= croppedEnd) {
                 video.pause();
-                //wait 100ms
                 setTimeout(() => {
                     video.currentTime = croppedStart;
                 }, 50);

@@ -1,7 +1,7 @@
 export default async function csvToTouwi(fileAccel, fileGyro, outputFileName) {
     console.log("Processing files:", fileAccel, fileGyro);
 
-    // Utilitaire pour lire un fichier en texte
+    // Utility function to read a file as text
     function readFile(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -11,31 +11,31 @@ export default async function csvToTouwi(fileAccel, fileGyro, outputFileName) {
         });
     }
 
-    // Lecture asynchrone des deux fichiers
+    // Asynchronously read the two files
     const [accelContent, gyroContent] = await Promise.all([readFile(fileAccel), readFile(fileGyro)]);
 
-    // Traitement des contenus des fichiers
+    // Process the contents of the files
     function parseCsvContent(content) {
-        const lines = content.trim().split("\n"); // Supprime les espaces superflus
-        const data = lines.slice(1).map(line => line.split(",")); // Ignorer la première ligne (en-tête)
+        const lines = content.trim().split("\n"); // Remove extra spaces
+        const data = lines.slice(1).map(line => line.split(",")); // Ignore the first line (header)
         return data;
     }
 
     const accelData = parseCsvContent(accelContent);
     const gyroData = parseCsvContent(gyroContent);
 
-    // Combinaison des données avec ajout du label "NONE"
+    // Combine the data with the label "NONE"
     const combinedHeaders = "timestamp,gyro_x,gyro_y,gyro_z,accel_x,accel_y,accel_z,LABEL";
     let combinedData = combinedHeaders + "\n";
 
     for (let i = 0; i < accelData.length; i++) {
-        const timestamp = accelData[i][0]; // Timestamp commun entre les fichiers
-        const gyroValues = gyroData[i].slice(1).join(","); // Récupérer x, y, z du gyroscope
-        const accelValues = accelData[i].slice(1).join(","); // Récupérer x, y, z de l'accéléromètre
-        combinedData += `${timestamp},${gyroValues},${accelValues},NONE\n`; // Ajouter la ligne combinée avec LABEL "NONE"
+        const timestamp = accelData[i][0]; // Common timestamp between the files
+        const gyroValues = gyroData[i].slice(1).join(","); // Get x, y, z from the gyroscope
+        const accelValues = accelData[i].slice(1).join(","); // Get x, y, z from the accelerometer
+        combinedData += `${timestamp},${gyroValues},${accelValues},NONE\n`; // Add the combined line with the LABEL "NONE"
     }
 
-    // Création du fichier combiné au format CSV
+    // Create the combined file in CSV format
     const blob = new Blob([combinedData], { type: 'text/csv' });
     const file = new File([blob], outputFileName, { type: 'text/csv', lastModified: new Date() });
 
@@ -44,5 +44,5 @@ export default async function csvToTouwi(fileAccel, fileGyro, outputFileName) {
    
     
     
-    return file; // Retourne le fichier pour d'autres traitements (téléchargement, envoi, etc.)
+    return file; // Return the file for further processing (download, send, etc.)
 }

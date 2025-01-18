@@ -20,7 +20,7 @@ export async function POST(request) {
     
         const buffer = Buffer.from(await file.arrayBuffer()); 
     
-        // Définir le chemin du fichier
+        // Define the file path
         const filePath = path.join(process.cwd(), "public", "uploads", file.name);
 
         try {

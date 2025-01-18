@@ -8,9 +8,7 @@ const CropVideoControls = ({ propsVideoControls }) => {
     const [videoUrl, setVideoUrl] = useState(null); //Video URL value/setter
 
     const videoRef = propsVideoControls.videoRef;   //Video UseRef
-    const timeUpdateHandlerRef = useRef(null);      //TEMPORARY WILL BE REMOVED FEATURE WIP
-    const [, forceUpdate] = useState({});          //Does something
-
+    const [, forceUpdate] = useState({});           //Does something
     const [isPlaying, setIsPlaying] = useState(false); //Is video playing
 
 
@@ -96,8 +94,8 @@ const CropVideoControls = ({ propsVideoControls }) => {
 
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="relative">
+        <div className="flex flex-col gap-4 h-full">
+            <div className="relative flex-1">
                 <CustomVideoPlayer
                     videoRef={videoRef}
                     videoUrl={videoUrl}

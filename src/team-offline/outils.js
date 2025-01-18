@@ -2,14 +2,14 @@ import { receiveFile, saveModificationFile, saveNewFile, receiveVideoTimers } fr
 
 export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 
-  // Retourne le fichier .touwi 
+  // Returns the .touwi file content
   const touwiContent = await receiveFile(fileName);
 
   if (!touwiContent) {
-      throw new Error("Contenu du fichier introuvable ou vide.");
+      throw new Error("File content not found or empty.");
   }
 
-  // Détermine l'index de la colonne en fonction du capteur et de l'axe
+  // Determines the column index based on the sensor and axis
   const headers = touwiContent.split("\n")[0].split(",");
   let axisColumn;
   if (axis === ''){
@@ -25,10 +25,10 @@ export const getRowWithTimestamp = async(sensor, axis, fileName) => {
   const res = [[],[]]
   
 
-  //récupérer les colonnes 
+  // Retrieves the columns 
   const rows = touwiContent.trim().split("\n").slice(1);
 
-  // parcours des timestamp et colonnes
+  // Iterates through timestamps and columns
   rows.forEach(row => {
       const columns = row.split(",");
       const timestamp = columns[timestampIndex];
@@ -42,14 +42,14 @@ export const getRowWithTimestamp = async(sensor, axis, fileName) => {
 }
 
 export const getReducedRowsWithTimestamp = async(sensor, axis, fileName, start, end) => {
-  // Retourne le fichier .touwi 
+  // Returns the .touwi file content
   const touwiContent = await receiveFile(fileName);
 
   if (!touwiContent) {
-    throw new Error("Contenu du fichier introuvable ou vide.");
+    throw new Error("File content not found or empty.");
   }
 
-  // Détermine l'index de la colonne en fonction du capteur et de l'axe
+  // Determines the column index based on the sensor and axis
   const headers = touwiContent.split("\n")[0].split(",");
   let axisColumn;
   if (axis === '') {
@@ -65,10 +65,10 @@ export const getReducedRowsWithTimestamp = async(sensor, axis, fileName, start, 
   const res = [[], []]
 
 
-  //récupérer les colonnes 
+  // Retrieves the columns 
   const rows = touwiContent.trim().split("\n").slice(1);
 
-  // parcours des timestamp et colonnes
+  // Iterates through timestamps and columns
   rows.forEach(row => {
     const columns = row.split(",");
     const timestamp = columns[timestampIndex];
@@ -84,49 +84,49 @@ export const getReducedRowsWithTimestamp = async(sensor, axis, fileName, start, 
   return res
 }
 
-// Fonction pour mettre à jour un label par timestamp
+// Function to update a label by timestamp
 export const updateLabelByTimestamp = async (timestamp, newLabel, fileName) => {
-  // Charger le contenu du fichier
+  // Loads the file content
   const touwiContent = await receiveFile(fileName);
 
   if (!touwiContent) {
-    throw new Error("Contenu du fichier introuvable ou vide.");
+    throw new Error("File content not found or empty.");
   }
 
-  // Diviser le contenu en lignes
+  // Divides the content into lines
   const rows = touwiContent.trim().split("\n");
 
-  // Extraire l'en-tête et les lignes de données
+  // Extracts the header and data rows
   const header = rows[0];
   const dataRows = rows.slice(1);
 
-  // Convertir le timestamp recherché en chaîne pour assurer la comparaison correcte
+  // Converts the target timestamp to a string for correct comparison
   const targetTimestamp = String(timestamp);
 
-  console.log("Début de la mise à jour du label...");
+  console.log("Starting label update...");
 
-  // Rechercher le timestamp et modifier le label si trouvé
+  // Searches for the timestamp and updates the label if found
   const updatedDataRows = dataRows.map(row => {
     const columns = row.split(",");
-    if (columns[0] === targetTimestamp) {  // Comparaison avec le timestamp en chaîne
-      console.log(`Modification du label pour le timestamp ${targetTimestamp}`);
-      columns[columns.length - 1] = newLabel;  // Mettre à jour le dernier élément (LABEL)
+    if (columns[0] === targetTimestamp) {  // Comparison with the timestamp as a string
+      console.log(`Updating label for timestamp ${targetTimestamp}`);
+      columns[columns.length - 1] = newLabel;  // Updates the last element (LABEL)
     }
     return columns.join(",");
   });
 
-  // Reconstituer le contenu du fichier avec les modifications
+  // Reconstructs the file content with the updates
   const updatedContent = [header, ...updatedDataRows].join("\n");
 
-  // Créer un Blob et un fichier pour sauvegarder les modifications
+  // Creates a Blob and a file to save the updates
   const blob = new Blob([updatedContent], { type: 'text/csv' });
   const file = new File([blob], fileName, { type: 'text/csv', lastModified: new Date() });
 
-  // Vérification de sauvegarde
+  // Verification of save
   const saveResult = await saveNewFile(file);
 }
 
-// Fonction pour mettre à jour les labels d'un timestamp jusqu'à un autre
+// Function to update labels from one timestamp to another
 export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,fileName) => {
 
   if (timestamp_debut === undefined || timestamp_fin === undefined || new_label === undefined || fileName === undefined) {
@@ -134,32 +134,32 @@ export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,file
   }
   console.log('Period added from ' + timestamp_debut + ' to ' + timestamp_fin + ' with label ' + new_label);
 
-  // Charger le contenu du fichier
+  // Loads the file content
   const touwiContent = await receiveFile(fileName);
 
   if (!touwiContent) {
-    throw new Error("Contenu du fichier introuvable ou vide.");
+    throw new Error("File content not found or empty.");
   }
 
-  // Diviser le contenu en lignes
+  // Divides the content into lines
   const rows = touwiContent.trim().split("\n");
 
-  // Extraire l'en-tête et les lignes de données
+  // Extracts the header and data rows
   const header = rows[0];
   const dataRows = rows.slice(1);
 
-  // Convertir le timestamp recherché en chaîne pour assurer la comparaison correcte
+  // Converts the target timestamps to strings for correct comparison
   const targetStartTimestamp = String(timestamp_debut);
   const targetEndTimestamp = String(timestamp_fin);
 
-  // Rechercher les timestamps et modifier le label si trouvé
+  // Searches for the timestamps and updates the label if found
   const updatedDataRows = dataRows.map(row => {
     const columns = row.split(",");
     const currentTimestamp = columns[0];
 
-    // Vérifier si le timestamp est dans l'intervalle défini
+    // Checks if the timestamp is within the defined range
     if (currentTimestamp >= targetStartTimestamp && currentTimestamp <= targetEndTimestamp) {
-      columns[columns.length - 1] = new_label;  // Mettre à jour le dernier élément (LABEL)
+      columns[columns.length - 1] = new_label;  // Updates the last element (LABEL)
     }
     return columns.join(",");
   });
@@ -169,7 +169,7 @@ export const periodUpdate = async (timestamp_debut, timestamp_fin,new_label,file
   const blob = new Blob([updatedContent], { type: 'text/csv' });
   const file = new File([blob], fileName, { type: 'text/csv', lastModified: new Date() });
 
-  await saveNewFile(file);// Retourner le contenu du fichier modifié sous forme de texte
+  await saveNewFile(file);// Returns the modified file content as text
 
 }
 

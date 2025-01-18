@@ -14,9 +14,9 @@ import { getVideoTimers } from '@/team-offline/outils';
 
 const App = () => {
     const router = useRouter();
-
+    
     const { variablesContext } = useVariablesContext();     //Previous page informations
-
+    console.log("App", variablesContext);
 
     // State hooks
     const [appMode, setAppMode] = useState('None');         // App mode value/setter
@@ -28,7 +28,7 @@ const App = () => {
     const [hasVideo, setHasVideo] = useState(false);
     const [cropPoints, setCropPoints] = useState({ video: { start: null, end: null }, signal: { start: null, end: null } });
     const [fileName, setFileName] = useState('');           // Store fileName
-    const [isReopen, setIsReopen] = useState(false);       // Store isReopen status
+    const [isReopen, setIsReopen] = useState(false);        // Store isReopen status
 
     //If video is given :
     const [syncEnabled, setSyncEnabled] = useState(true);   //Link/Unlink video playing to signals
@@ -46,16 +46,19 @@ const App = () => {
         }
 
         // Getting .touwi file name depending of new project or reopening project
+        let currentFileName;
         if (variablesContext.touwi === null) {
-            setFileName(variablesContext.accel.name.split("_accel")[0] + '.touwi');
+            currentFileName = variablesContext.accel.name.split("_accel")[0] + '.touwi';
+            setFileName(currentFileName);
             setIsReopen(false);
             //New Project at @fileName
         } else {
-            setFileName(variablesContext.touwi.name);
+            currentFileName = variablesContext.touwi.name;
+            setFileName(currentFileName);
             setIsReopen(true);
             // Reopening Project at @fileName
         }
-        const fetchTimers = async () => {                   //If found -> set cropPoints
+        const fetchTimers = async (currentFileName,) => {   //If found -> set cropPoints
             if (!variablesContext.video) {                  //Else -> do not display video
                 setHasVideo(false);
                 setPreRender(true);
@@ -72,23 +75,22 @@ const App = () => {
                 return;
             }
             else {
-                const timers = await fetchVideoTimers();
-                if (!timers) {
-                    console.log('Timers : ', timers);
+                const timers = await fetchVideoTimers(currentFileName);
+                if (timers === undefined) {
                     setHasVideo(false);
                     alert("No crop timers found for this video, video will be removed");
                     setPreRender(true);
                     return;
                 }
                 setCropPoints({
-                    signal: timers.videotimers.signal,
-                    video: timers.videotimers.video
+                    signal: timers['videoTimers'].signal,
+                    video: timers['videoTimers'].video
                 });
                 setHasVideo(true);
                 setPreRender(true);
             };
         }
-        fetchTimers();
+        fetchTimers(currentFileName);
     }, []);
 
     useEffect(() => {                                       //Update timestampRef when timestamps change
@@ -96,47 +98,6 @@ const App = () => {
             timestampRef.current = timestamps;              //list needs to be stored once and remain unchanged
         }
     }, [timestamps]);
-
-
-
-    useEffect(() => {                                       //Look for video crop Timers if there is a video
-        const fetchTimers = async () => {                   //If found -> set cropPoints
-            if (hasVideo) {                                 //Else -> do not display video
-                if (variablesContext.crop) {
-                    setCropPoints(
-                        {
-                            signal: { start: variablesContext.crop.signal.start, end: variablesContext.crop.signal.end },
-                            video: { start: variablesContext.crop.video.start, end: variablesContext.crop.video.end }
-                        }
-                    );
-                    setPreRender(true);
-                }
-                else {
-                    const timers = await fetchVideoTimers();
-                    if (timers) {
-                        setCropPoints({
-                            signal: timers.videoTimers.signal,
-                            video: timers.videoTimers.video
-                        });
-                        setPreRender(true);
-
-                    } else {
-                        setHasVideo(false);
-                        alert("No crop timers found for this video, video will be removed");
-                        setPreRender(true);
-
-                    }
-                }
-            }
-            else {
-                setHasVideo(false);
-                setPreRender(true);
-            }
-
-        };
-
-        fetchTimers();
-    }, [hasVideo, variablesContext]);
 
 
     function resetZoom() {
@@ -156,7 +117,6 @@ const App = () => {
                 deleteRegion(plotList, prevMidPointRef.current, true);
             }
 
-            // Batch layout updates
             const updates = plotList.current.map(plotRef => {
                 return Plotly.relayout(plotRef.current, {
                     'xaxis.autorange': true,
@@ -166,14 +126,7 @@ const App = () => {
 
             // Wait for all layout updates to complete
             Promise.all(updates).then(() => {
-
-                if (plotList.current[0].current === null) {
-                    console.log('Removing deleted plot from list | code °1 ');
-                    plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
-                }
-
-                const midPoint = (plotList.current[0].current.layout.xaxis.range[0] +
-                    plotList.current[0].current.layout.xaxis.range[1]) / 2;
+                const midPoint = (plotList.current[0].current.layout.xaxis.range[0] + plotList.current[0].current.layout.xaxis.range[1]) / 2;
                 prevMidPointRef.current = midPoint;
                 highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, '');
             });
@@ -188,11 +141,6 @@ const App = () => {
 
         // Update shapes and annotations on all plots
         plotList.current.forEach((plotRef) => {
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °2 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
             Plotly.relayout(plotRef.current, { shapes: updatedShapes, annotations: updatedAnnotations });
         });
 
@@ -207,7 +155,6 @@ const App = () => {
         // Destroy all plots
         plotList.current.forEach((plotRef) => {
             if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °3 ');
                 plotList.current = plotList.current.filter(ref => ref !== plotRef);
                 return;
             }
@@ -222,12 +169,6 @@ const App = () => {
 
         // Update drag mode for all plots
         plotList.current.forEach((plotRef) => {
-
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °4 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
 
             //if we don't use scrollzoom on navigate, just use :
             //Plotly.relayout(plotRef, { dragmode: newDragMode });
@@ -271,7 +212,6 @@ const App = () => {
         }
 
         //Add new INDICATOR
-        //highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, 'Midpoint Indicator');
         highlightFlag(midPoint, { width: 3, color: 'black', dash: 'solid' }, '');
         prevMidPointRef.current = midPoint;
 
@@ -291,12 +231,6 @@ const App = () => {
 
         //Update axis range for all plots
         plotRefList.forEach((plotRef) => {
-
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °5 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
 
             if (layoutMode == '2_axis') {
                 if (plotRef.current.getAttribute('data-vertical-sync') === 'true') {
@@ -360,7 +294,6 @@ const App = () => {
             },
             clicktoshow: false,
             hovertext: 'Flag at ' + xValue,
-            //hovertext: 'Click to delete flag',
             opacity: 0.66,
             padding: 8,
             borderpad: 4,
@@ -372,22 +305,12 @@ const App = () => {
 
         // Add new shape and annotation to all plots
         plotList.current.forEach(plotRef => {
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °6 ');
-                plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                return;
-            }
             Plotly.relayout(plotRef.current, { shapes: [...plotRef.current.layout.shapes, shape], annotations: [...plotRef.current.layout.annotations, annotation] });
         });
 
     }
 
     function deleteRegion(plotList, xValue, onlyFlag) {
-
-        if (plotList.current[0].current === null) {
-            console.log('Removing deleted plot from list | code °7 ');
-            plotList.current = plotList.current.filter(ref => ref !== plotList.current[0]);
-        }
 
         // Find the region that contains the clicked xValue
         let regionIndex = plotList.current[0].current.layout.shapes.findIndex(
@@ -412,11 +335,6 @@ const App = () => {
 
             // Remove 1 shape from all plots
             plotRefs.forEach(plotRef => {
-                if (plotRef.current === null) {
-                    console.log('Removing deleted plot from list | code °8 ');
-                    plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                    return;
-                }
                 plotRef.current.layout.shapes.splice(regionIndex, 1);
 
                 // Remove it's annotation if it's a flag
@@ -433,11 +351,6 @@ const App = () => {
 
             // Update shapes and annotations on the plots
             plotRefs.forEach(plotRef => {
-                if (plotRef.current === null) {
-                    console.log('Removing deleted plot from list | code °9 ');
-                    plotList.current = plotList.current.filter(ref => ref !== plotRef);
-                    return;
-                }
                 Plotly.relayout(plotRef.current, {
                     shapes: plotRef.current.layout.shapes,
                     annotations: plotRef.current.layout.annotations
@@ -450,8 +363,8 @@ const App = () => {
         }
     }
 
-    async function fetchVideoTimers() {
-        const tmp = await getVideoTimers(fileName);
+    async function fetchVideoTimers(currentFileName) {
+        const tmp = await getVideoTimers(currentFileName);
         return tmp;
     }
 
@@ -489,23 +402,7 @@ const App = () => {
                         />
                     ) : (
                         <div className="flex flex-col justify-center items-center h-full" style={{ height: '100vh' }}>
-
                             <LifeLine color="#3176cc" size="large" text="Loading..." textColor="#3176cc" />
-
-                            {
-                            /*
-                                <div className='flex space-x-2 justify-center items-center bg-white h-screen dark:invert'>
-                                    <span className='sr-only'>Loading...</span>
-                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.3s]'></div>
-                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce [animation-delay:-0.15s]'></div>
-                                    <div className='h-8 w-8 bg-black rounded-full animate-bounce'></div>
-                                </div>
-                                <div className="animate-spin rounded-full h-36 w-36 border-t-4 border-b-4 border-blue-500"></div>
-                            <div className="text-blue-500 text-2xl font-bold mt-4">Loading...</div>
-                                */}
-
-
-
                         </div>
                     )}
                 </div>

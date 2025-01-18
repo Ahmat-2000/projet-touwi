@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 
 
-//
-// TODO : Choisir une base de donnée et l'implémenter
-//
-
 /**
- * Cette fonction répond aux requêtes de type GET faites à l'api
+ * This function responds to GET type requests made to the api
  * localhost:3000/api/example/route.js 
  */
 export async function GET(request) {
@@ -15,7 +11,7 @@ export async function GET(request) {
 }
  
 /**
- * Cette fonction répond aux requêtes de type POST faites à l'api
+ * This function responds to GET type requests made to the api
  * localhost:3000/api/example/route.js 
  */
 export async function POST(request) {

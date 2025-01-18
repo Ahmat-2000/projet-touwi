@@ -8,7 +8,6 @@ const Plot = ({ propsData }) => {
 
     const [deletePlot, setDeletePlot] = useState(false);    //Button boolean to delete plot
     const [verticalSync, setVerticalSync] = useState(true); //Vertical sync boolean
-    
     const plotRef = useRef(null);                            //UseRef for plot element
     
     useEffect(() => {                                        //Update vertical sync attribute when verticalSync changes
@@ -178,13 +177,6 @@ const Plot = ({ propsData }) => {
         );
     }
     else {
-
-        propsData.plotRefList.forEach((plotRef) => {
-            if (plotRef.current === null) {
-                console.log('Removing deleted plot from list | code °11 ');
-                propsData.plotRefList = propsData.plotRefList.filter(ref => ref !== plotRef);
-            }
-        });
 
         if (propsData.plotRefList.length <= 1) {
             alert("Cannot delete the last plot. At least one plot must remain.");

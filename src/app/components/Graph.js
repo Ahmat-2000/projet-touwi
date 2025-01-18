@@ -54,7 +54,6 @@ const Graph = ({ propsData }) => {
     function clearDiv(keyNumber) {
         setPlots(prevPlots => {
             const newPlots = prevPlots.filter(plot => String(plot.key) !== String(keyNumber));
-            console.log(`Plot ${keyNumber} removed. Remaining plots: ${newPlots.length}`);
             return newPlots;
         });
     }
@@ -62,16 +61,16 @@ const Graph = ({ propsData }) => {
     //--------------------------------
 
     const handleOpenModal = () => {
-        setIsModalOpen(true); // Ouvre la boîte modale
+        setIsModalOpen(true); // Open signals menu selector
     };
 
     const handleCloseModal = () => {
-        setIsModalOpen(false); // Ferme la boîte modale
+        setIsModalOpen(false); // Close signals menu selector
     };
 
     const handleAddPlot = () => {
         createPlot(selectedCategory, selectedAxis, propsData.name);
-        setIsModalOpen(false); // Ferme la boîte modale après le choix
+        setIsModalOpen(false); // Close signals menu selector after choice
     };
 
     //--------------------------------
@@ -88,21 +87,11 @@ const Graph = ({ propsData }) => {
                 const start = propsData.cropPoints.video.start;
                 const end = propsData.cropPoints.video.end;
 
-                console.log( start, end );
                 const video = propsData.videoRef.current;
                 const videoDuration = end - start;
-
-                if (propsData.plotList.current[0].current === null) {
-                    console.log('Removing deleted plot from list | code °3 ');
-                    propsData.plotList.current = propsData.plotList.current.filter(ref => ref !== propsData.plotList.current[0]);
-                }
-
-                const signalLength = propsData.plotList.current[0].current.data[0].x.length; // Get signal length from plotly data
-
-                // Convert signal index to video time using linear mapping and add the start offset
+                const signalLength = propsData.plotList.current[0].current.data[0].x.length;
                 const videoTime = ((xValue / signalLength) * videoDuration) + start;
 
-                // Set video current time
                 video.currentTime = videoTime;
             }
         }
@@ -113,7 +102,6 @@ const Graph = ({ propsData }) => {
         } else {
             if (currentAppMode === 'period') {
                 if (selections.length === 0 || selections[selections.length - 1].end !== null) {
-                    console.log(`New period: Start - ${xValue}, End - ?`);
                     selections.push({ start: xValue, end: null });
                 }
                 else {
@@ -199,7 +187,7 @@ const Graph = ({ propsData }) => {
 
                     if (start !== null) {
                         if (columnLabels[i - 1].startsWith('PERIOD:')) {
-                            const labelName = columnLabels[i - 1].slice(7);
+                            const labelName = columnLabels[i - 1].slice(7); // Extract string after 'PERIOD:'
                             periodList.push([start, i - 1, labelName]);
                             start = null;
                         }
@@ -263,7 +251,7 @@ const Graph = ({ propsData }) => {
             const timestamp = result[0];
             const data = result[1];
 
-            const colors = [                    //Color loop for plots signals colors
+            const colors = [ //Color loop for plots signals colors
                 '#2E86C1',  // Strong Blue
                 '#E74C3C',  // Soft Red
                 '#27AE60',  // Forest Green
@@ -315,9 +303,6 @@ const Graph = ({ propsData }) => {
         <div>
             <div className="w-full flex mb-4">
                 {propsData.hasVideo && (
-                    /*
-                        <div className="bg-white p-4 rounded-xl shadow-md m-4 w-[80vh]">
-                        */
                     <div>
                         <VideoControls propsVideoControls={{
                             cropPoints: propsData.cropPoints.video,
@@ -334,7 +319,7 @@ const Graph = ({ propsData }) => {
                 )}
                 <div className="w-full h-full p-3 bg-white rounded-xl shadow-md flex flex-col gap-3 box-border mt-4 mx-2">
                     <div className="flex justify-between items-center mb-2">
-                        <h2 className="text-xl font-semibold text-gray-800">Chronos Signal Labeling WebApp</h2>
+                        <h2 className="text-xl font-semibold text-gray-800 ml-5">Chronos Signal Labeling WebApp</h2>
                         <div>
                             <Image src="/images/temp_logo.png" width={100} height={70} alt="Chronos Logo" />
                         </div>

@@ -12,6 +12,7 @@ import { saveVideoTimers } from '@/team-offline/requests';
 
 import CropPlot from './CropPlot';
 import CropVideoControls from './CropVideoControls';
+import Tips from '../Tips';
 
 const CropVideo = () => {
     const { variablesContext } = useVariablesContext();         //Form file getter
@@ -24,6 +25,7 @@ const CropVideo = () => {
     const [dragMode, setDragMode] = useState(false);            //Drag mode setter
     const [cropPoints, setCropPoints] = useState({start: null, end: null});           //Video crop points setter
     const [signalCropPoints, setSignalCropPoints] = useState([]); //Signal crop points setter
+    const [, forceUpdate] = useState({});                       //Force update state
 
     const videoCropPointsRef = useRef(cropPoints);
     const signalCropPointsRef = useRef(signalCropPoints);
@@ -59,13 +61,94 @@ const CropVideo = () => {
 
     useEffect(() => {
         videoCropPointsRef.current = cropPoints;
-        console.log("videoCropPointsRef", videoCropPointsRef.current);
     }, [cropPoints]);
 
     useEffect(() => {
         signalCropPointsRef.current = signalCropPoints;
-        console.log("signalCropPointsRef", signalCropPointsRef.current);
     }, [signalCropPoints]);
+
+    useEffect(() => {
+        const handleKeydown = (event) => {
+            if (event.target.tagName === 'INPUT') {
+                return;
+            }
+
+            const charUpper = event.key.toUpperCase();
+            switch (charUpper) {
+
+                case '1':
+                    setAppMode('video_start');
+                    break;
+                case '2':
+                    setAppMode('video_end');
+                    break;
+                case '3':
+                    setAppMode('signal_start');
+                    break;
+                case '4':
+                    setAppMode('signal_end');
+                    break;
+                
+                case 'B':
+                    setAppMode('Pointer');
+                    break;
+                case 'D':
+                    setAppMode('delete');
+                    break;
+
+
+                // Reset zoom
+                case 'H':
+                    if (plotRef.current) {
+                        Plotly.relayout(plotRef.current, {
+                            'xaxis.autorange': true,
+                            'yaxis.autorange': true
+                        });
+                    }
+                    break;
+                
+                // Navigation modes
+                case 'P':
+                    setPlotlyDragMode('pan');
+                    setAppMode('None');
+                    break;
+                case 'Z':
+                    setPlotlyDragMode('zoom');
+                    setAppMode('None');
+                    break;
+                
+                // Video speed controls
+                case '+':
+                    event.preventDefault();
+                    if (videoRef.current) {
+                        const currentSpeed = videoRef.current.playbackRate;
+                        let newSpeed = currentSpeed * 2;
+                        // Limit the speed between 0.1 and 16
+                        newSpeed = Math.min(16, Math.max(0.1, newSpeed));
+                        videoRef.current.playbackRate = newSpeed;
+                        forceUpdate({});
+                    }
+                    break;
+                case '-':
+                    event.preventDefault();
+                    if (videoRef.current) {
+                        const currentSpeed = videoRef.current.playbackRate;
+                        let newSpeed = currentSpeed / 2;
+                        // Limit the speed between 0.1 and 16
+                        newSpeed = Math.min(16, Math.max(0.1, newSpeed));
+                        videoRef.current.playbackRate = newSpeed;
+                        forceUpdate({});
+                    }
+                    break;
+
+            }
+        };
+
+        window.addEventListener('keydown', handleKeydown);
+        return () => {
+            window.removeEventListener('keydown', handleKeydown);
+        };
+    }, []);
 
     function createPlot(filename) {
 
@@ -136,115 +219,113 @@ const CropVideo = () => {
                 </div>
 
                 {/* Control Panel */}
-                <div className="bg-white p-6 rounded-xl shadow-md w-[50%] flex flex-col gap-1 mx-auto">
+                <div className="bg-white p-6 rounded-xl shadow-md w-[50%] flex flex-col justify-between gap-4 mx-auto">
+                    {/* Header Section */}
                     <div className="flex justify-between items-center">
+                        <h1 className="text-lg font-bold text-gray-800 ml-9">Chronos Cropping Tool</h1>
                         <Image src="/images/temp_logo.png" width={100} height={70} alt="Chronos Logo" className="h-12 w-auto" />
-                        <h1 className="text-2xl font-bold text-gray-800">Video Cropping Tool</h1>
-                        <div className="bg-gray-50 rounded-lg px-4 py-2 flex items-center gap-3">
-                            <span className="text-sm font-semibold text-gray-600">Current Mode</span>
-                            <span className="px-3 py-1 rounded-md font-semibold text-center text-white bg-[#297DCB]">
-                                {appMode === 'None' ? 'Pointer' : appMode}
-                            </span>
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gray-50 rounded-lg px-4 py-2 flex items-center gap-3">
+                                <span className="text-sm font-semibold text-gray-600">Current Mode</span>
+                                <span className="px-3 py-1 rounded-md font-semibold text-center text-white bg-[#297DCB]">
+                                    {appMode === 'None' ? 'Pointer' : appMode}
+                                </span>
+                            </div>
+                            <Tips imgPath="/images/crop_tips.png" />
                         </div>
                     </div>
 
-                    {/* Button Grid - Fixed Height Buttons with Separators */}
-                    <div className="flex justify-evenly px-12">
+                    {/* Button Grid - With more spacing */}
+                    <div className="flex justify-evenly px-6 flex-1">
                         {/* Video Controls Section */}
-                        <div className="bg-gray-50 p-6 rounded-2xl">
-                            <span className="text-sm font-medium text-gray-600 text-center block mb-3">Video Selection</span>
-                            <div className="flex flex-col gap-4">
+                        <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
+                            <span className="text-sm font-medium text-gray-600 text-center block mb-6">Video Selection</span>
+                            <div className="flex flex-col gap-6">
                                 <button 
                                     onClick={() => { setAppMode('video_start'); setPlotlyDragMode(false); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'video_start' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'video_start' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-film text-xl mb-2"></i>
+                                    <i className="fas fa-film text-2xl mb-3"></i>
                                     <span className="text-sm">Video Start</span>
                                 </button>
 
                                 <button
                                     onClick={() => { setAppMode('video_end'); setPlotlyDragMode(false); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'video_end' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'video_end' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-film text-xl mb-2"></i>
+                                    <i className="fas fa-film text-2xl mb-3"></i>
                                     <span className="text-sm">Video End</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="w-16 flex items-center justify-center">
-                            <div className="w-px h-full bg-gray-200"></div>
-                        </div>
+                        <div className="w-px h-full bg-gray-200 my-4"></div>
 
                         {/* Signal Controls Section */}
-                        <div className="bg-gray-50 p-6 rounded-2xl">
-                            <span className="text-sm font-medium text-gray-600 text-center block mb-3">Signal Selection</span>
-                            <div className="flex flex-col gap-4">
+                        <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
+                            <span className="text-sm font-medium text-gray-600 text-center block mb-6">Signal Selection</span>
+                            <div className="flex flex-col gap-6">
                                 <button
                                     onClick={() => { setAppMode('signal_start'); setPlotlyDragMode(false); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'signal_start' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'signal_start' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-wave-square text-xl mb-2"></i>
+                                    <i className="fas fa-wave-square text-2xl mb-3"></i>
                                     <span className="text-sm">Signal Start</span>
                                 </button>
 
                                 <button
                                     onClick={() => { setAppMode('signal_end'); setPlotlyDragMode(false); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'signal_end' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'signal_end' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-wave-square text-xl mb-2"></i>
+                                    <i className="fas fa-wave-square text-2xl mb-3"></i>
                                     <span className="text-sm">Signal End</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="w-16 flex items-center">
-                            <div className="w-px h-full bg-gray-200"></div>
-                        </div>
+                        <div className="w-px h-full bg-gray-200 my-4"></div>
 
                         {/* Navigation Controls Section */}
-                        <div className="bg-gray-50 p-6 rounded-2xl">
-                            <span className="text-sm font-medium text-gray-600 text-center block mb-3">Signal Navigation</span>
-                            <div className="flex flex-col gap-4">
+                        <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
+                            <span className="text-sm font-medium text-gray-600 text-center block mb-6">Signal Navigation</span>
+                            <div className="flex flex-col gap-6">
                                 <button
                                     onClick={() => { setPlotlyDragMode('zoom'); setAppMode('None'); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${dragMode === 'zoom' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-search-plus text-xl mb-2"></i>
+                                    <i className="fas fa-search-plus text-2xl mb-3"></i>
                                     <span className="text-sm">Zoom</span>
                                 </button>
 
                                 <button
                                     onClick={() => { setPlotlyDragMode('pan'); setAppMode('None'); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${dragMode === 'pan' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-hand-paper text-xl mb-2"></i>
+                                    <i className="fas fa-hand-paper text-2xl mb-3"></i>
                                     <span className="text-sm">Pan</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div className="w-16 flex items-center">
-                            <div className="w-px h-full bg-gray-200"></div>
-                        </div>
+                        <div className="w-px h-full bg-gray-200 my-4"></div>
 
                         {/* Utility Controls Section */}
-                        <div className="bg-gray-50 p-6 rounded-2xl">
-                            <span className="text-sm font-medium text-gray-600 text-center block mb-3">Tools</span>
-                            <div className="flex flex-col gap-4">
+                        <div className="bg-gray-50 p-4 rounded-2xl flex flex-col justify-center">
+                            <span className="text-sm font-medium text-gray-600 text-center block mb-6">Tools</span>
+                            <div className="flex flex-col gap-6">
                                 <button 
                                     onClick={() => { setPlotlyDragMode(false); setAppMode('None'); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'None' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-mouse-pointer text-xl mb-2"></i>
+                                    <i className="fas fa-mouse-pointer text-2xl mb-3"></i>
                                     <span className="text-sm">Pointer</span>
                                 </button>
 
                                 <button
                                     onClick={() => { setAppMode('delete'); setPlotlyDragMode(false); }}
-                                    className={`h-24 w-40 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
+                                    className={`h-28 w-44 flex flex-col items-center justify-center p-3 rounded-xl ${appMode === 'delete' ? 'bg-[#297DCB] text-white' : 'bg-white text-gray-600'} hover:translate-y-[-2px] transition-all shadow hover:shadow-md border border-gray-200`}
                                 >
-                                    <i className="fas fa-trash text-xl mb-2"></i>
+                                    <i className="fas fa-trash text-2xl mb-3"></i>
                                     <span className="text-sm">Delete</span>
                                 </button>
                             </div>
@@ -281,7 +362,7 @@ const CropVideo = () => {
                             saveVideoTimers(crop, filename);
                             router.push("/edit");
                         }}
-                        className={`flex flex-col items-center justify-center p-4 rounded-lg transition-all shadow-lg hover:shadow-xl ${
+                        className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all shadow-lg hover:shadow-xl ${
                             cropPoints.start === null || 
                             cropPoints.end === null || 
                             signalCropPoints.start === undefined || 

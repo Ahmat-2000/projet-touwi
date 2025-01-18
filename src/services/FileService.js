@@ -14,16 +14,16 @@ export const removeUnevenLinesFromCSV = (file) => {
             const csvText = event.target.result;
             const lines = csvText.split('\n');
       
-            // Obtenir la première ligne et déterminer son nombre de colonnes
+            // Get the first line and determine its number of columns
             const firstLineLength = lines[0].split(',').length;
       
-            // Filtrer les lignes qui ont un nombre de colonnes égal à celui de la première ligne
+            // Filter lines that have a number of columns equal to that of the first line
             const filteredLines = lines.filter((line) => line.split(',').length === firstLineLength);
       
-            // Reconvertir en chaîne CSV
+            // Convert back to CSV string
             const cleanedCSV = filteredLines.join('\n');
       
-            // Créer un Blob CSV à partir de la chaîne nettoyée
+            // Create a CSV Blob from the cleaned string
             const csvBlob = new Blob([cleanedCSV], { type: 'text/csv' });
             resolve(csvBlob);
         };
@@ -37,9 +37,9 @@ export const removeUnevenLinesFromCSV = (file) => {
 };
 
 function getFileExtension(filename) {
-    const lastDotIndex = filename.lastIndexOf('.'); // Trouver le dernier point
+    const lastDotIndex = filename.lastIndexOf('.'); // Find the last dot
     if (lastDotIndex === -1 || lastDotIndex === 0) {
-        return ''; // Pas d'extension ou le point est le premier caractère
+        return ''; // No extension or the dot is the first character
     }
-    return filename.substring(lastDotIndex + 1); // Récupérer tout après le dernier point
+    return filename.substring(lastDotIndex + 1); // Get everything after the last dot
 }

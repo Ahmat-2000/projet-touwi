@@ -151,7 +151,6 @@ const CropPlot = ({ propsData }) => {
             },
             clicktoshow: false,
             hovertext: 'Flag at ' + point,
-            //hovertext: 'Click to delete flag',
             opacity: 1,
             padding: 8,
             borderpad: 4,

@@ -80,11 +80,7 @@ const ControlPanel = ({ propsControlPanel }) => {
         }
 
         const charUpper = event.key.toUpperCase();
-        console.log(charUpper);
-
-
         switch (charUpper) {
-
             // Navigation modes
             case 'Z':
                 propsControlPanel.setPlotlyDragMode('zoom');

@@ -5,8 +5,8 @@ import CustomVideoPlayer from './CropVersion/CustomVideoPlayer';
 
 const VideoControls = ({ propsVideoControls }) => {
 
-    const videoRef = propsVideoControls.videoRef;                   //hf for this part
-    const [, forceUpdate] = useState({});                           //Bad code merge fused 2 different codes but it works
+    const videoRef = propsVideoControls.videoRef;
+    const [, forceUpdate] = useState({});
     const [windowSize, setWindowSize] = useState(100);
     const [isHoveringSlider, setIsHoveringSlider] = useState(false);
     const [videoUrl, setVideoUrl] = useState(null);
@@ -62,15 +62,7 @@ const VideoControls = ({ propsVideoControls }) => {
         if (propsVideoControls.plotList.current.length > 0) {
             const video = videoRef.current;
             const currentVideoTime = video.currentTime;
-            const videoDuration = video.duration;
-
-            if (propsVideoControls.plotList.current[0].current === null) {
-                console.log('Removing deleted plot from list | code °12 ');
-                propsVideoControls.plotList.current = propsVideoControls.plotList.current.filter(ref => ref !== propsVideoControls.plotList.current[0]);
-            }
-
             const signalLength = propsVideoControls.plotList.current[0].current.data[0].x.length;
-
             const currentSignalIndex = Math.floor(( (Math.max(0, currentVideoTime - propsVideoControls.cropPoints.start) ) / (propsVideoControls.cropPoints.end - propsVideoControls.cropPoints.start)) * signalLength);
 
 
@@ -104,7 +96,7 @@ const VideoControls = ({ propsVideoControls }) => {
             const baseJumpTime = 0.5;
             const scaledJumpTime = baseJumpTime * video.playbackRate;
             const charUpper = event.key.toUpperCase();
-            console.log("video", charUpper);
+
             switch (charUpper) {
                 case ' ':
                     if (!propsVideoControls.syncEnabled) {
@@ -116,13 +108,11 @@ const VideoControls = ({ propsVideoControls }) => {
                     break;
                 case 'ARROWLEFT':
                     event.preventDefault();
-                    console.log("max( ", propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime );
                     video.currentTime = Math.max(propsVideoControls.cropPoints.start, (video.currentTime - propsVideoControls.cropPoints.start) - scaledJumpTime);
                     video.pause();
                     break;
                 case 'ARROWRIGHT':
                     event.preventDefault();
-                    console.log("min( ", propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime );
                     video.currentTime = Math.min(propsVideoControls.cropPoints.end, (video.currentTime - propsVideoControls.cropPoints.start) + scaledJumpTime);
                     video.pause();
                     break;

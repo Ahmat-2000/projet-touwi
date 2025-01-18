@@ -15,7 +15,7 @@ export async function POST(request) {
         const name = data.name.split('.')[0];
     
     
-        // Définir le chemin du fichier
+        // Define the file path
         const filePath = path.join(process.cwd(), "public", "uploads");
 
         try {

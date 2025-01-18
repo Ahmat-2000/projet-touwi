@@ -58,14 +58,11 @@ const ImportComponent = () => {
 
     setErrors(newErrors);
 
-    // Générez le nom de fichier à partir du nom de fileAccel
-
     if (Object.keys(newErrors).length === 0) {
       try {
-        // Générez le nom de fichier à partir du nom de fileAccel
+        // Generate the file name from the name of fileAccel
         const fileName = fields.accel.name.split("_accel")[0] + '.touwi';
 
-        // Passez fileName comme argument à csvToTouwi
         const resultFile = await csvToTouwi(fields.accel.file, fields.gyro.file, fileName);
         await saveNewFile(resultFile);
 
@@ -84,7 +81,7 @@ const ImportComponent = () => {
 
     setErrors(newErrors);
 
-    // Générez le nom de fichier à partir du nom de touwi
+    // Generate the file name from the name of .touwi
 
     if (Object.keys(newErrors).length === 0) {
       try {
@@ -92,7 +89,7 @@ const ImportComponent = () => {
         redirect();
 
         const reopenedFile = new File([fields.touwi.file], fields.touwi.name, { type: 'touwi', lastModified: new Date() });
-        console.log("saving touwi file");
+        console.log("Saving touwi file");
         await saveNewFile(reopenedFile);
 
       } catch (error) {

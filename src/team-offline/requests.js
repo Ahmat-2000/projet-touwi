@@ -1,5 +1,5 @@
 export const saveNewFile = async (touwiFile) => {
-    //touwiFile doit être un objet de type File ou Blob
+    //touwiFile must be an object of type File or Blob
     try {
         const formData = new FormData();
         formData.append("file", touwiFile);
@@ -8,18 +8,18 @@ export const saveNewFile = async (touwiFile) => {
             body: formData,
         });
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Erreur lors de l\'envoi des données:', error);
+        console.error('Error sending data:', error);
         throw error; 
     }
 };
 
 export const saveModificationFile = async (touwiFile) => {
-    //touwiFile doit être un objet de type File ou Blob
+    //touwiFile must be an object of type File or Blob
     try {
         const formData = new FormData();
         formData.append("file", touwiFile);
@@ -28,19 +28,19 @@ export const saveModificationFile = async (touwiFile) => {
             body: formData,
         });
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Erreur lors de l\'envoi des données:', error);
+        console.error('Error sending data:', error);
         throw error; 
     }
 };
 
 //unused function
 export const saveVideoSynchronisationData = async (jsonData) => {
-    //jsonData doit ête un objet de type dictionnaire
+    //jsonData must be a dictionary object
     try {
         jsonData = {
             "name": "reopen.touwi",
@@ -55,13 +55,13 @@ export const saveVideoSynchronisationData = async (jsonData) => {
             body: JSON.stringify(jsonData)
         });
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
         return result;
     } catch (error) {
         console.log(error)
-        console.error('Erreur lors de l\'envoi des données:', error);
+        console.error('Error sending data:', error);
         throw error; 
     }
 };
@@ -80,14 +80,14 @@ export const receiveFile = async (name) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         let txt = await response.text();
         return txt
 
     } catch (error) {
-        console.error('Erreur lors de la récupération du fichier:', error);
+        console.error('Error retrieving the file:', error);
     }
 };
 
@@ -104,7 +104,7 @@ export const receiveExportFile = async (name) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const blob = new Blob( [ await response.text()], { type: 'touwi' });
@@ -112,7 +112,7 @@ export const receiveExportFile = async (name) => {
         return file
 
     } catch (error) {
-        console.error('Erreur lors de la récupération du fichier:', error);
+        console.error('Error retrieving the file:', error);
     }
 };
 
@@ -161,13 +161,13 @@ export const receiveVideoTimers = async (name) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Erreur HTTP! statut: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         let txt = await response.text();
         return txt
 
     } catch (error) {
-        console.error('Erreur lors de la récupération du fichier:', error);
+        console.error('Error retrieving the file:', error);
     }
 };
