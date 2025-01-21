@@ -90,7 +90,12 @@ const App = () => {
                 setPreRender(true);
             };
         }
-        fetchTimers(currentFileName);
+        if (variablesContext.video) {
+            fetchTimers(currentFileName);
+        } else {
+            setHasVideo(false);
+            setPreRender(true);
+        }
     }, []);
 
     useEffect(() => {                                       //Update timestampRef when timestamps change
